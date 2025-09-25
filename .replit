@@ -1,76 +1,76 @@
-modules = ["nodejs-20", "postgresql-16"]
+# La Cantina Berlin - Next.js Restaurant Website Configuration
+modules = ["nodejs-20", "web", "postgresql-16"]
+
 [agent]
 expertMode = true
+integrations = ["javascript_database:1.0.0", "replitmail:1.0.0", "javascript_object_storage:1.0.0"]
 
 [nix]
 channel = "stable-25_05"
-packages = ["p7zip", "wget", "unzip", "nano"]
+packages = ["python3", "gnumake", "gcc", "pkg-config", "sqlite", "openssl", "imagemagick"]
 
+# Environment Variables
+[env]
+NODE_ENV = "development"
+NEXT_TELEMETRY_DISABLED = "1"
+
+# Development Server Configuration
 [workflows]
 runButton = "Project"
 
 [[workflows.workflow]]
-name = "Project"
-mode = "parallel"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Server"
-
-[[workflows.workflow]]
 name = "Server"
 author = "agent"
+description = "La Cantina Berlin Next.js Development Server"
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd la-cantina-berlin && npm run dev -- --port 5000 --hostname 0.0.0.0"
 waitForPort = 5000
 
+[[workflows.workflow]]
+name = "Server"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev -- --port 5000 --hostname 0.0.0.0"
+waitForPort = 5000
+
 [workflows.workflow.metadata]
 outputType = "webview"
 
 [[ports]]
-localPort = 3000
+localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 5000
+localPort = 40757
 externalPort = 3000
 
-[[ports]]
-localPort = 32941
-externalPort = 3001
-
-[[ports]]
-localPort = 35551
-externalPort = 6000
-
-[[ports]]
-localPort = 35815
-externalPort = 3003
-
-[[ports]]
-localPort = 36643
-externalPort = 3002
-
-[[ports]]
-localPort = 41657
-externalPort = 4200
-
-[[ports]]
-localPort = 44845
-externalPort = 5000
-
-[[ports]]
-localPort = 45985
-externalPort = 6800
-
-[[ports]]
-localPort = 46067
-externalPort = 5173
-
+# Deployment Configuration
 [deployment]
 deploymentTarget = "autoscale"
-run = ["bash", "-c", "cd la-cantina-berlin && npm start"]
-build = ["bash", "-c", "cd la-cantina-berlin && npm run build"]
+build = ["npm", "run", "build"]
+run = ["npm", "start"]
+
+[deployment.env]
+NODE_ENV = "production"
+NEXT_TELEMETRY_DISABLED = "1"
+
+# Language Server Protocol Settings
+[languages.typescript]
+pattern = "**/{*.ts,*.tsx,*.js,*.jsx}"
+syntax = "typescript"
+[languages.typescript.languageServer]
+start = ["typescript-language-server", "--stdio"]
+
+[languages.javascript]
+pattern = "**/{*.js,*.jsx}"
+syntax = "javascript"
+[languages.javascript.languageServer]
+start = ["typescript-language-server", "--stdio"]
