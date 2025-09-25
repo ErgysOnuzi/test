@@ -159,12 +159,13 @@ export default function ClientGallery() {
               animation: showGallery ? 'fadeInUp 0.6s ease-out forwards' : 'none'
             }}
           >
-            <div className="aspect-w-16 aspect-h-12 overflow-hidden relative">
+            <div className="overflow-hidden relative">
               <NextImage
                 src={image.imageUrl}
                 alt={image.description || 'Ristorante La Cantina Bleibtreu'}
-                fill
-                className="object-cover group-hover:scale-110 transition-transform duration-500"
+                width={800}
+                height={600}
+                className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 quality={75}
                 priority={index < 3} // First 3 images get priority loading
