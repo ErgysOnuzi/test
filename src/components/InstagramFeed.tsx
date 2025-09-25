@@ -29,7 +29,7 @@ const seededRandom = (seed: number) => {
   return x - Math.floor(x);
 };
 
-// Function to select 3 posts using date as seed for daily rotation
+// Function to select 2 posts using date as seed for daily rotation
 const selectDailyPosts = (posts: string[], count: number): string[] => {
   const today = Math.floor(Date.now() / (1000 * 60 * 60 * 24)); // Days since epoch
   const shuffled = [...posts];
@@ -49,7 +49,7 @@ function InstagramFeedContent({ showHeader = true, selectedPosts: propSelectedPo
     if (propSelectedPosts && propSelectedPosts.length > 0) {
       return propSelectedPosts;
     }
-    return selectDailyPosts(IG_URLS, 3);
+    return selectDailyPosts(IG_URLS, 2);
   }, [propSelectedPosts]);
 
   return (
@@ -71,7 +71,7 @@ function InstagramFeedContent({ showHeader = true, selectedPosts: propSelectedPo
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {selectedPosts.map(url => (
           <InstagramEmbed key={url} url={url} />
         ))}

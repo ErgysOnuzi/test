@@ -22,7 +22,7 @@ const seededRandom = (seed: number) => {
 };
 
 // Server-side function to select daily posts using Berlin timezone
-export const selectDailyInstagramPosts = (count: number = 3): string[] => {
+export const selectDailyInstagramPosts = (count: number = 2): string[] => {
   // Use Berlin timezone for consistent daily rotation
   const berlinTime = new Date().toLocaleString('en-US', { timeZone: 'Europe/Berlin' });
   const berlinDate = new Date(berlinTime);
