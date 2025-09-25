@@ -9,9 +9,19 @@ export async function GET(request: NextRequest) {
     return unauthorizedResponse();
   }
   try {
-    // Get all feedbacks for admin (including pending and rejected)
+    // Get all feedbacks for admin (including pending and rejected) with proper field mapping
     const feedbacks = await db
-      .select()
+      .select({
+        id: schema.feedbacks.id,
+        name: schema.feedbacks.name,
+        email: schema.feedbacks.email,
+        rating: schema.feedbacks.rating,
+        comment: schema.feedbacks.comment,
+        status: schema.feedbacks.status,
+        isPublic: schema.feedbacks.isPublic,
+        reservationId: schema.feedbacks.reservationId,
+        createdAt: schema.feedbacks.createdAt,
+      })
       .from(schema.feedbacks)
       .orderBy(desc(schema.feedbacks.createdAt));
 

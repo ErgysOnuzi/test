@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db, { schema } from '@/lib/db';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, and } from 'drizzle-orm';
 
 export async function GET() {
   try {
-    // Get all approved feedbacks for public display
+    // Get all approved AND public feedbacks for public display
     const feedbacks = await db
       .select({
         id: schema.feedbacks.id,
@@ -14,7 +14,12 @@ export async function GET() {
         createdAt: schema.feedbacks.createdAt,
       })
       .from(schema.feedbacks)
-      .where(eq(schema.feedbacks.status, 'approved'))
+      .where(
+        and(
+          eq(schema.feedbacks.status, 'approved'),
+          eq(schema.feedbacks.isPublic, true)
+        )
+      )
       .orderBy(desc(schema.feedbacks.createdAt));
 
     return NextResponse.json(feedbacks);

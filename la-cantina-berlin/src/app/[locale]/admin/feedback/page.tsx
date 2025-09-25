@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { Star, Check, X, Trash2, Clock, User, Mail } from 'lucide-react';
+import { Star, Check, X, Trash2, Clock, User, Mail, Eye, EyeOff } from 'lucide-react';
 import AdminGate from '../AdminGate';
 
 interface AdminFeedback {
@@ -12,6 +12,7 @@ interface AdminFeedback {
   rating: number;
   comment: string;
   status: 'pending' | 'approved' | 'rejected';
+  isPublic: boolean;
   createdAt: string;
 }
 
@@ -59,6 +60,36 @@ export default function AdminFeedbackPage() {
       }
     } catch (error) {
       console.error('Error updating feedback:', error);
+    } finally {
+      setActionLoading(prev => {
+        const newState = { ...prev };
+        delete newState[id];
+        return newState;
+      });
+    }
+  };
+
+  const toggleVisibility = async (id: number, currentVisibility: boolean) => {
+    const action = currentVisibility ? 'hide' : 'show';
+    setActionLoading(prev => ({ ...prev, [id]: action }));
+    try {
+      const response = await fetch(`/api/admin/feedback/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ isPublic: !currentVisibility }),
+      });
+
+      if (response.ok) {
+        setFeedbacks(prev =>
+          prev.map(feedback =>
+            feedback.id === id ? { ...feedback, isPublic: !currentVisibility } : feedback
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error toggling visibility:', error);
     } finally {
       setActionLoading(prev => {
         const newState = { ...prev };
@@ -193,6 +224,13 @@ export default function AdminFeedbackPage() {
                               <span className={getStatusBadge(feedback.status)}>
                                 {t(feedback.status)}
                               </span>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                feedback.isPublic 
+                                  ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                                  : 'bg-gray-100 text-gray-800 border border-gray-300'
+                              }`}>
+                                {feedback.isPublic ? 'Visible' : 'Hidden'}
+                              </span>
                             </div>
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                               <div className="flex items-center gap-1">
@@ -261,13 +299,30 @@ export default function AdminFeedbackPage() {
                           </button>
                         )}
                         <button
+                          onClick={() => toggleVisibility(feedback.id, feedback.isPublic)}
+                          disabled={actionLoading[feedback.id] === 'hide' || actionLoading[feedback.id] === 'show'}
+                          className={`flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 ${
+                            feedback.isPublic 
+                              ? 'bg-orange-600 hover:bg-orange-700' 
+                              : 'bg-blue-600 hover:bg-blue-700'
+                          }`}
+                          data-testid={`button-visibility-${feedback.id}`}
+                        >
+                          {feedback.isPublic ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          {actionLoading[feedback.id] === 'hide' 
+                            ? 'Hiding...' 
+                            : actionLoading[feedback.id] === 'show' 
+                            ? 'Showing...' 
+                            : feedback.isPublic ? 'Hide' : 'Show'}
+                        </button>
+                        <button
                           onClick={() => deleteFeedback(feedback.id)}
                           disabled={actionLoading[feedback.id] === 'delete'}
-                          className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                          className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50"
                           data-testid={`button-delete-${feedback.id}`}
                         >
                           <Trash2 className="w-4 h-4" />
-                          {actionLoading[feedback.id] === 'delete' ? t('deleting') : t('delete')}
+                          {actionLoading[feedback.id] === 'delete' ? 'Deleting...' : 'Delete'}
                         </button>
                       </div>
                     </div>

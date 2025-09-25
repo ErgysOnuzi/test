@@ -13,25 +13,46 @@ export async function PATCH(
   }
   
   try {
-    const { status } = await request.json();
+    const body = await request.json();
+    const { status, isPublic } = body;
 
-    // Validate status
-    if (!['approved', 'rejected', 'pending'].includes(status)) {
-      return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+    // Validate input - either status OR isPublic should be provided
+    if (status !== undefined) {
+      if (!['approved', 'rejected', 'pending'].includes(status)) {
+        return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+      }
+    } else if (isPublic !== undefined) {
+      if (typeof isPublic !== 'boolean') {
+        return NextResponse.json({ error: 'isPublic must be a boolean' }, { status: 400 });
+      }
+    } else {
+      return NextResponse.json({ error: 'Either status or isPublic must be provided' }, { status: 400 });
     }
 
-    // Update feedback status
-    const result = db.prepare(`
-      UPDATE feedbacks 
-      SET status = ? 
-      WHERE id = ?
-    `).run(status, id);
+    // Update feedback status or visibility
+    let result;
+    if (status !== undefined) {
+      result = db.prepare(`
+        UPDATE feedbacks 
+        SET status = ? 
+        WHERE id = ?
+      `).run(status, id);
+    } else {
+      result = db.prepare(`
+        UPDATE feedbacks 
+        SET is_public = ? 
+        WHERE id = ?
+      `).run(isPublic, id);
+    }
 
     if (result.changes === 0) {
       return NextResponse.json({ error: 'Feedback not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ message: 'Feedback status updated successfully' });
+    const message = status !== undefined 
+      ? 'Feedback status updated successfully' 
+      : 'Feedback visibility updated successfully';
+    return NextResponse.json({ message });
   } catch (error) {
     console.error('Error updating feedback:', error);
     return NextResponse.json({ error: 'Failed to update feedback' }, { status: 500 });
