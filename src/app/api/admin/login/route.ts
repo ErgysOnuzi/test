@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateAdminToken, createSecureCookie, validateAdminPassword } from '@/lib/serverAuth';
 import { checkRateLimit, getRateLimitHeaders } from '@/lib/rateLimiter';
+import { generateCSRFToken, addCSRFCookieToResponse } from '@/lib/csrf';
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,6 +39,9 @@ export async function POST(request: NextRequest) {
     const token = generateAdminToken();
     const cookie = createSecureCookie(token);
     
+    // Generate CSRF token for new session
+    const { token: csrfToken, secret: csrfSecret } = generateCSRFToken();
+    
     // Create response with secure cookie and rate limit headers
     const rateLimitHeaders = getRateLimitHeaders(rateLimit.remaining);
     const response = NextResponse.json(
@@ -46,9 +50,10 @@ export async function POST(request: NextRequest) {
     );
     
     response.cookies.set(cookie);
+    const responseWithCSRF = addCSRFCookieToResponse(response, csrfSecret);
     console.info(`Successful admin login from IP: ${clientIP}`);
     
-    return response;
+    return responseWithCSRF;
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json({ error: 'Login failed' }, { status: 500 });

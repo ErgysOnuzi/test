@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import db, { schema } from '@/lib/db';
 import { desc, eq } from 'drizzle-orm';
 import { verifyAdminAuth, unauthorizedResponse } from '@/lib/serverAuth';
+import { csrfProtection } from '@/lib/csrf';
 
 export async function GET(request: NextRequest) {
   // Verify admin authentication
@@ -26,6 +27,11 @@ export async function POST(request: NextRequest) {
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
+  
+  // CSRF Protection
+  const csrfError = await csrfProtection(request);
+  if (csrfError) return csrfError;
+  
   try {
     const body = await request.json();
     const { title, description, date, capacity } = body;
@@ -53,6 +59,11 @@ export async function DELETE(request: NextRequest) {
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
+  
+  // CSRF Protection
+  const csrfError = await csrfProtection(request);
+  if (csrfError) return csrfError;
+  
   try {
     const url = new URL(request.url);
     const id = url.searchParams.get('id');

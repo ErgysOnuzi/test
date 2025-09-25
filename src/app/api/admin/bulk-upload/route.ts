@@ -4,12 +4,17 @@ import { existsSync } from 'fs';
 import path from 'path';
 import { verifyAdminAuth, unauthorizedResponse } from '@/lib/serverAuth';
 import db, { schema } from '@/lib/db';
+import { csrfProtection } from '@/lib/csrf';
 
 export async function POST(request: NextRequest) {
   // Verify admin authentication
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
+
+  // CSRF Protection
+  const csrfError = await csrfProtection(request);
+  if (csrfError) return csrfError;
 
   try {
     const formData = await request.formData();

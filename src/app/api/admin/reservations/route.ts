@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import db, { schema } from '@/lib/db';
 import { desc, eq } from 'drizzle-orm';
 import { verifyAdminAuth, unauthorizedResponse } from '@/lib/serverAuth';
+import { csrfProtection } from '@/lib/csrf';
 
 export async function GET() {
   if (!(await verifyAdminAuth())) {
@@ -33,6 +34,10 @@ export async function PATCH(request: NextRequest) {
   if (!(await verifyAdminAuth())) {
     return unauthorizedResponse();
   }
+
+  // CSRF Protection
+  const csrfError = await csrfProtection(request);
+  if (csrfError) return csrfError;
 
   try {
     const body = await request.json();

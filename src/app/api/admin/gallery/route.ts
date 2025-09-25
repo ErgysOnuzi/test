@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import db, { schema } from '@/lib/db';
 import { desc, eq } from 'drizzle-orm';
 import { verifyAdminAuth, unauthorizedResponse } from '@/lib/serverAuth';
+import { csrfProtection } from '@/lib/csrf';
 
 export async function GET(request: NextRequest) {
   if (!(await verifyAdminAuth(request))) {
@@ -27,6 +28,10 @@ export async function POST(request: NextRequest) {
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
+
+  // CSRF Protection
+  const csrfError = await csrfProtection(request);
+  if (csrfError) return csrfError;
 
   try {
     const body = await request.json();
@@ -57,6 +62,10 @@ export async function DELETE(request: NextRequest) {
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
+
+  // CSRF Protection
+  const csrfError = await csrfProtection(request);
+  if (csrfError) return csrfError;
 
   try {
     const url = new URL(request.url);

@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache';
 import db, { schema } from '@/lib/db';
 import { verifyAdminAuth, unauthorizedResponse } from '@/lib/serverAuth';
 import { eq } from 'drizzle-orm';
+import { csrfProtection } from '@/lib/csrf';
 
 export async function DELETE(
   request: NextRequest,
@@ -12,6 +13,10 @@ export async function DELETE(
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
+  
+  // CSRF Protection
+  const csrfError = await csrfProtection(request);
+  if (csrfError) return csrfError;
   
   try {
     const { id: idParam } = await params;
@@ -47,6 +52,10 @@ export async function PATCH(
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
+  
+  // CSRF Protection
+  const csrfError = await csrfProtection(request);
+  if (csrfError) return csrfError;
   
   try {
     const { id: idParam } = await params;
@@ -90,6 +99,10 @@ export async function PUT(
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
+  
+  // CSRF Protection
+  const csrfError = await csrfProtection(request);
+  if (csrfError) return csrfError;
   
   try {
     const { id: idParam } = await params;

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import db, { schema } from '@/lib/db';
 import { verifyAdminAuth, unauthorizedResponse } from '@/lib/serverAuth';
+import { csrfProtection } from '@/lib/csrf';
 // Use the schema directly for type inference
 type InsertMenuItem = typeof schema.menuItems.$inferInsert;
 
@@ -27,6 +28,10 @@ export async function POST(request: NextRequest) {
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
+  
+  // CSRF Protection
+  const csrfError = await csrfProtection(request);
+  if (csrfError) return csrfError;
   
   try {
     const body = await request.json();

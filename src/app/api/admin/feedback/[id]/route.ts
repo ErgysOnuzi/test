@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import db, { schema } from '@/lib/db';
 import { verifyAdminAuth, unauthorizedResponse } from '@/lib/serverAuth';
 import { eq } from 'drizzle-orm';
+import { csrfProtection } from '@/lib/csrf';
 
 export async function PATCH(
   request: NextRequest,
@@ -12,6 +13,10 @@ export async function PATCH(
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
+  
+  // CSRF Protection
+  const csrfError = await csrfProtection(request);
+  if (csrfError) return csrfError;
   
   try {
     const body = await request.json();
@@ -56,6 +61,10 @@ export async function DELETE(
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
+  
+  // CSRF Protection
+  const csrfError = await csrfProtection(request);
+  if (csrfError) return csrfError;
   
   try {
     // Delete feedback using Drizzle ORM
