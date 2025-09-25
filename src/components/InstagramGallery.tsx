@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Instagram, ExternalLink, Heart, MessageCircle, Image as ImageIcon } from 'lucide-react';
+import NextImage from 'next/image';
 
 interface InstagramPost {
   id: string;
@@ -14,7 +15,62 @@ interface InstagramPost {
 }
 
 // Instagram posts data - currently using static data, can be extended with Instagram Graph API
-const instagramPosts: InstagramPost[] = [];
+const instagramPosts: InstagramPost[] = [
+  {
+    id: '1',
+    imageUrl: '/uploads/gallery/WhatsApp_Image_2025-09-25_at_12.06.01_AM.jpeg',
+    caption: 'Frische Pasta aus unserer Küche - jeden Tag mit Liebe zubereitet ❤️ #LaCantinaBerlin #FreshPasta #ItalianCuisine',
+    likes: 247,
+    comments: 18,
+    timestamp: '2025-01-20T18:30:00Z',
+    postUrl: 'https://instagram.com/lacantina_berlin'
+  },
+  {
+    id: '2', 
+    imageUrl: '/uploads/gallery/WhatsApp_Image_2025-09-25_at_12.06.01_AM_(1).jpeg',
+    caption: 'Gemütliche Atmosphäre für den perfekten Abend mit Familie und Freunden 🍷 #LaCantinaBerlin #Atmosphere #ItalianDining',
+    likes: 189,
+    comments: 12,
+    timestamp: '2025-01-18T19:45:00Z',
+    postUrl: 'https://instagram.com/lacantina_berlin'
+  },
+  {
+    id: '3',
+    imageUrl: '/uploads/gallery/WhatsApp_Image_2025-09-25_at_12.06.01_AM_(2).jpeg', 
+    caption: 'Authentische italienische Küche mitten in Berlin 🇮🇹 Besucht uns in der Bleibtreustraße! #Berlin #ItalianFood #Authentic',
+    likes: 312,
+    comments: 25,
+    timestamp: '2025-01-16T12:15:00Z',
+    postUrl: 'https://instagram.com/lacantina_berlin'
+  },
+  {
+    id: '4',
+    imageUrl: '/uploads/gallery/WhatsApp_Image_2025-09-25_at_12.06.01_AM_(3).jpeg',
+    caption: 'Unser Chef kreiert täglich neue Köstlichkeiten mit den besten Zutaten 👨‍🍳 #ChefSpecial #LaCantinaBerlin #ItalianChef',
+    likes: 156,
+    comments: 9,
+    timestamp: '2025-01-14T16:20:00Z',
+    postUrl: 'https://instagram.com/lacantina_berlin'
+  },
+  {
+    id: '5',
+    imageUrl: '/uploads/gallery/WhatsApp_Image_2025-09-25_at_12.06.02_AM.jpeg',
+    caption: 'Weekend Special: Homemade Tiramisu - der perfekte Abschluss eines wunderbaren Abends 🍮 #Tiramisu #Dessert #LaCantina',
+    likes: 278,
+    comments: 21,
+    timestamp: '2025-01-12T20:30:00Z', 
+    postUrl: 'https://instagram.com/lacantina_berlin'
+  },
+  {
+    id: '6',
+    imageUrl: '/uploads/gallery/WhatsApp_Image_2025-09-25_at_12.06.02_AM_(1).jpeg',
+    caption: 'Frische Zutaten, traditionelle Rezepte - so schmeckt Italien in Berlin! 🍅🧄 #FreshIngredients #Traditional #LaCantinaBerlin',
+    likes: 201,
+    comments: 14,
+    timestamp: '2025-01-10T14:45:00Z',
+    postUrl: 'https://instagram.com/lacantina_berlin'
+  }
+];
 
 interface InstagramGalleryProps {
   locale: string;
@@ -110,10 +166,13 @@ export default function InstagramGallery({ locale }: InstagramGalleryProps) {
             >
               {/* Image Container */}
               <div className="aspect-square relative overflow-hidden bg-gradient-to-br from-primary/20 to-secondary/20">
-                {/* Placeholder for image */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <ImageIcon className="w-12 h-12 text-primary/40" />
-                </div>
+                <NextImage
+                  src={post.imageUrl}
+                  alt={post.caption.slice(0, 100)}
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-110"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                />
                 
                 {/* Overlay on hover */}
                 <div className={`absolute inset-0 bg-black/60 flex items-center justify-center transition-opacity duration-300 ${
