@@ -2,23 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import db, { schema } from '@/lib/db';
 import { desc, eq } from 'drizzle-orm';
+import { verifyAdminAuth, unauthorizedResponse } from '@/lib/serverAuth';
 
-// Simple admin authentication check
-async function isAuthenticated(): Promise<boolean> {
-  const cookieStore = await cookies();
-  const adminSession = cookieStore.get('admin-session');
-  return adminSession?.value === 'authenticated';
-}
-
-export async function GET() {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export async function GET(request: NextRequest) {
+  if (!(await verifyAdminAuth(request))) {
+    return unauthorizedResponse();
   }
 
   try {
+    // Only fetch uploaded images, exclude Instagram items
     const images = await db
       .select()
       .from(schema.gallery)
+      .where(eq(schema.gallery.category, 'uploaded'))
       .orderBy(desc(schema.gallery.createdAt));
     return NextResponse.json(images);
   } catch (error) {
@@ -28,8 +24,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await verifyAdminAuth(request))) {
+    return unauthorizedResponse();
   }
 
   try {
@@ -47,7 +43,10 @@ export async function POST(request: NextRequest) {
       .insert(schema.gallery)
       .values({
         imageUrl: finalImageUrl,
-        description: description || null
+        description: description || null,
+        category: 'uploaded',
+        isActive: true,
+        sortOrder: 0
       })
       .returning();
     
@@ -59,8 +58,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await verifyAdminAuth(request))) {
+    return unauthorizedResponse();
   }
 
   try {

@@ -32,7 +32,11 @@ const nextConfig = {
   }),
   
   experimental: { 
-    serverActions: { allowedOrigins: ["*"] }
+    serverActions: { 
+      allowedOrigins: process.env.NODE_ENV === 'development' 
+        ? ['*'] 
+        : ['lacantina-berlin.de', '*.lacantina-berlin.de', '*.replit.dev']
+    }
   },
 
   // Cross-origin headers handled in headers() function below
@@ -75,6 +79,22 @@ const nextConfig = {
           {
             key: 'X-Frame-Options',
             value: 'SAMEORIGIN',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "frame-src 'self' https://www.instagram.com https://*.instagram.com https://*.cdninstagram.com",
+              "frame-ancestors 'self'",
+              "img-src 'self' data: https: https://*.cdninstagram.com",
+              process.env.NODE_ENV === 'development' 
+                ? "script-src 'self' 'unsafe-eval' 'unsafe-inline'" 
+                : "script-src 'self'",
+              process.env.NODE_ENV === 'development'
+                ? "style-src 'self' 'unsafe-inline'"
+                : "style-src 'self' 'unsafe-inline'", // Keep for CSS-in-JS in React
+              "connect-src 'self' https: wss:",
+            ].join('; '),
           },
         ],
       },

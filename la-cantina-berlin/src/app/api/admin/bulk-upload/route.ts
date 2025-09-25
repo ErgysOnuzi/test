@@ -44,10 +44,10 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
-        // Check file size (5MB limit per file)
-        const maxSize = 5 * 1024 * 1024; // 5MB
+        // Check file size (20MB limit per file)
+        const maxSize = 20 * 1024 * 1024; // 20MB
         if (file.size > maxSize) {
-          errors.push(`File ${file.name}: Size must be less than 5MB`);
+          errors.push(`File ${file.name}: Size must be less than 20MB`);
           continue;
         }
 

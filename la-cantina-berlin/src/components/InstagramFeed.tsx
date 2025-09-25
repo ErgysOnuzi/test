@@ -1,34 +1,26 @@
 'use client';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Instagram, ExternalLink } from 'lucide-react';
+import InstagramEmbed from './InstagramEmbed';
 
 interface InstagramFeedProps {
   showHeader?: boolean;
 }
 
-export default function InstagramFeed({ showHeader = true }: InstagramFeedProps) {
-  useEffect(() => {
-    // Load Instagram embed script if not already loaded
-    if (!document.querySelector('script[src*="instagram.com/embed.js"]')) {
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = '//www.instagram.com/embed.js';
-      document.body.appendChild(script);
-      
-      // Process embeds after script loads
-      script.onload = () => {
-        if (window.instgrm) {
-          window.instgrm.Embeds.process();
-        }
-      };
-    } else {
-      // If script already exists, just process embeds
-      if (window.instgrm) {
-        window.instgrm.Embeds.process();
-      }
-    }
-  }, []);
+const IG_URLS = [
+  "https://www.instagram.com/p/DAvXTRFidcu/",
+  "https://www.instagram.com/p/C_vwvupNoNR/",
+  "https://www.instagram.com/p/C8HwJgmt8aL/",
+  "https://www.instagram.com/p/C6gz8uSiGlb/",
+  "https://www.instagram.com/p/C6Mg0uGLdNH/",
+  "https://www.instagram.com/p/C4lqzQMrscT/",
+  "https://www.instagram.com/p/C4kriK-NmpI/",
+  "https://www.instagram.com/p/C0e_9IcLnk-/",
+  "https://www.instagram.com/p/Cztz53rN1km/",
+  "https://www.instagram.com/p/CroTpxftUqg/",
+];
 
+export default function InstagramFeed({ showHeader = true }: InstagramFeedProps) {
   return (
     <div className="bg-card/80 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-border">
       {showHeader && (
@@ -48,61 +40,11 @@ export default function InstagramFeed({ showHeader = true }: InstagramFeedProps)
         </div>
       )}
 
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <blockquote 
-          className="instagram-media" 
-          data-instgrm-permalink="https://www.instagram.com/p/DO02v5qjEUd/" 
-          data-instgrm-version="14"
-          style={{ 
-            background: '#FFF', 
-            border: 0, 
-            borderRadius: '3px', 
-            boxShadow: '0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15)', 
-            margin: '1px', 
-            maxWidth: '540px', 
-            minWidth: '326px', 
-            padding: 0, 
-            width: '100%' 
-          }}
-        >
-        </blockquote>
-        
-        <blockquote 
-          className="instagram-media" 
-          data-instgrm-permalink="https://www.instagram.com/p/DL77XYINvtn/" 
-          data-instgrm-version="14"
-          style={{ 
-            background: '#FFF', 
-            border: 0, 
-            borderRadius: '3px', 
-            boxShadow: '0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15)', 
-            margin: '1px', 
-            maxWidth: '540px', 
-            minWidth: '326px', 
-            padding: 0, 
-            width: '100%' 
-          }}
-        >
-        </blockquote>
-        
-        <blockquote 
-          className="instagram-media" 
-          data-instgrm-permalink="https://www.instagram.com/p/DJCTJMsi720/" 
-          data-instgrm-version="14"
-          style={{ 
-            background: '#FFF', 
-            border: 0, 
-            borderRadius: '3px', 
-            boxShadow: '0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15)', 
-            margin: '1px', 
-            maxWidth: '540px', 
-            minWidth: '326px', 
-            padding: 0, 
-            width: '100%' 
-          }}
-        >
-        </blockquote>
-      </section>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {IG_URLS.map(url => (
+          <InstagramEmbed key={url} url={url} />
+        ))}
+      </div>
 
       <div className="text-center mt-6 pt-6 border-t border-border/30">
         <a
@@ -117,15 +59,4 @@ export default function InstagramFeed({ showHeader = true }: InstagramFeedProps)
       </div>
     </div>
   );
-}
-
-// Extend the Window interface to include Instagram embed
-declare global {
-  interface Window {
-    instgrm?: {
-      Embeds: {
-        process(): void;
-      };
-    };
-  }
 }
