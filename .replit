@@ -57,6 +57,10 @@ args = "Server"
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 34841
+externalPort = 3000
+
 # Deployment Configuration
 [deployment]
 deploymentTarget = "autoscale"
