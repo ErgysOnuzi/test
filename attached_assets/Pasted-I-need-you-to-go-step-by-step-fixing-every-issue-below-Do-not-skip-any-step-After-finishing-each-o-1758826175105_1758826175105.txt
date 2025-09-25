@@ -1,0 +1,97 @@
+I need you to go step by step fixing every issue below. Do not skip any step. After finishing each one, confirm it works before moving to the next. When the entire list is complete, run a full test of the website (public pages + admin panel) to ensure everything is working correctly.
+
+1. Routing and Navigation
+
+Add redirect from base URL / to /de.
+
+Fix broken links (e.g. “Services” or others returning 404).
+
+Implement a branded 404 error page.
+
+Remove or link orphan/placeholder pages.
+
+2. UI and Design
+
+Fix mobile hamburger menu (include Bootstrap JS/jQuery).
+
+Correct responsive layout issues (no overlap, no horizontal scroll).
+
+Make button styles and theme consistent across all pages.
+
+Replace all placeholder “Lorem ipsum” text.
+
+Fix footer alignment and misaligned icons/text.
+
+3. Functionality and Forms
+
+Add client- and server-side validation for all forms (contact, admin, etc.).
+
+Add clear success/error feedback messages on form submission.
+
+Fix contact form delivery so submissions are stored or emailed properly.
+
+Either fully implement newsletter signup or remove it.
+
+Fix interactive components (carousel, gallery, etc.).
+
+Improve error handling so no raw errors/stack traces are shown.
+
+4. Console and Assets
+
+Add a favicon to stop 404.
+
+Fix Google Map embed by adding valid API key or remove it.
+
+Remove all console warnings.
+
+Fix broken asset references (CSS/images).
+
+5. Admin Panel & Security
+
+Change admin password to a strong, unique one.
+
+Add a visible logout button and destroy session on logout.
+
+Fix CRUD actions: add feedback after create/update, add delete confirmation dialog, add input validation.
+
+Add session timeout for admin users.
+
+Implement CSRF tokens for all admin forms.
+
+Sanitize all admin-submitted content to prevent XSS.
+
+Verify all DB queries are parameterized to prevent SQL injection.
+
+6. Accessibility & Performance
+
+Add descriptive alt text to all images.
+
+Add <label> elements or ARIA labels to all form fields.
+
+Fix low-contrast text (e.g. footer).
+
+Ensure full keyboard navigation and visible focus indicators.
+
+Optimize and compress large images.
+
+Minify assets, enable caching, and load scripts efficiently.
+
+Final Step
+
+When all items above are finished, perform a complete site test:
+
+Check every route (/de and subpages) loads with no errors.
+
+Test all forms (contact, newsletter, admin CRUD) with valid and invalid inputs.
+
+Verify admin login, logout, and security protections work.
+
+Confirm no console errors or warnings.
+
+Confirm site looks correct on desktop and mobile.
+
+Confirm accessibility basics (labels, alt text, contrast, keyboard navigation).
+
+Confirm load times are reasonable and images optimized.
+
+Do not close the task until everything is confirmed working.
