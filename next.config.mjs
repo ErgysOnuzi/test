@@ -64,18 +64,17 @@ const nextConfig = {
       allowedOrigins: process.env.NODE_ENV === 'development' 
         ? ['*'] 
         : ['lacantina-berlin.de', '*.lacantina-berlin.de', '*.replit.dev']
-    },
-    // Fix for cross-origin warnings in Next.js 15+
-    allowedDevOrigins: process.env.NODE_ENV === 'development' 
-      ? ['*.replit.dev', '*.replit.app', '*.repl.it', 'localhost:*', '0.0.0.0:*'] 
-      : []
+    }
   },
 
   // Cross-origin headers handled in headers() function below
   
   images: {
-    domains: ['localhost'],
     remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
       {
         protocol: 'https',
         hostname: '*.replit.app',
