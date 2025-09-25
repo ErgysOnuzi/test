@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { Camera, Star, MapPin } from 'lucide-react';
 import ClientGallery from '@/components/ClientGallery';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300; // Cache for 5 minutes
 
 interface GalleryPageProps {
   params: Promise<{ locale: string }>;

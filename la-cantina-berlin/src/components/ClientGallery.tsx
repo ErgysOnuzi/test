@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Image, Camera } from 'lucide-react';
+import NextImage from 'next/image';
 import GalleryLoadingAnimation from './GalleryLoadingAnimation';
 
 interface GalleryImage {
@@ -20,6 +21,7 @@ export default function ClientGallery() {
   const [loadedImagesCount, setLoadedImagesCount] = useState(0);
   const [showGallery, setShowGallery] = useState(false);
   const [isImagesFetched, setIsImagesFetched] = useState(false);
+  const [timeoutReached, setTimeoutReached] = useState(false);
 
   // Fetch images from API
   useEffect(() => {
@@ -54,6 +56,20 @@ export default function ClientGallery() {
     setIsLoading(false);
     setShowGallery(true);
   }, []);
+
+  // Set timeout to show gallery after 1.5 seconds regardless of image loading
+  useEffect(() => {
+    if (images.length > 0 && !timeoutReached) {
+      const timer = setTimeout(() => {
+        setTimeoutReached(true);
+        if (isLoading) {
+          handleLoadingComplete();
+        }
+      }, 1500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [images.length, timeoutReached, isLoading, handleLoadingComplete]);
 
   // Show loading overlay immediately when page loads, continue until images are loaded
   const showLoadingOverlay = isLoading;
@@ -112,12 +128,12 @@ export default function ClientGallery() {
 
   return (
     <div className="relative">
-      {/* Loading Overlay - Shows immediately */}
+      {/* Loading Overlay - Shows immediately, completes after timeout or first few images */}
       {showLoadingOverlay && (
         <GalleryLoadingAnimation 
           onComplete={handleLoadingComplete}
-          totalImages={images.length > 0 ? images.length : 1} // Show at least 1 to start animation
-          loadedImages={images.length > 0 ? loadedImagesCount : 0}
+          totalImages={images.length > 0 ? Math.min(images.length, 6) : 1} // Only wait for first 6 images
+          loadedImages={timeoutReached ? images.length : Math.min(loadedImagesCount, 6)}
         />
       )}
       
@@ -143,12 +159,15 @@ export default function ClientGallery() {
               animation: showGallery ? 'fadeInUp 0.6s ease-out forwards' : 'none'
             }}
           >
-            <div className="aspect-w-16 aspect-h-12 overflow-hidden">
-              <img
+            <div className="aspect-w-16 aspect-h-12 overflow-hidden relative">
+              <NextImage
                 src={image.imageUrl}
                 alt={image.description || 'Ristorante La Cantina Bleibtreu'}
-                className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
-                loading={index < 3 ? "eager" : "lazy"} // Load first 3 images immediately, rest lazily
+                fill
+                className="object-cover group-hover:scale-110 transition-transform duration-500"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                quality={75}
+                priority={index < 3} // First 3 images get priority loading
                 onLoad={handleImageLoad}
                 onError={handleImageError}
               />
