@@ -6,10 +6,6 @@ expertMode = true
 channel = "stable-25_05"
 packages = ["p7zip", "wget", "unzip", "nano"]
 
-[[ports]]
-localPort = 40357
-externalPort = 80
-
 [workflows]
 runButton = "Project"
 
@@ -20,10 +16,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Next.js Dev Server"
+args = "Server"
 
 [[workflows.workflow]]
-name = "Next.js Dev Server"
+name = "Server"
 author = "agent"
 
 [[workflows.workflow.tasks]]
@@ -33,3 +29,7 @@ waitForPort = 5000
 
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[ports]]
+localPort = 43971
+externalPort = 80
