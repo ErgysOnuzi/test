@@ -19,6 +19,7 @@ export default function ClientGallery() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadedImagesCount, setLoadedImagesCount] = useState(0);
   const [showGallery, setShowGallery] = useState(false);
+  const [isImagesFetched, setIsImagesFetched] = useState(false);
 
   // Fetch images from API
   useEffect(() => {
@@ -28,9 +29,11 @@ export default function ClientGallery() {
         if (response.ok) {
           const data = await response.json();
           setImages(data);
+          setIsImagesFetched(true);
         }
       } catch (error) {
         console.error('Error fetching gallery images:', error);
+        setIsImagesFetched(true); // Still mark as fetched to prevent infinite loading
       }
     };
 
@@ -52,11 +55,11 @@ export default function ClientGallery() {
     setShowGallery(true);
   }, []);
 
-  // Render loading overlay and gallery simultaneously
-  const showLoadingOverlay = isLoading && images.length > 0;
+  // Show loading overlay immediately when page loads, continue until images are loaded
+  const showLoadingOverlay = isLoading;
 
-  // Show empty state if no images
-  if (images.length === 0) {
+  // Show empty state if no images after fetching is complete
+  if (images.length === 0 && isImagesFetched) {
     return (
       <div className="text-center py-20">
         <div className="mb-12">
@@ -109,12 +112,12 @@ export default function ClientGallery() {
 
   return (
     <div className="relative">
-      {/* Loading Overlay */}
+      {/* Loading Overlay - Shows immediately */}
       {showLoadingOverlay && (
         <GalleryLoadingAnimation 
           onComplete={handleLoadingComplete}
-          totalImages={images.length}
-          loadedImages={loadedImagesCount}
+          totalImages={images.length > 0 ? images.length : 1} // Show at least 1 to start animation
+          loadedImages={images.length > 0 ? loadedImagesCount : 0}
         />
       )}
       
