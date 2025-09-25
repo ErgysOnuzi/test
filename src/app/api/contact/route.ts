@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import db, { schema } from '@/lib/db';
 import { desc } from 'drizzle-orm';
 import { sendEmail } from '@/utils/replitmail';
+import { handleAPIError, logError } from '@/lib/errorHandling';
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +23,11 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
-    console.log('Contact message saved successfully with ID:', newMessage.id);
+    // Log success securely without exposing sensitive details
+    logError('Contact Message Success', null, { 
+      messageReceived: true,
+      timestamp: new Date().toISOString()
+    });
 
     // Send email notification to restaurant
     try {
@@ -52,9 +57,9 @@ Please respond to this inquiry promptly.`,
           <p><small>Message ID: ${newMessage.id} | Received: ${new Date().toLocaleString('de-DE')}</small></p>
         `
       });
-      console.log('Contact notification email sent successfully');
+      // Log email success without exposing details
     } catch (emailError) {
-      console.error('Failed to send contact notification email:', emailError);
+      logError('Contact Email Notification', emailError);
       // Don't fail the entire request if email fails
     }
 
@@ -64,8 +69,12 @@ Please respond to this inquiry promptly.`,
     }, { status: 201 });
 
   } catch (error) {
-    console.error('Error processing contact message:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return handleAPIError(
+      'Contact Form Processing',
+      error,
+      'Unable to send your message at this time. Please try again later.',
+      500
+    );
   }
 }
 

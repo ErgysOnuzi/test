@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_cache } from 'next/cache';
+import { handleAPIError } from '@/lib/errorHandling';
 
 // Google Places API types
 interface GooglePlaceDetails {
@@ -80,7 +81,12 @@ const getCachedGoogleReviews = unstable_cache(
       };
 
     } catch (error) {
-      console.error('Error fetching Google reviews:', error);
+      // Log error securely without exposing details  
+      const { logError } = await import('@/lib/errorHandling');
+      logError('Google Reviews Cache', error, { 
+        hasApiKey: !!process.env.GOOGLE_API_KEY,
+        hasPlaceId: !!process.env.GOOGLE_PLACE_ID
+      });
       throw error;
     }
   },
@@ -101,13 +107,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(reviewData, { headers });
 
   } catch (error) {
-    console.error('Error fetching Google reviews:', error);
-    return NextResponse.json(
-      { 
-        error: 'Failed to fetch reviews',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
+    return handleAPIError(
+      'Google Reviews API',
+      error,
+      'Unable to load reviews at this time. Please try again later.',
+      503
     );
   }
 }

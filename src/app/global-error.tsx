@@ -1,6 +1,7 @@
 'use client'
  
 import React from 'react';
+import { logError } from '@/lib/errorHandling';
 
 export default function GlobalError({
   error,
@@ -9,6 +10,14 @@ export default function GlobalError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  // Log critical error securely for monitoring (client-side logging)
+  React.useEffect(() => {
+    logError('Global Error Boundary', error, { 
+      digest: error.digest,
+      url: window.location.href,
+      userAgent: navigator.userAgent 
+    });
+  }, [error]);
   return (
     <div className="min-h-screen flex items-center justify-center bg-red-50">
       <div className="text-center">

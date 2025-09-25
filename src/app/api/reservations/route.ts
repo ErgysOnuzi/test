@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import db, { schema } from '@/lib/db';
 import { desc } from 'drizzle-orm';
 import { sendEmail } from '@/utils/replitmail';
+import { handleAPIError, logError } from '@/lib/errorHandling';
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,7 +32,11 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
-    console.log('Reservation saved successfully with ID:', newReservation.id);
+    // Log success securely without exposing sensitive details
+    logError('Reservation Success', null, { 
+      reservationReceived: true,
+      timestamp: new Date().toISOString()
+    });
 
     // Send email notification to restaurant
     try {
@@ -68,9 +73,9 @@ Please prepare for this reservation.`,
           <p><small>Reservation ID: ${newReservation.id} | Received: ${new Date().toLocaleString('de-DE')}</small></p>
         `
       });
-      console.log('Reservation notification email sent successfully');
+      // Log email success without exposing details
     } catch (emailError) {
-      console.error('Failed to send reservation notification email:', emailError);
+      logError('Reservation Email Notification', emailError);
       // Don't fail the entire request if email fails
     }
 
@@ -80,8 +85,12 @@ Please prepare for this reservation.`,
     }, { status: 200 });
 
   } catch (error) {
-    console.error('Error processing reservation:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return handleAPIError(
+      'Reservation Processing',
+      error,
+      'Unable to process your reservation at this time. Please try again later.',
+      500
+    );
   }
 }
 
