@@ -21,7 +21,6 @@ const IG_URLS = [
   "https://www.instagram.com/p/CroTpxftUqg/",
   "https://www.instagram.com/p/C3xB9KuNmPR/",
   "https://www.instagram.com/p/C2pL7VuoTqX/",
-  "https://www.instagram.com/p/C1mZ8KuRvQ4/",
 ];
 
 // Seeded random function to ensure consistent results across renders
