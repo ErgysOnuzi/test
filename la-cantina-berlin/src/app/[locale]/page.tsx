@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { ChefHat, Flame, Wine } from 'lucide-react';
 import Hero from '@/components/Hero';
 import GoogleReviews from '@/components/GoogleReviews';
-import InstagramFeed from '@/components/InstagramFeed';
+import ServerInstagramFeed from '@/components/ServerInstagramFeed';
 
 export default function HomePage() {
   const t = useTranslations('home');
@@ -73,7 +73,7 @@ export default function HomePage() {
       {/* Instagram Feed Section */}
       <section className="py-16 px-6 bg-background">
         <div className="max-w-6xl mx-auto">
-          <InstagramFeed maxPosts={3} showHeader={true} />
+          <ServerInstagramFeed maxPosts={3} showHeader={true} />
         </div>
       </section>
     </div>

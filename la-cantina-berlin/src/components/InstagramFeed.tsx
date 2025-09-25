@@ -5,6 +5,7 @@ import InstagramEmbed from './InstagramEmbed';
 
 interface InstagramFeedProps {
   showHeader?: boolean;
+  selectedPosts?: string[]; // Pre-selected posts from server-side for hydration consistency
 }
 
 const IG_URLS = [
@@ -23,17 +24,34 @@ const IG_URLS = [
   "https://www.instagram.com/p/C1mZ8KuRvQ4/",
 ];
 
-// Function to randomly select 3 posts from all available posts
-const selectRandomPosts = (posts: string[], count: number): string[] => {
-  const shuffled = [...posts].sort(() => 0.5 - Math.random());
+// Seeded random function to ensure consistent results across renders
+const seededRandom = (seed: number) => {
+  const x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
+};
+
+// Function to select 3 posts using date as seed for daily rotation
+const selectDailyPosts = (posts: string[], count: number): string[] => {
+  const today = Math.floor(Date.now() / (1000 * 60 * 60 * 24)); // Days since epoch
+  const shuffled = [...posts];
+  
+  // Fisher-Yates shuffle with seeded random
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(seededRandom(today + i) * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  
   return shuffled.slice(0, count);
 };
 
-export default function InstagramFeed({ showHeader = true }: InstagramFeedProps) {
-  // Use useMemo to select 3 random posts on each component mount/refresh
+function InstagramFeedContent({ showHeader = true, selectedPosts: propSelectedPosts }: InstagramFeedProps) {
+  // Use pre-selected posts from server if available, otherwise fall back to client-side selection
   const selectedPosts = useMemo(() => {
-    return selectRandomPosts(IG_URLS, 3);
-  }, []);
+    if (propSelectedPosts && propSelectedPosts.length > 0) {
+      return propSelectedPosts;
+    }
+    return selectDailyPosts(IG_URLS, 3);
+  }, [propSelectedPosts]);
 
   return (
     <div className="bg-card/80 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-border">
@@ -73,4 +91,9 @@ export default function InstagramFeed({ showHeader = true }: InstagramFeedProps)
       </div>
     </div>
   );
+}
+
+// Export the main component (this fixes the hydration issue with deterministic daily rotation)
+export default function InstagramFeed(props: InstagramFeedProps) {
+  return <InstagramFeedContent {...props} />;
 }

@@ -39,11 +39,8 @@ export async function GET(request: NextRequest) {
     let placeId = null;
     
     try {
-      console.log('Searching for:', searchQuery);
       const searchResponse = await fetch(searchUrl);
       const searchData = await searchResponse.json();
-      
-      console.log('Search results:', searchData);
       
       if (searchData.results && searchData.results.length > 0) {
         // Look for the best match - your exact restaurant
@@ -53,7 +50,6 @@ export async function GET(request: NextRequest) {
         );
         
         placeId = exactMatch ? exactMatch.place_id : searchData.results[0].place_id;
-        console.log('Using Place ID:', placeId, 'for restaurant:', exactMatch?.name || searchData.results[0].name);
       }
     } catch (searchError) {
       console.error('Error searching for restaurant:', searchError);

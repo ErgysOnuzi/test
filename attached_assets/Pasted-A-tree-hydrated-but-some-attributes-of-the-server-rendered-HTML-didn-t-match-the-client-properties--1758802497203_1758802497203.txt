@@ -1,0 +1,60 @@
+A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+See more info here: https://nextjs.org/docs/messages/react-hydration-error
+
+
+  ...
+    <RedirectErrorBoundary router={{...}}>
+      <InnerLayoutRouter url="/de" tree={[...]} cacheNode={{lazyData:null, ...}} segmentPath={[...]}>
+        <SegmentViewNode type="page" pagePath="[locale]/p...">
+          <SegmentTrieNode>
+          <ClientPageRoot Component={function HomePage} searchParams={{}} params={{locale:"de"}}>
+            <HomePage params={Promise} searchParams={Promise}>
+              <div className="min-h-screen">
+                <Hero>
+                <section>
+                <section>
+                <section>
+                <section className="py-16 px-6...">
+                  <div className="max-w-6xl ...">
+                    <InstagramFeed maxPosts={3} showHeader={true}>
+                      <div className="bg-card/80...">
+                        <div>
+                        <div className="grid grid-...">
+                          <InstagramEmbed>
+                          <InstagramEmbed url="https://ww...">
+                            <div style={{position:"...", ...}}>
+                              <iframe
++                               src="https://www.instagram.com/p/CroTpxftUqg/embed"
+-                               src="https://www.instagram.com/p/C6gz8uSiGlb/embed"
++                               title="ig-CroTpxftUqg"
+-                               title="ig-C6gz8uSiGlb"
+                                style={{position:"absolute",inset:0,width:"100%",height:"100%",border:0,overflow:"hidden"}}
+                                loading="lazy"
+                              >
+                          <InstagramEmbed url="https://ww...">
+                            <div style={{position:"...", ...}}>
+                              <iframe
++                               src="https://www.instagram.com/p/DAvXTRFidcu/embed"
+-                               src="https://www.instagram.com/p/Cztz53rN1km/embed"
++                               title="ig-DAvXTRFidcu"
+-                               title="ig-Cztz53rN1km"
+                                style={{position:"absolute",inset:0,width:"100%",height:"100%",border:0,overflow:"hidden"}}
+                                loading="lazy"
+                              >
+                        ...
+        ...
+      ...
+Call Stack
+2
+iframe
+unknown (0:0)
+map
+[native code]

@@ -12,7 +12,7 @@ interface AdminFeedback {
   rating: number;
   comment: string;
   status: 'pending' | 'approved' | 'rejected';
-  created_at: string;
+  createdAt: string;
 }
 
 export default function AdminFeedbackPage() {
@@ -201,7 +201,7 @@ export default function AdminFeedbackPage() {
                               </div>
                               <div className="flex items-center gap-1">
                                 <Clock className="w-4 h-4" />
-                                {formatDate(feedback.created_at)}
+                                {formatDate(feedback.createdAt)}
                               </div>
                               <div className="flex gap-1">
                                 {renderStars(feedback.rating)}

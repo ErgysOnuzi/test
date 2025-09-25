@@ -22,7 +22,7 @@ interface Feedback {
   name: string;
   rating: number;
   comment: string;
-  created_at: string;
+  createdAt: string;
 }
 
 export default function FeedbackPage() {
@@ -81,6 +81,8 @@ export default function FeedbackPage() {
       if (response.ok) {
         setSubmitSuccess(true);
         reset();
+        // Refresh feedback list to show new feedback immediately
+        fetchFeedbacks();
         setTimeout(() => setSubmitSuccess(false), 3000);
       } else {
         const error = await response.json();
@@ -169,7 +171,7 @@ export default function FeedbackPage() {
                         <div>
                           <p className="font-semibold text-foreground">{feedback.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            {formatDate(feedback.created_at)}
+                            {formatDate(feedback.createdAt)}
                           </p>
                         </div>
                       </div>

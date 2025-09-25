@@ -14,7 +14,8 @@ interface Testimonial {
   verified: boolean;
 }
 
-// TODO: Replace with real Google My Business reviews
+// This component returns null when no testimonials are available
+// TODO: Replace with real Google My Business reviews when available
 const testimonials: Record<string, Testimonial[]> = {
   de: [],
   en: []
