@@ -1,0 +1,56 @@
+Call Stack
+26
+
+Hide 25 ignore-listed frame(s)
+getFallbackFromErrorAndNotify
+node_modules/use-intl/dist/esm/development/initializeConfig-DPFnvsUO.js (239:1)
+translateBaseFn
+node_modules/use-intl/dist/esm/development/initializeConfig-DPFnvsUO.js (264:1)
+translateFn
+node_modules/use-intl/dist/esm/development/initializeConfig-DPFnvsUO.js (332:1)
+AdminPage
+src/app/[locale]/admin/page.tsx (57:16)
+Object.react_stack_bottom_frame
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (23583:1)
+renderWithHooksAgain
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (6892:1)
+renderWithHooks
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (6804:1)
+updateFunctionComponent
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (9246:1)
+beginWork
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (10857:1)
+runWithFiberInDEV
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (871:1)
+performUnitOfWork
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (15726:1)
+workLoopSync
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (15546:39)
+renderRootSync
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (15526:1)
+performWorkOnRoot
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (14990:1)
+performSyncWorkOnRoot
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (16830:1)
+flushSyncWorkAcrossRoots_impl
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (16676:1)
+flushSyncWork$1
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (15296:1)
+Object.scheduleRefresh
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (113:1)
+eval
+node_modules/next/dist/compiled/react-refresh/cjs/react-refresh-runtime.development.js (265:1)
+Set.forEach
+<anonymous>
+Object.performReactRefresh
+node_modules/next/dist/compiled/react-refresh/cjs/react-refresh-runtime.development.js (254:1)
+applyUpdate
+node_modules/next/dist/compiled/@next/react-refresh-utils/dist/internal/helpers.js (139:1)
+statusHandler
+node_modules/next/dist/compiled/@next/react-refresh-utils/dist/internal/helpers.js (156:1)
+setStatus
+.next/static/chunks/webpack.js (498:55)
+<unknown>
+.next/static/chunks/webpack.js (667:21)
+ClientPageRoot
+../src/client/components/client-page.tsx (60:12)

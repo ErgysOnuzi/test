@@ -1,0 +1,101 @@
+Super 👍 – atëherë e kompletojmë edhe me FAQ Page, Cookie Banner Text dhe një Feedback Page për klientët, të gjitha në gjermanisht dhe anglisht.
+
+⸻
+
+🌍 Shtesa për Website (DE & EN)
+
+⸻
+
+❓ FAQ / Häufig gestellte Fragen
+
+🇩🇪 German:
+
+Häufig gestellte Fragen (FAQ)
+
+1. Muss ich einen Tisch im Voraus reservieren?
+Wir empfehlen eine Reservierung, besonders am Wochenende.
+
+2. Gibt es vegetarische oder vegane Gerichte?
+Ja, unsere Speisekarte bietet eine Auswahl an vegetarischen und veganen Optionen.
+
+3. Bieten Sie Catering an?
+Ja, wir bieten Catering für Firmen und private Veranstaltungen an.
+
+4. Kann ich Gerichte auch zum Mitnehmen bestellen?
+Alle unsere Gerichte sind auch zum Mitnehmen erhältlich.
+
+5. Gibt es Parkmöglichkeiten in der Nähe?
+Ja, öffentliche Parkplätze befinden sich in unmittelbarer Nähe.
+
+⸻
+
+🇬🇧 English:
+
+Frequently Asked Questions (FAQ)
+
+1. Do I need to reserve a table in advance?
+We recommend booking, especially on weekends.
+
+2. Do you offer vegetarian or vegan dishes?
+Yes, our menu includes vegetarian and vegan options.
+
+3. Do you provide catering services?
+Yes, we offer catering for corporate and private events.
+
+4. Can I order dishes for takeaway?
+All our dishes are available for takeaway.
+
+5. Is there parking nearby?
+Yes, public parking spaces are available close to the restaurant.
+
+⸻
+
+🍪 Cookie Banner Text
+
+🇩🇪 German:
+Wir verwenden Cookies, um unsere Website für Sie optimal zu gestalten und kontinuierlich zu verbessern. Mit der Nutzung unserer Seiten erklären Sie sich damit einverstanden.
+[Akzeptieren] [Einstellungen]
+
+🇬🇧 English:
+We use cookies to optimize our website and continuously improve it. By using our pages, you agree to this.
+[Accept] [Settings]
+
+⸻
+
+💬 Feedback Page / Kundenfeedback
+
+🇩🇪 German:
+
+Ihr Feedback zählt!
+
+Wir möchten uns stetig verbessern und freuen uns über Ihre Rückmeldung. Teilen Sie Ihre Meinung zu Ihrem Besuch bei uns:
+
+Formularfelder:
+	•	Name (optional)
+	•	E-Mail-Adresse (optional)
+	•	Bewertung (1–5 Sterne)
+	•	Kommentar
+
+„Vielen Dank für Ihr Feedback – es hilft uns, noch besser zu werden!“
+
+⸻
+
+🇬🇧 English:
+
+Your Feedback Matters!
+
+We are committed to improving and truly value your opinion. Please share your experience with us:
+
+Form fields:
+	•	Name (optional)
+	•	Email (optional)
+	•	Rating (1–5 stars)
+	•	Comment
+
+“Thank you for your feedback – it helps us improve!”
+
+⸻
+
+✅ Tani ke faqe kryesore, menu, rezervime, evente, galeri, kontakt, privacy policy, impressum, FAQ, cookie banner dhe feedback page – pra komplet një paketë profesionale për restorantin.
+
+👉 Do të doje që për Feedback Page ta shtojmë edhe një opsion që klientët të ngarkojnë foto të ushqimit ose ambientit bashkë me komentin? Kjo rrit shumë besueshmërinë dhe marketingun.

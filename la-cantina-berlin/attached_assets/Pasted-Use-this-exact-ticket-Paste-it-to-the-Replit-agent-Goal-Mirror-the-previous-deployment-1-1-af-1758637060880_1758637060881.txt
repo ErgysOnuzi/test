@@ -1,0 +1,119 @@
+Use this exact ticket. Paste it to the Replit agent:
+
+⸻
+
+Goal
+
+Mirror the previous deployment 1:1 after moving code Replit → GitHub → new Replit. The site must behave identically (routes, API, DB, auth, media, webhooks, cron). Do not “simplify” or re-scaffold. Do not drop data.
+
+Repo / Stack Audit
+	1.	Detect framework and runtime
+
+	•	Read package.json, lockfile (pnpm-lock.yaml | yarn.lock | package-lock.json), replit.nix / .replit, Procfile.
+	•	Pin Node to the project’s declared version. If none, use the version that built the last successful artifact (infer from .nvmrc or engines field).
+
+	2.	Lockfile fidelity
+
+	•	Use the existing lockfile. No lockfile regeneration.
+	•	Install with the matching tool:
+	•	pnpm: pnpm i --frozen-lockfile
+	•	yarn: yarn --frozen-lockfile
+	•	npm: npm ci
+
+	3.	Build pipeline
+
+	•	Run the exact build script from package.json (build, generate, prisma generate, next build, vite build, etc.).
+	•	If the old Replit cached a build folder (.next, dist, build, public/.cache), re-create it deterministically from source. Do not copy old artifacts.
+
+Secrets / Config Parity
+
+Recreate all secrets from the old instance. Without these, behavior diverges.
+	•	Create Replit Secrets with identical keys and values:
+	•	DATABASE_URL
+	•	NEXTAUTH_SECRET / SESSION_SECRET (or equivalent)
+	•	OAuth client IDs/secrets (Google/GitHub/etc.)
+	•	Third-party keys (Stripe, YouTube, Cloudinary/S3, SendGrid/Mailgun, any custom API)
+	•	Storage credentials (S3/Cloudflare R2: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET, R2_PUBLIC_BASE_URL)
+	•	Webhook signing secrets (Stripe STRIPE_WEBHOOK_SECRET, etc.)
+	•	Any project-specific envs referenced in code (process.env.*)—enumerate by static scan.
+
+Action:
+	•	Run a project-wide search for process.env. and list missing keys. Add them to Replit Secrets. Do not commit actual values.
+
+Database / Migrations
+	•	Target the same database the old site used (Postgres/Supabase/MySQL). Do not create a new DB.
+	•	Verify connection with DATABASE_URL.
+	•	If Prisma: npx prisma generate then npx prisma migrate deploy (not dev).
+	•	If direct SQL migrations: run the pending migrations folder in order.
+	•	Protect data: no reset, no drop, no destructive seeds. If the repo has a seed script, run only if idempotent.
+
+Storage / Media
+	•	If media lived on S3/R2/Cloudinary, confirm bucket and public base URL envs.
+	•	If media lived on the old Replit filesystem, move it to object storage or copy from the old instance’s persistent path if available. Re-wire PUBLIC_BASE_URL so image URLs remain valid.
+
+Auth / OAuth
+	•	Update OAuth redirect URLs to the new Replit domain and any custom domain.
+	•	For NextAuth/Auth.js: set NEXTAUTH_URL to the production URL. Ensure NEXTAUTH_SECRET matches a secure value.
+	•	For custom JWT sessions: keep SESSION_SECRET identical if you want existing sessions to remain valid.
+
+URLs / Domains / CORS
+	•	Configure custom domain in Replit (or reverse proxy) to match the old host.
+	•	Set ORIGIN, BASE_URL, NEXT_PUBLIC_SITE_URL (or equivalent) to the canonical URL.
+	•	CORS: mirror allowed origins list. Include both the repl.co preview and the custom domain.
+
+Runtime / Serving
+	•	Ensure .replit and replit.nix (if present) run the same start command as before.
+	•	Web servers must listen on $PORT.
+	•	For Next.js: use next start on the built output. For Vite/Express: use the production server script (node server.js, etc.).
+
+Jobs / Webhooks / Cron
+	•	Re-register any webhooks (Stripe, YouTube, Discord, Telegram) to the new public URL.
+	•	Re-create scheduled tasks (cron) if they ran on Replit or an external scheduler. Keep intervals identical.
+
+Caching / Rate Limits
+	•	Restore any Redis/Upstash caches (UPSTASH_REDIS_REST_URL/TOKEN etc.).
+	•	If YouTube/API quotas were tuned, keep the same keys and referrers.
+
+Build Output Parity Checklist
+
+After deployment, verify:
+	•	All pages render server and client.
+	•	API routes return 200 with the same payload shape.
+	•	Auth login/logout/callbacks work.
+	•	DB reads/writes (create/update/delete) work across Menu/Reservations/Gallery/Events or equivalent modules.
+	•	Media upload/delete functions work; deletions reflect in storage.
+	•	Webhooks receive events and signature verification passes.
+	•	Admin panel: create/edit/save/delete functions behave identically.
+	•	No 404s on static assets; image optimization works if used.
+	•	No console/network errors in the browser; no unhandled promise rejections on server.
+
+Commands (adjust to the detected tool)
+
+# 1) Node pin (if using nix, ensure node version matches)
+# 2) Install
+pnpm i --frozen-lockfile    # or yarn --frozen-lockfile / npm ci
+
+# 3) Generate/build
+npx prisma generate || true
+pnpm run build              # or yarn build / npm run build
+
+# 4) DB migrations (safe)
+npx prisma migrate deploy || true
+# or run the project’s migration tool in "deploy" mode
+
+# 5) Start
+pnpm run start              # production start; ensure it binds to $PORT
+
+Diff / Gaps To Fix
+	•	If builds fail, do not change code style or upgrade dependencies blindly. Fix by matching the old Node and lockfile.
+	•	If a secret is missing, report its key name; I will provide the value.
+	•	If a webhook/cron URL must change, list each endpoint you need re-registered.
+
+Acceptance Criteria
+	•	Same routes, same UI, same admin functions, same data, same media URLs, same auth flow.
+	•	No regression in delete/edit for gallery/events/reservations (these were broken before; ensure they work now).
+	•	Provide a short report: Node version, install tool, env keys you added, migrations applied, webhooks re-registered, domain/CORS set, final deployed URL.
+
+⸻
+
+If you need anything else from me, list the exact env var names only.

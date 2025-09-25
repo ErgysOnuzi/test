@@ -1,0 +1,183 @@
+Got it ✅ — you want me to prepare the entire website (full codebase, design, texts, structure, everything) so that the Replit agent can just follow step-by-step and build it. I’ll give you a complete project specification in English, including:
+	1.	Tech stack (Next.js + Tailwind + Supabase)
+	2.	File & folder structure
+	3.	Database schema
+	4.	Pages & components (with design + content texts written out)
+	5.	Color palette & typography
+	6.	Deployment setup
+
+⸻
+
+🍝 La Cantina Berlin – Full Website Specification
+
+1️⃣ Tech Stack
+	•	Frontend: Next.js (App Router, TypeScript, TailwindCSS)
+	•	Backend/Database: Supabase (for menu items, reservations, gallery, events)
+	•	Auth/Admin: Supabase policies + simple admin dashboard
+	•	Hosting: Vercel (or Replit preview + Replit hosting)
+
+⸻
+
+2️⃣ Folder Structure
+
+/src
+ ├─ app
+ │   ├─ page.tsx               # Homepage
+ │   ├─ menu/page.tsx          # Menu page
+ │   ├─ reservations/page.tsx  # Reservations + Waitlist
+ │   ├─ gallery/page.tsx       # Gallery
+ │   ├─ events/page.tsx        # Events & Catering
+ │   ├─ contact/page.tsx       # Contact page
+ │   ├─ legal/page.tsx         # Legal (Impressum + Privacy)
+ │
+ ├─ components
+ │   ├─ Header.tsx
+ │   ├─ Footer.tsx
+ │   ├─ Navbar.tsx
+ │   ├─ Hero.tsx
+ │   ├─ MenuCard.tsx
+ │   ├─ ReservationForm.tsx
+ │   ├─ GalleryGrid.tsx
+ │   ├─ EventCard.tsx
+ │   └─ ContactForm.tsx
+ │
+ ├─ lib/supabase.ts
+ ├─ types (menu.ts, reservation.ts, gallery.ts, event.ts)
+ ├─ styles/globals.css
+
+
+⸻
+
+3️⃣ Supabase Database Schema
+
+menu_items
+
+id uuid pk
+title text
+description text
+price numeric
+category text
+is_available boolean default true
+
+reservations
+
+id uuid pk
+name text
+phone text
+email text
+date date
+time time
+guests int
+status text default 'pending'
+
+gallery
+
+id uuid pk
+image_url text
+description text
+created_at timestamp default now()
+
+events
+
+id uuid pk
+title text
+description text
+date date
+capacity int
+
+
+⸻
+
+4️⃣ Pages & Content
+
+🏠 Homepage (page.tsx)
+	•	Hero section:
+“Welcome to La Cantina Berlin – Authentic Italian cuisine in the heart of the city.”
+CTA: “Reserve a Table”
+	•	Highlights: Daily Specials, Event Hosting, Authentic Wine Selection
+	•	Footer: Address, hours, map, social links
+
+📖 Menu (menu/page.tsx)
+	•	Categories: Starters, Pasta, Main Courses, Desserts, Drinks
+	•	Each dish: title, description, price
+	•	Example dish:
+Spaghetti Carbonara – Traditional Roman recipe with pancetta and pecorino cheese (€14.90)
+
+📅 Reservations (reservations/page.tsx)
+	•	Form: Name, Email, Phone, Date, Time, Guests
+	•	Submit → Saves to Supabase + sends email confirmation (via SendGrid/Mailgun if added)
+	•	Waitlist logic: If fully booked, guest is added to waitlist
+
+🖼️ Gallery (gallery/page.tsx)
+	•	Grid of photos pulled from Supabase
+	•	Admin can upload photos (CMS)
+	•	Example: Dining room, pasta dishes, wine cellar
+
+🍷 Events & Catering (events/page.tsx)
+	•	Event cards (title, description, date, capacity)
+	•	Catering inquiry form
+
+📍 Contact (contact/page.tsx)
+	•	Google Maps embed (restaurant location)
+	•	Address, phone, email
+	•	Simple contact form
+
+⚖️ Legal (legal/page.tsx)
+	•	Impressum (legal imprint for Germany)
+	•	Privacy Policy (GDPR compliant)
+
+⸻
+
+5️⃣ Colors & Typography
+	•	Colors:
+	•	Deep Red: #B80000
+	•	Charcoal: #111111
+	•	Warm Beige: #F6F2ED
+	•	White: #FFFFFF
+	•	Fonts:
+	•	Headings: Playfair Display (serif, elegant)
+	•	Body: Inter (clean, modern sans-serif)
+
+⸻
+
+6️⃣ Components
+
+Header.tsx / Navbar.tsx
+	•	Logo left, menu links right (Home, Menu, Reservations, Gallery, Events, Contact)
+	•	Language switcher (🇩🇪 German default / 🇬🇧 English secondary)
+
+Hero.tsx
+	•	Full-width background image
+	•	Headline: “Authentic Italian Cuisine in Berlin”
+	•	Button: “Reserve a Table”
+
+MenuCard.tsx
+	•	Displays dish name, description, price
+	•	Filter by category
+
+ReservationForm.tsx
+	•	Inputs (name, phone, email, date, time, guests)
+	•	Submit to Supabase
+
+GalleryGrid.tsx
+	•	Responsive grid of images
+	•	Lightbox popup
+
+EventCard.tsx
+	•	Title, description, date, RSVP link
+
+ContactForm.tsx
+	•	Name, email, message → send via Supabase or email API
+
+⸻
+
+7️⃣ Deployment
+	•	Preview on Replit
+	•	Connect to Vercel for production hosting
+	•	Domain setup for ristorante-la-cantina.de (or subdomain if client prefers staging first)
+
+⸻
+
+👉 With this spec, the Replit agent can build the entire website end-to-end: design, content, database, and deployment.
+
+Would you like me to now write the exact message you can paste to the Replit agent (so they follow this step-by-step)?

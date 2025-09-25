@@ -1,0 +1,237 @@
+Use this exact audit brief. Paste to the Replit agent.
+
+⸻
+
+Objective
+
+Perform a full-site audit and fix pass. Identify and resolve any error, misconfig, or regression across frontend, backend, database, storage, auth, i18n, SEO, performance, accessibility, cron/webhooks, and admin CRUD. Deliver a written report with evidence.
+
+Preflight
+	1.	Lockfile + Node
+
+	•	Confirm Node version used at build time. Do not upgrade/downgrade unless required by the lockfile.
+	•	Use npm ci (not npm i). No lockfile regeneration.
+
+	2.	Env parity
+
+	•	Enumerate required env keys via static scan:
+
+grep -RnoI --line-number -E "process\.env\.[A-Z0-9_]+" .
+
+
+	•	Create any missing keys in Replit Secrets. Do not commit values.
+
+	3.	Native deps
+
+	•	Ensure the Nix shell includes: nodejs_20, python3, gcc, gnumake, pkg-config, sqlite, openssl.
+	•	Rebuild native modules if present:
+
+npm rebuild
+
+
+	•	Confirm binary loads without warnings at runtime.
+
+	4.	Port binding
+
+	•	Ensure start/dev scripts bind to $PORT.
+
+Build + Boot Verification
+	•	Commands:
+
+npm ci
+npm run build
+npm run start
+
+
+	•	Collect logs. Flag any warnings or “UnhandledPromiseRejection”.
+	•	Confirm health endpoint works (pick one API route) with:
+
+curl -i https://<repl-url>/api/health || curl -i http://localhost:$PORT/api/health
+
+
+	•	If no health route exists, create a temporary /api/health returning { ok: true } and remove after.
+
+Functional QA (User-Facing)
+
+Test on desktop and mobile breakpoints: 360px, 768px, 1024px, 1440px.
+	1.	Routing
+
+	•	All public pages load without 404/500.
+	•	No hydration mismatch warnings.
+	•	No client console errors.
+
+	2.	Navigation
+
+	•	Header/footers render and links resolve.
+	•	Active link states correct.
+	•	404 page styled and helpful.
+
+	3.	Localization (if present)
+
+	•	Language switch toggles all UI strings.
+	•	URL prefixes/suffixes correct.
+	•	No mixed-language artifacts.
+
+	4.	Forms
+
+	•	Contact/Reservation forms validate inputs, show inline errors, and submit.
+	•	Rate-limit or honeypot works; spam not accepted.
+	•	Success toasts/messages render reliably.
+
+	5.	Content
+
+	•	Menus/prices render correctly, currency/locale formatting accurate.
+	•	Gallery images lazy-load, open, and close without layout shift.
+	•	Events list shows correct dates, timezone-safe.
+
+	6.	Media
+
+	•	All images return 200 and correct content-type.
+	•	Broken images return fallback.
+	•	Image optimizer (if used) returns optimized sizes.
+
+Admin/Backoffice QA
+	1.	Auth
+
+	•	Login with correct password succeeds; wrong password rate-limited.
+	•	JWT/session cookie HttpOnly, Secure on HTTPS; correct expiry.
+	•	Logout clears session.
+
+	2.	CRUD Modules
+Execute end-to-end for Menu, Reservations, Gallery, Events (or all domain objects present):
+
+	•	Create → appears in list/grid immediately.
+	•	Read → detail view consistent with DB.
+	•	Update → fields persist; timestamps update.
+	•	Delete → row/file removed; 404 on old URL; no ghost cache.
+	•	Edge cases: empty fields, long text, unicode, images > limit, duplicate keys.
+
+	3.	File Uploads
+
+	•	Upload accepts jpg/png/webp within size limits.
+	•	Stored in configured object storage or writable path.
+	•	Delete removes file from storage and DB.
+
+	4.	Admin UX
+
+	•	Pagination, filtering, sorting functional.
+	•	Bulk actions operate on selected rows only.
+	•	Toasts/alerts unambiguous.
+
+API Contract QA
+
+For each API route, run:
+
+for p in \
+  /api/menu \
+  /api/reservations \
+  /api/gallery \
+  /api/events \
+  /api/auth/me \
+; do
+  echo "== $p ==" && curl -sS -H "Accept: application/json" https://<repl-url>$p | head -c 400 && echo; done
+
+Verify:
+	•	2xx responses with expected JSON shape.
+	•	4xx on invalid input; 401/403 on protected routes without auth.
+	•	405/OPTIONS handled for CORS preflight if used.
+	•	No stack traces or secret values leak in errors.
+
+Database QA (SQLite or configured DB)
+	1.	Connection
+
+	•	App connects with current DATABASE_URL/expected path.
+	•	File/dir exists and writable on Replit.
+
+	2.	Schema
+
+	•	Migrations applied in production-safe mode (no resets).
+	•	Schema versions match repo.
+
+	3.	Integrity
+
+	•	Foreign keys enabled if applicable.
+	•	Unique constraints enforced.
+	•	Transactional writes; rollback on failure.
+
+	4.	Data
+
+	•	Seed only if idempotent. No destructive seeds in production.
+
+Security QA
+	•	No secrets logged to console or sent to client.
+	•	CORS restricts to allowed origins (preview + custom domain).
+	•	Headers: X-Frame-Options: DENY or SAMEORIGIN, X-Content-Type-Options: nosniff, Referrer-Policy: strict-origin-when-cross-origin.
+	•	CSRF protection on state-changing requests if cookies used.
+	•	Rate limiting or captcha on auth-sensitive endpoints.
+
+Performance/UX QA
+	•	Lighthouse (Desktop/Mobile): run and record scores.
+	•	Core Web Vitals: LCP <2.5s, CLS <0.1, INP <200ms on a warm load.
+	•	Images sized correctly, no layout shifts from media.
+	•	No oversized JS chunks; code-splitting works.
+
+Accessibility QA
+	•	Landmarks present; headings logical.
+	•	Color contrast passes WCAG AA.
+	•	All interactive elements keyboard navigable.
+	•	Images have alt text; icons marked aria-hidden where decorative.
+	•	Forms have labels and ARIA states.
+
+SEO/Meta QA
+	•	<title>, <meta name="description">, OpenGraph/Twitter cards per page.
+	•	Canonical URLs correct.
+	•	Sitemap and robots.txt correct if present.
+	•	301s in place for moved routes.
+
+Observability
+	•	Server logs: no unhandled errors.
+	•	Client console: no errors; warnings triaged.
+	•	Add temporary request logging around failing routes; remove after fix.
+
+Jobs, Webhooks, Third-Party
+	•	Cron tasks present and scheduled as before (document frequency).
+	•	Stripe/YouTube/Discord/Telegram webhooks re-registered to new URL; signatures verify.
+	•	External API keys valid; handle quota errors gracefully.
+
+Domain + TLS
+	•	Custom domain points to Replit; forced HTTPS.
+	•	BASE_URL/NEXT_PUBLIC_SITE_URL/NEXTAUTH_URL (if used) set to canonical.
+	•	Favicons/manifest served with 200.
+
+Regression Targets (explicit)
+	•	Admin: create/edit/save/delete for Reservations, Menu, Gallery, Events must work.
+	•	File deletion physically removes blobs.
+	•	No 404s for static assets.
+	•	No “works on dev / fails on prod” discrepancies.
+
+Deliverables
+	1.	Fix list with diffs for each change.
+	2.	Env key inventory required to run.
+	3.	Logs or screenshots proving each module works post-fix.
+	4.	Final URLs to test (public + admin).
+	5.	Known limitations and follow-up tasks.
+
+Quick Commands Reference
+
+# enumerate env keys
+grep -RnoI -E "process\.env\.[A-Z0-9_]+" .
+
+# build + start
+npm ci && npm run build && npm run start
+
+# basic API smoke
+curl -i https://<repl-url>/api/health
+
+# JSON contract spot-checks
+curl -sS https://<repl-url>/api/menu | jq .
+curl -sS https://<repl-url>/api/reservations | jq .
+curl -sS https://<repl-url>/api/gallery | jq .
+curl -sS https://<repl-url>/api/events | jq .
+
+Acceptance Criteria
+	•	Zero console errors (client/server) during typical user and admin flows.
+	•	All CRUD modules pass create/read/update/delete, including media deletion.
+	•	Auth stable with correct cookies/JWT; secrets not exposed.
+	•	No broken images, routes, or links.
+	•	Documented report with evidence and remaining gaps.
