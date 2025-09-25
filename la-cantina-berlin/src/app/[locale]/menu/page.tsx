@@ -2,7 +2,8 @@ import React from 'react';
 import MenuWithFilters from '@/components/MenuWithFilters';
 import { generateSEOMetadata, MenuSchema } from '@/components/StructuredData';
 
-export const dynamic = 'force-dynamic';
+// Enable static generation with ISR - revalidate every 5 minutes
+export const revalidate = 300;
 
 export async function generateMetadata({
   params
@@ -15,9 +16,16 @@ export async function generateMetadata({
 
 async function getMenuItems() {
   try {
-    const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:5000'}/api/menu`, {
-      next: { tags: ['menu'] },
-      cache: 'no-store'
+    // Get base URL for server-side fetching
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXTAUTH_URL || 'http://localhost:5000';
+    
+    const response = await fetch(`${baseUrl}/api/menu`, {
+      next: { 
+        tags: ['menu'],
+        revalidate: 300 // Cache for 5 minutes
+      }
     });
     
     if (!response.ok) {

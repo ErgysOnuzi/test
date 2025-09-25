@@ -5,7 +5,6 @@ import { getMessages } from 'next-intl/server';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import GlobalLoader from '@/components/GlobalLoader';
-import PagePreloader from '@/components/PagePreloader';
 import { RestaurantSchema, generateSEOMetadata } from '@/components/StructuredData';
 
 export async function generateMetadata({
@@ -52,7 +51,6 @@ export default async function LocaleLayout({
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <GlobalLoader />
-          <PagePreloader />
           <Header />
           <main>{children}</main>
           <Footer />
