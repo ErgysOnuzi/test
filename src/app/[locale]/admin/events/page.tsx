@@ -34,6 +34,7 @@ export default function AdminEventsPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
 
   // Load events from API
@@ -68,6 +69,9 @@ export default function AdminEventsPage() {
         });
         if (response.ok) {
           setEvents(prev => prev.filter(event => event.id !== id));
+          setSuccessMessage(t('event_deleted_success'));
+          setError(null);
+          setTimeout(() => setSuccessMessage(null), 5000);
         } else {
           setError(t('failed_to_delete_event'));
         }
@@ -100,6 +104,9 @@ export default function AdminEventsPage() {
         const newEvent = await response.json();
         setEvents(prev => [newEvent, ...prev]);
         setShowAddForm(false);
+        setSuccessMessage(t('event_added_success'));
+        setError(null);
+        setTimeout(() => setSuccessMessage(null), 5000);
       } else {
         setError(t('failed_to_create_event'));
       }
@@ -145,6 +152,12 @@ export default function AdminEventsPage() {
           {error && (
             <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg mb-6">
               {error}
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="bg-green-100 border border-green-200 text-green-700 dark:bg-green-900/30 dark:border-green-700/50 dark:text-green-400 px-4 py-3 rounded-lg mb-6">
+              {successMessage}
             </div>
           )}
 

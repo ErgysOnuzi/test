@@ -24,6 +24,7 @@ export default function MenuCRUD() {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -72,6 +73,9 @@ export default function MenuCRUD() {
       
       if (response.ok) {
         setItems(items.filter(item => item.id !== id));
+        setSuccessMessage(t('item_deleted_success'));
+        setError(null);
+        setTimeout(() => setSuccessMessage(null), 5000);
       } else {
         setError(t('error_deleting_item'));
       }
@@ -100,6 +104,9 @@ export default function MenuCRUD() {
             item.id === editingItem.id ? { ...updatedItem, id: editingItem.id } : item
           ));
           setEditingItem(null);
+          setSuccessMessage(t('item_updated_success'));
+          setError(null);
+          setTimeout(() => setSuccessMessage(null), 5000);
         } else {
           setError(t('error_updating_item'));
         }
@@ -118,6 +125,9 @@ export default function MenuCRUD() {
           const newItem = await response.json();
           setItems([...items, newItem]);
           setShowAddForm(false);
+          setSuccessMessage(t('item_created_success'));
+          setError(null);
+          setTimeout(() => setSuccessMessage(null), 5000);
         } else {
           setError(t('error_creating_item'));
         }
@@ -168,6 +178,12 @@ export default function MenuCRUD() {
       {error && (
         <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
           {error}
+        </div>
+      )}
+      
+      {successMessage && (
+        <div className="bg-green-100 border border-green-200 text-green-700 dark:bg-green-900/30 dark:border-green-700/50 dark:text-green-400 px-4 py-3 rounded-lg">
+          {successMessage}
         </div>
       )}
 

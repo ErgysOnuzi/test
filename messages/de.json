@@ -224,6 +224,11 @@
     "upload_first_image": "Erstes Bild hochladen",
     "message_sent_success": "Nachricht erfolgreich gesendet!",
     "internal_server_error": "Interner Serverfehler",
+    "item_created_success": "Menüelement erfolgreich erstellt!",
+    "item_updated_success": "Menüelement erfolgreich aktualisiert!",
+    "item_deleted_success": "Menüelement erfolgreich gelöscht!",
+    "event_added_success": "Event erfolgreich hinzugefügt!",
+    "event_deleted_success": "Event erfolgreich gelöscht!",
     "select_other_category": "Bitte wählen Sie eine andere Kategorie aus.",
     "loading_items": "Leckere Artikel werden geladen..."
   },

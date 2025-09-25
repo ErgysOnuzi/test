@@ -214,7 +214,12 @@
     "select_other_category": "Please select another category.",
     "loading_items": "Loading delicious items...",
     "message_sent_success": "Message sent successfully!",
-    "internal_server_error": "Internal server error"
+    "internal_server_error": "Internal server error",
+    "item_created_success": "Menu item created successfully!",
+    "item_updated_success": "Menu item updated successfully!",
+    "item_deleted_success": "Menu item deleted successfully!",
+    "event_added_success": "Event added successfully!",
+    "event_deleted_success": "Event deleted successfully!"
   },
   "contact": {
     "title": "Contact",
