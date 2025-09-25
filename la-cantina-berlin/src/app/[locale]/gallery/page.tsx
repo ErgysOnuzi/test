@@ -155,7 +155,7 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
                   >
                     <div className="aspect-w-16 aspect-h-12 overflow-hidden">
                       <img
-                        src={image.image_url}
+                        src={image.imageUrl}
                         alt={image.description || 'Ristorante La Cantina Bleibtreu'}
                         className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                         loading="lazy"
