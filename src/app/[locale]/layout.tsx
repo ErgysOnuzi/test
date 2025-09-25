@@ -38,6 +38,17 @@ export default async function LocaleLayout({
     <html lang={locale} data-scroll-behavior="smooth">
       <head>
         <RestaurantSchema locale={locale} />
+        
+        {/* Favicon and PWA - Partial implementation due to PNG creation constraints */}
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/favicon.svg" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#D2691E" />
+        <meta name="msapplication-TileColor" content="#D2691E" />
+        <meta name="msapplication-config" content="none" />
+        
         <meta name="google-site-verification" content="your-google-verification-code" />
         <link rel="canonical" href={`https://lacantina-berlin.de/${locale}`} />
         <link rel="alternate" hrefLang="de" href="https://lacantina-berlin.de/de" />
