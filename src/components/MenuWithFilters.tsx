@@ -433,7 +433,7 @@ export default function MenuWithFilters({ menuItems, locale }: MenuWithFiltersPr
                     disabled={isPending && currentlyLoading === foodType}
                     className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-300 flex items-center gap-2 text-sm ${
                       selectedFoodType === foodType
-                        ? 'bg-secondary text-secondary-foreground shadow-lg scale-110 border-2 border-secondary'
+                        ? 'bg-secondary text-secondary-foreground shadow-lg scale-105 border-2 border-secondary'
                         : 'bg-card text-muted-foreground border border-border hover:text-foreground hover:shadow-md hover:scale-105'
                     } ${isPending && currentlyLoading === foodType ? 'opacity-75' : ''}`}
                     data-testid={`food-type-${foodType.toLowerCase().replace(/\s+/g, '-')}`}
@@ -464,7 +464,7 @@ export default function MenuWithFilters({ menuItems, locale }: MenuWithFiltersPr
                     disabled={isPending && currentlyLoading === drinkType}
                     className={`px-8 py-3 rounded-2xl font-semibold transition-all duration-300 flex items-center gap-2 ${
                       selectedDrinkType === drinkType
-                        ? 'bg-secondary text-secondary-foreground shadow-lg scale-110 border-2 border-secondary'
+                        ? 'bg-secondary text-secondary-foreground shadow-lg scale-105 border-2 border-secondary'
                         : 'bg-card text-muted-foreground border border-border hover:text-foreground hover:shadow-md hover:scale-105'
                     } ${isPending && currentlyLoading === drinkType ? 'opacity-75' : ''}`}
                     data-testid={`drink-type-${drinkType.toLowerCase().replace(/\s+/g, '-')}`}

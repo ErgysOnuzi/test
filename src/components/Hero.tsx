@@ -36,7 +36,7 @@ export default function Hero() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href={`/${locale}/reservations`}>
             <button 
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg font-medium rounded-md transition-colors"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg font-medium rounded-md transition-colors border-2 border-primary"
               data-testid="button-hero-reserve"
             >
               {t('cta_reserve')}
@@ -44,7 +44,7 @@ export default function Hero() {
           </Link>
           <Link href={`/${locale}/menu`}>
             <button 
-              className="border-white text-white hover:bg-white/10 bg-white/5 backdrop-blur-sm px-8 py-3 text-lg font-medium rounded-md border-2 transition-colors"
+              className="border-white/80 text-white hover:bg-white/10 bg-white/5 backdrop-blur-sm px-8 py-3 text-lg font-medium rounded-md border-2 transition-colors hover:border-white"
               data-testid="button-hero-menu"
             >
               {t('cta_menu')}
