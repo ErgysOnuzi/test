@@ -1,4 +1,5 @@
 import createNextIntlPlugin from 'next-intl/plugin';
+import crypto from 'crypto';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
@@ -14,22 +15,49 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   
-  // Bundle analyzer in development
-  ...(process.env.ANALYZE === 'true' && {
-    webpack: (config) => {
+  // Force static generation and prefetching
+  trailingSlash: false,
+  
+  // Webpack optimizations for faster builds
+  webpack: (config, { dev, isServer }) => {
+    // Optimize chunks for faster navigation
+    if (!dev && !isServer) {
       config.optimization.splitChunks = {
         chunks: 'all',
         cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
+          default: false,
+          vendors: false,
+          // Create separate chunks for major libraries
+          framework: {
             chunks: 'all',
+            name: 'framework',
+            test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
+            priority: 40,
+            enforce: true,
+          },
+          lib: {
+            test(module) {
+              return module.size() > 160000 && /node_modules[/\\]/.test(module.identifier());
+            },
+            name(module) {
+              const hash = crypto.createHash('sha1');
+              hash.update(module.identifier());
+              return hash.digest('hex').substring(0, 8);
+            },
+            priority: 30,
+            minChunks: 1,
+            reuseExistingChunk: true,
+          },
+          commons: {
+            name: 'commons',
+            minChunks: 2,
+            priority: 20,
           },
         },
       };
-      return config;
-    },
-  }),
+    }
+    return config;
+  },
   
   experimental: { 
     serverActions: { 

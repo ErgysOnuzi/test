@@ -31,7 +31,7 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link href={`/${locale}`} className="block" data-testid="link-home">
+            <Link href={`/${locale}`} prefetch={true} className="block" data-testid="link-home">
               <h1 className="text-2xl font-serif font-bold text-primary">
                 La Cantina
               </h1>
@@ -45,6 +45,7 @@ export default function Header() {
               <Link
                 key={item.name}
                 href={item.href}
+                prefetch={true}
                 className={`text-foreground hover:text-primary transition-colors duration-200 ${
                   pathWithoutLocale === item.href ? "text-primary font-medium" : ""
                 }`}
@@ -58,7 +59,7 @@ export default function Header() {
           {/* Desktop CTA & Language Toggle */}
           <div className="hidden md:flex items-center gap-4">
             <LanguageToggle />
-            <Link href={`/${locale}/reservations`}>
+            <Link href={`/${locale}/reservations`} prefetch={true}>
               <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md font-medium transition-colors" data-testid="button-reserve">
                 {t('reservations')}
               </button>
@@ -86,6 +87,7 @@ export default function Header() {
                 <Link
                   key={item.name}
                   href={item.href}
+                  prefetch={true}
                   className={`block px-3 py-2 text-foreground hover:text-primary transition-colors duration-200 rounded-md ${
                     pathWithoutLocale === item.href ? "text-primary font-medium bg-accent/50" : ""
                   }`}
@@ -96,7 +98,7 @@ export default function Header() {
                 </Link>
               ))}
               <div className="pt-4">
-                <Link href={`/${locale}/reservations`}>
+                <Link href={`/${locale}/reservations`} prefetch={true}>
                   <button 
                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md font-medium transition-colors" 
                     data-testid="button-mobile-reserve" 
