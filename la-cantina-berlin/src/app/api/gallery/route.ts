@@ -1,13 +1,18 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import db, { schema } from '@/lib/db';
-import { asc, eq, and } from 'drizzle-orm';
+import { asc, eq, and, sql } from 'drizzle-orm';
 
 // Add caching to improve performance
 export const revalidate = 300; // 5 minutes
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // Get active uploaded gallery items with optimized fields and limit
+    // Get pagination parameters from URL
+    const { searchParams } = new URL(request.url);
+    const offset = parseInt(searchParams.get('offset') || '0');
+    const limit = parseInt(searchParams.get('limit') || '36');
+    
+    // Get active uploaded gallery items with optimized fields and pagination
     const galleryItems = await db
       .select({
         id: schema.gallery.id,
@@ -24,9 +29,33 @@ export async function GET() {
         )
       )
       .orderBy(asc(schema.gallery.sortOrder), asc(schema.gallery.createdAt))
-      .limit(36); // Load first 36 images for better initial performance
+      .limit(limit)
+      .offset(offset);
     
-    const response = NextResponse.json(galleryItems);
+    // Get total count for pagination info
+    const [totalResult] = await db
+      .select({ count: sql`COUNT(*)` })
+      .from(schema.gallery)
+      .where(
+        and(
+          eq(schema.gallery.isActive, true),
+          eq(schema.gallery.category, 'uploaded')
+        )
+      );
+    
+    const totalCount = Number(totalResult.count);
+    const hasMore = offset + limit < totalCount;
+    
+    const response = NextResponse.json({
+      images: galleryItems,
+      pagination: {
+        offset,
+        limit,
+        total: totalCount,
+        hasMore,
+        nextOffset: hasMore ? offset + limit : null
+      }
+    });
     
     // Add cache headers for better performance
     response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');

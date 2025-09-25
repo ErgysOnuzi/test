@@ -22,15 +22,20 @@ export default function ClientGallery() {
   const [showGallery, setShowGallery] = useState(false);
   const [isImagesFetched, setIsImagesFetched] = useState(false);
   const [timeoutReached, setTimeoutReached] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextOffset, setNextOffset] = useState<number | null>(null);
 
-  // Fetch images from API
+  // Fetch initial images from API
   useEffect(() => {
     const fetchImages = async () => {
       try {
         const response = await fetch('/api/gallery');
         if (response.ok) {
           const data = await response.json();
-          setImages(data);
+          setImages(data.images || data); // Handle both new and old API response format
+          setHasMore(data.pagination?.hasMore || false);
+          setNextOffset(data.pagination?.nextOffset || null);
           setIsImagesFetched(true);
         }
       } catch (error) {
@@ -70,6 +75,26 @@ export default function ClientGallery() {
       return () => clearTimeout(timer);
     }
   }, [images.length, timeoutReached, isLoading, handleLoadingComplete]);
+
+  // Load more images function
+  const loadMoreImages = async () => {
+    if (!hasMore || nextOffset === null || isLoadingMore) return;
+
+    setIsLoadingMore(true);
+    try {
+      const response = await fetch(`/api/gallery?offset=${nextOffset}&limit=36`);
+      if (response.ok) {
+        const data = await response.json();
+        setImages(prev => [...prev, ...(data.images || [])]);
+        setHasMore(data.pagination?.hasMore || false);
+        setNextOffset(data.pagination?.nextOffset || null);
+      }
+    } catch (error) {
+      console.error('Error loading more images:', error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   // Show loading overlay immediately when page loads, continue until images are loaded
   const showLoadingOverlay = isLoading;
@@ -187,6 +212,26 @@ export default function ClientGallery() {
           </div>
         ))}
       </div>
+
+      {/* Load More Button */}
+      {hasMore && (
+        <div className="text-center mt-12">
+          <button
+            onClick={loadMoreImages}
+            disabled={isLoadingMore}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-full font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:scale-105"
+          >
+            {isLoadingMore ? (
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
+                Loading More Photos...
+              </div>
+            ) : (
+              `Load More Photos`
+            )}
+          </button>
+        </div>
+      )}
 
         {/* Custom CSS for fade in animation */}
         <style jsx>{`
