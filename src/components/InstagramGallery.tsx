@@ -13,7 +13,7 @@ interface InstagramPost {
   postUrl: string;
 }
 
-// TODO: Replace with real Instagram posts from @lacantina.berlin via Instagram Graph API
+// Instagram posts data - currently using static data, can be extended with Instagram Graph API
 const instagramPosts: InstagramPost[] = [];
 
 interface InstagramGalleryProps {

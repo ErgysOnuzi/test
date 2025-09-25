@@ -259,7 +259,7 @@ export default function AdminFeedbackPage() {
                             <button
                               onClick={() => updateFeedbackStatus(feedback.id, 'approved')}
                               disabled={actionLoading[feedback.id] === 'approved'}
-                              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md transition-colors disabled:opacity-50 font-medium"
                               data-testid={`button-approve-${feedback.id}`}
                             >
                               <Check className="w-4 h-4" />
@@ -268,7 +268,7 @@ export default function AdminFeedbackPage() {
                             <button
                               onClick={() => updateFeedbackStatus(feedback.id, 'rejected')}
                               disabled={actionLoading[feedback.id] === 'rejected'}
-                              className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                              className="flex items-center gap-2 px-4 py-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-md transition-colors disabled:opacity-50 font-medium"
                               data-testid={`button-reject-${feedback.id}`}
                             >
                               <X className="w-4 h-4" />
@@ -280,7 +280,7 @@ export default function AdminFeedbackPage() {
                           <button
                             onClick={() => updateFeedbackStatus(feedback.id, 'rejected')}
                             disabled={actionLoading[feedback.id] === 'rejected'}
-                            className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                            className="flex items-center gap-2 px-4 py-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-md transition-colors disabled:opacity-50 font-medium"
                             data-testid={`button-reject-${feedback.id}`}
                           >
                             <X className="w-4 h-4" />
@@ -291,7 +291,7 @@ export default function AdminFeedbackPage() {
                           <button
                             onClick={() => updateFeedbackStatus(feedback.id, 'approved')}
                             disabled={actionLoading[feedback.id] === 'approved'}
-                            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md transition-colors disabled:opacity-50 font-medium"
                             data-testid={`button-approve-${feedback.id}`}
                           >
                             <Check className="w-4 h-4" />
@@ -301,11 +301,7 @@ export default function AdminFeedbackPage() {
                         <button
                           onClick={() => toggleVisibility(feedback.id, feedback.isPublic)}
                           disabled={actionLoading[feedback.id] === 'hide' || actionLoading[feedback.id] === 'show'}
-                          className={`flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 ${
-                            feedback.isPublic 
-                              ? 'bg-orange-600 hover:bg-orange-700' 
-                              : 'bg-blue-600 hover:bg-blue-700'
-                          }`}
+                          className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/90 text-secondary-foreground rounded-md transition-colors disabled:opacity-50 font-medium"
                           data-testid={`button-visibility-${feedback.id}`}
                         >
                           {feedback.isPublic ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -318,7 +314,7 @@ export default function AdminFeedbackPage() {
                         <button
                           onClick={() => deleteFeedback(feedback.id)}
                           disabled={actionLoading[feedback.id] === 'delete'}
-                          className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                          className="flex items-center gap-2 px-4 py-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-md transition-colors disabled:opacity-50 font-medium"
                           data-testid={`button-delete-${feedback.id}`}
                         >
                           <Trash2 className="w-4 h-4" />

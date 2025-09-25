@@ -15,7 +15,7 @@ interface Testimonial {
 }
 
 // This component returns null when no testimonials are available
-// TODO: Replace with real Google My Business reviews when available
+// Customer testimonials - real Google My Business reviews are integrated via GoogleReviews component
 const testimonials: Record<string, Testimonial[]> = {
   de: [],
   en: []
