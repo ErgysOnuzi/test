@@ -3,6 +3,66 @@ import path from 'path';
 import { db } from '../server/db';
 import { menuItems, reservations, gallery, events, contactMessages, feedbacks } from '../shared/schema';
 
+// Type definitions for SQLite data
+interface SqliteMenuItem {
+  id: number;
+  title: string;
+  price: number;
+  category: string;
+  is_available: number;
+  title_de: string;
+  title_en: string;
+  description_de: string;
+  description_en: string;
+  category_de: string;
+  category_en: string;
+  allergens: string;
+}
+
+interface SqliteReservation {
+  id: number;
+  name: string;
+  phone: string;
+  email: string;
+  date: string;
+  time: string;
+  guests: number;
+  status: string;
+  created_at: string;
+}
+
+interface SqliteGalleryItem {
+  id: number;
+  image_url: string;
+  created_at: string;
+}
+
+interface SqliteEvent {
+  id: number;
+  title: string;
+  date: string;
+  capacity: number;
+  created_at: string;
+}
+
+interface SqliteContactMessage {
+  id: number;
+  name: string;
+  email: string;
+  message: string;
+  created_at: string;
+}
+
+interface SqliteFeedback {
+  id: number;
+  name: string;
+  email: string;
+  rating: number;
+  comment: string;
+  status: string;
+  created_at: string;
+}
+
 // Initialize SQLite database connection
 const dbPath = path.join(process.cwd(), 'data', 'la_cantina.db');
 const sqliteDb = new Database(dbPath);
@@ -15,7 +75,7 @@ async function migrateData() {
     console.log('Migrating menu items...');
     const sqliteMenuItems = sqliteDb.prepare(`
       SELECT * FROM menu_items ORDER BY id
-    `).all();
+    `).all() as SqliteMenuItem[];
     
     console.log(`Found ${sqliteMenuItems.length} menu items to migrate`);
     
@@ -40,7 +100,7 @@ async function migrateData() {
     console.log('Migrating reservations...');
     const sqliteReservations = sqliteDb.prepare(`
       SELECT * FROM reservations ORDER BY id
-    `).all();
+    `).all() as SqliteReservation[];
     
     console.log(`Found ${sqliteReservations.length} reservations to migrate`);
     
@@ -62,7 +122,7 @@ async function migrateData() {
     console.log('Migrating gallery items...');
     const sqliteGallery = sqliteDb.prepare(`
       SELECT * FROM gallery ORDER BY id
-    `).all();
+    `).all() as SqliteGalleryItem[];
     
     console.log(`Found ${sqliteGallery.length} gallery items to migrate`);
     
@@ -78,7 +138,7 @@ async function migrateData() {
     console.log('Migrating events...');
     const sqliteEvents = sqliteDb.prepare(`
       SELECT * FROM events ORDER BY id
-    `).all();
+    `).all() as SqliteEvent[];
     
     console.log(`Found ${sqliteEvents.length} events to migrate`);
     
@@ -96,7 +156,7 @@ async function migrateData() {
     console.log('Migrating contact messages...');
     const sqliteContactMessages = sqliteDb.prepare(`
       SELECT * FROM contact_messages ORDER BY id
-    `).all();
+    `).all() as SqliteContactMessage[];
     
     console.log(`Found ${sqliteContactMessages.length} contact messages to migrate`);
     
@@ -114,7 +174,7 @@ async function migrateData() {
     console.log('Migrating feedbacks...');
     const sqliteFeedbacks = sqliteDb.prepare(`
       SELECT * FROM feedbacks ORDER BY id
-    `).all();
+    `).all() as SqliteFeedback[];
     
     console.log(`Found ${sqliteFeedbacks.length} feedbacks to migrate`);
     
