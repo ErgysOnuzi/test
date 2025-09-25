@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_cache } from 'next/cache';
 
 // Google Places API types
 interface GooglePlaceDetails {
@@ -18,72 +19,86 @@ interface GooglePlaceDetails {
   };
 }
 
-export async function GET(request: NextRequest) {
-  try {
-    const apiKey = process.env.GOOGLE_API_KEY;
-    
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: 'Google API key not configured' },
-        { status: 500 }
-      );
-    }
-
-    // Search specifically for your restaurant
-    const restaurantName = 'Ristorante La Cantina Bleibtreu';
-    const address = 'Bleibtreustraße 17, Berlin';
-    const searchQuery = `${restaurantName} ${address}`;
-    
-    const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(searchQuery)}&key=${apiKey}`;
-    
-    let placeId = null;
-    
+// Server-side cached function to fetch Google Reviews
+const getCachedGoogleReviews = unstable_cache(
+  async () => {
     try {
-      const searchResponse = await fetch(searchUrl);
-      const searchData = await searchResponse.json();
+      const apiKey = process.env.GOOGLE_API_KEY;
       
-      if (searchData.results && searchData.results.length > 0) {
-        // Look for the best match - your exact restaurant
-        const exactMatch = searchData.results.find(result => 
-          result.name.toLowerCase().includes('cantina') && 
-          result.formatted_address.toLowerCase().includes('bleibtreustraße')
-        );
-        
-        placeId = exactMatch ? exactMatch.place_id : searchData.results[0].place_id;
+      if (!apiKey) {
+        throw new Error('Google API key not configured');
       }
-    } catch (searchError) {
-      console.error('Error searching for restaurant:', searchError);
-      return NextResponse.json(
-        { error: 'Could not find restaurant in Google Places' },
-        { status: 404 }
-      );
-    }
 
-    if (!placeId) {
-      return NextResponse.json(
-        { error: 'Restaurant not found in Google Places' },
-        { status: 404 }
-      );
-    }
+      // For better performance, use a known place_id if available
+      // Otherwise, search for the restaurant
+      let placeId = process.env.GOOGLE_PLACE_ID; // Add this to your environment if known
+      
+      if (!placeId) {
+        // Search for the restaurant
+        const restaurantName = 'Ristorante La Cantina Bleibtreu';
+        const address = 'Bleibtreustraße 17, Berlin';
+        const searchQuery = `${restaurantName} ${address}`;
+        
+        const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(searchQuery)}&key=${apiKey}`;
+        
+        const searchResponse = await fetch(searchUrl);
+        const searchData = await searchResponse.json();
+        
+        if (searchData.results && searchData.results.length > 0) {
+          const exactMatch = searchData.results.find(result => 
+            result.name.toLowerCase().includes('cantina') && 
+            result.formatted_address.toLowerCase().includes('bleibtreustraße')
+          );
+          
+          placeId = exactMatch ? exactMatch.place_id : searchData.results[0].place_id;
+        } else {
+          throw new Error('Restaurant not found in Google Places');
+        }
+      }
 
-    // Now get the place details with reviews
-    const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,rating,user_ratings_total,reviews&key=${apiKey}`;
+      if (!placeId) {
+        throw new Error('Restaurant not found in Google Places');
+      }
+
+      // Get the place details with reviews
+      const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,rating,user_ratings_total,reviews&key=${apiKey}`;
+      
+      const detailsResponse = await fetch(detailsUrl);
+      const detailsData = await detailsResponse.json();
+
+      if (!detailsResponse.ok) {
+        throw new Error(`Google API error: ${detailsResponse.statusText}`);
+      }
+
+      const { result } = detailsData;
+      
+      return {
+        name: result.name,
+        rating: result.rating,
+        reviewCount: result.user_ratings_total,
+        reviews: result.reviews || []
+      };
+
+    } catch (error) {
+      console.error('Error fetching Google reviews:', error);
+      throw error;
+    }
+  },
+  ['google-reviews'], // cache key
+  { revalidate: 1800 } // Cache for 30 minutes
+);
+
+export async function GET(request: NextRequest) {
+  // Add caching headers for additional client-side caching
+  const headers = {
+    'Cache-Control': 'public, max-age=300, s-maxage=1800, stale-while-revalidate=3600',
+  };
+  
+  try {
+    // Use server-side cached data
+    const reviewData = await getCachedGoogleReviews();
     
-    const detailsResponse = await fetch(detailsUrl);
-    const detailsData: GooglePlaceDetails = await detailsResponse.json();
-
-    if (!detailsResponse.ok) {
-      throw new Error(`Google API error: ${detailsResponse.statusText}`);
-    }
-
-    const { result } = detailsData;
-    
-    return NextResponse.json({
-      name: result.name,
-      rating: result.rating,
-      reviewCount: result.user_ratings_total,
-      reviews: result.reviews || []
-    });
+    return NextResponse.json(reviewData, { headers });
 
   } catch (error) {
     console.error('Error fetching Google reviews:', error);

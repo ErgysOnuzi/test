@@ -8,9 +8,8 @@ import * as schema from "../../shared/schema";
 neonConfig.webSocketConstructor = ws;
 // Use HTTP fetch transport to avoid WebSocket issues on Replit
 neonConfig.poolQueryViaFetch = true;
-neonConfig.useSecureWebSocket = false;
-// Disable SSL certificate verification for development
-neonConfig.fetchConnectionCache = true;
+// Only disable secure WebSocket for development, keep secure for production
+neonConfig.useSecureWebSocket = process.env.NODE_ENV === 'production';
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
@@ -18,9 +17,11 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Modify DATABASE_URL to disable SSL for development
+// Only modify SSL for development - keep secure for production
 const dbUrl = new URL(process.env.DATABASE_URL);
-dbUrl.searchParams.set('sslmode', 'disable');
+if (process.env.NODE_ENV !== 'production') {
+  dbUrl.searchParams.set('sslmode', 'disable');
+}
 
 const pool = new Pool({ connectionString: dbUrl.toString() });
 const db = drizzle({ client: pool, schema });
