@@ -264,7 +264,7 @@ export default function AdminGalleryPage() {
                   <div className="p-4">
                     <p className="text-sm text-foreground">{image.description}</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {t('added_on')}: {new Date(image.createdAt || image.created_at).toLocaleDateString(locale === 'de' ? 'de-DE' : 'en-US')}
+                      {t('added_on')}: {new Date(image.createdAt).toLocaleDateString(locale === 'de' ? 'de-DE' : 'en-US')}
                     </p>
                   </div>
                 )}
