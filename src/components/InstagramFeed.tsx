@@ -31,7 +31,7 @@ const seededRandom = (seed: number) => {
 
 // Function to select 2 posts using date as seed for daily rotation
 const selectDailyPosts = (posts: string[], count: number): string[] => {
-  const today = Math.floor(Date.now() / (1000 * 60 * 60 * 24)); // Days since epoch
+  const today = Math.floor(1737840000000 / (1000 * 60 * 60 * 24)); // Static: Jan 25, 2025 (prevents hydration mismatch)
   const shuffled = [...posts];
   
   // Fisher-Yates shuffle with seeded random

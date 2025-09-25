@@ -43,7 +43,7 @@ export default function GoogleReviews({ maxReviews = 3, showViewMore = true }: G
             rating: 5,
             relative_time_description: "2 weeks ago",
             text: "Absolutely fantastic! The pasta is made fresh daily and you can taste the quality. The staff is incredibly welcoming and the atmosphere feels authentically Italian. Highly recommend the Osso Buco!",
-            time: Date.now() - 14 * 24 * 60 * 60 * 1000,
+            time: 1737840000000 - 14 * 24 * 60 * 60 * 1000, // Static: Jan 25, 2025 - 14 days
             profile_photo_url: ""
           },
           {
@@ -51,7 +51,7 @@ export default function GoogleReviews({ maxReviews = 3, showViewMore = true }: G
             rating: 5,
             relative_time_description: "1 month ago", 
             text: "Best Italian restaurant in Berlin! We had dinner here for our anniversary and everything was perfect. The wine selection is excellent and the tiramisu is to die for.",
-            time: Date.now() - 30 * 24 * 60 * 60 * 1000,
+            time: 1737840000000 - 30 * 24 * 60 * 60 * 1000, // Static: Jan 25, 2025 - 30 days
             profile_photo_url: ""
           },
           {
@@ -59,7 +59,7 @@ export default function GoogleReviews({ maxReviews = 3, showViewMore = true }: G
             rating: 4,
             relative_time_description: "3 weeks ago",
             text: "Great authentic Italian food. The carbonara was prepared perfectly and the service was attentive. Will definitely be back!",
-            time: Date.now() - 21 * 24 * 60 * 60 * 1000,
+            time: 1737840000000 - 21 * 24 * 60 * 60 * 1000, // Static: Jan 25, 2025 - 21 days
             profile_photo_url: ""
           }
         ];
