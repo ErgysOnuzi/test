@@ -7,6 +7,7 @@ import { menuItems, reservations, gallery, events, contactMessages, feedbacks } 
 interface SqliteMenuItem {
   id: number;
   title: string;
+  description: string;
   price: number;
   category: string;
   is_available: number;
@@ -82,6 +83,7 @@ async function migrateData() {
     for (const item of sqliteMenuItems) {
       await db.insert(menuItems).values({
         title: item.title,
+        description: item.description,
         price: item.price,
         category: item.category,
         isAvailable: Boolean(item.is_available),
