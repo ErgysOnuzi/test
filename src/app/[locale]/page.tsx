@@ -73,7 +73,7 @@ export default function HomePage() {
       {/* Instagram Feed Section */}
       <section className="py-16 px-6 bg-background">
         <div className="max-w-6xl mx-auto">
-          <ServerInstagramFeed maxPosts={3} showHeader={true} />
+          <ServerInstagramFeed maxPosts={2} showHeader={true} />
         </div>
       </section>
     </div>
