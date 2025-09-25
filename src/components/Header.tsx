@@ -22,6 +22,7 @@ export default function Header() {
     { name: t('reservations'), href: `/${locale}/reservations`, key: "reservations" },
     { name: t('gallery'), href: `/${locale}/gallery`, key: "gallery" },
     { name: t('events'), href: `/${locale}/events`, key: "events" },
+    { name: t('blog'), href: `/${locale}/blog`, key: "blog" },
     { name: t('contact'), href: `/${locale}/contact`, key: "contact" },
   ];
 
