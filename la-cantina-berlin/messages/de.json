@@ -266,7 +266,8 @@
     "authentic_experience": "Authentische Erfahrung",
     "authentic_experience_desc": "Traditionelle italienische Rezepte, die über Generationen weitergegeben und mit Liebe und Leidenschaft zubereitet werden.",
     "perfect_atmosphere": "Perfekte Atmosphäre", 
-    "perfect_atmosphere_desc": "Gemütliches italienisches Ambiente, perfekt für romantische Abendessen, Familientreffen und Geschäftstermine."
+    "perfect_atmosphere_desc": "Gemütliches italienisches Ambiente, perfekt für romantische Abendessen, Familientreffen und Geschäftstermine.",
+    "contact_us_for_event_info": "Kontaktieren Sie uns für weitere Informationen"
   },
   "feedback": {
     "title": "Feedback",
@@ -323,7 +324,6 @@
     "forms_data_text": "Wenn Sie uns per Kontaktformular oder bei Reservierungen Anfragen zukommen lassen, werden Ihre Angaben aus dem Anfrageformular inklusive der von Ihnen dort angegebenen Kontaktdaten zwecks Bearbeitung der Anfrage und für den Fall von Anschlussfragen bei uns gespeichert.",
     "your_rights_heading": "5. Ihre Rechte",
     "your_rights_text": "Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch. Wenn Sie der Ansicht sind, dass die Verarbeitung Ihrer personenbezogenen Daten gegen das Datenschutzrecht verstößt, haben Sie das Recht, sich bei der zuständigen Aufsichtsbehörde zu beschweren.",
-    "contact_us_for_event_info": "Kontaktieren Sie uns für weitere Informationen",
     "loading": "Lädt..."
   },
   "admin_feedback": {
