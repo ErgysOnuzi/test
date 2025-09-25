@@ -32,8 +32,7 @@ const nextConfig = {
   }),
   
   experimental: { 
-    serverActions: { allowedOrigins: ["*"] },
-    turbo: true
+    serverActions: { allowedOrigins: ["*"] }
   },
 
   // Cross-origin headers handled in headers() function below

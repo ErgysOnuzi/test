@@ -1,0 +1,77 @@
+Message for Replit agent — compare and restore parity
+
+Objective
+
+* Compare the current project to the legacy site and restore 1:1 parity for content, features, styles, routes, and behavior.
+* Legacy reference URL: [https://b4d46af9-ebc1-4a75-bab7-a8ea97c51ee1-00-2iixw0gfjqb4w.janeway.replit.dev/](https://b4d46af9-ebc1-4a75-bab7-a8ea97c51ee1-00-2iixw0gfjqb4w.janeway.replit.dev/)
+
+Method (execute exactly)
+
+1. Crawl + snapshot both sites
+
+* Run an automated crawl (depth ≤3) on legacy and current to enumerate all public routes.
+* Save artifacts: HTML snapshots, screenshots (desktop 1440×900 and mobile 390×844), response codes, titles/meta, canonical, hreflang, OG/Twitter tags, robots directives.
+* Produce a route map CSV with columns: path, status\_code, title, lang, canonical, has\_og, has\_schema, render\_time\_ms, size\_kb.
+
+2. Visual + DOM diff
+
+* For each matched route, generate:
+
+  * Visual diffs (pixel diff tolerance 1–2%).
+  * DOM diffs: missing sections, class/name changes, text mismatches, inline styles, hard-coded language strings.
+* Flag any CLS risks: images/iframes without fixed aspect, late-loaded fonts, layout jumps.
+
+3. Functional parity checks
+
+* Headers/footers/navigation: links, language switch, active states.
+* Home: hero, sections order, carousels, Instagram iframe embeds in homepage (not in Gallery).
+* Menu/Speisekarte pages: category order, item names, prices, dietary icons.
+* Reservations/contact forms: required fields, validations, success/failure states, email/webhook targets, rate-limit, spam protection.
+* Events & Catering: list, single pages, images, dates.
+* Gallery: only uploaded photos, pagination, lightbox, delete/edit. Bulk upload limit = 120 files per request (reject 121).
+* Admin panel: auth, CRUD for menu/reservations/gallery/events; image add/delete actually persists; DB/storage paths consistent.
+* Multilingual: /de and /en routes render correct language; no mixed strings; all i18n keys present.
+* Error pages: 404 and 500 customized and localized.
+
+4. Data + config parity
+
+* Environment variables: ensure identical names/values used by current code; no missing secrets.
+* Database schema: compare tables/columns/indexes; run migrations to match legacy expectations.
+* Storage paths: ensure same directory conventions and public URLs.
+* CSP/headers: allow Instagram iframes (frame-src/img-src), fonts, analytics; no console CSP errors.
+
+5. Performance and SEO checks
+
+* Lighthouse on legacy vs current (desktop/mobile). Do not regress any category by >2 points.
+* Core Web Vitals proxies: LCP target ≤2.5s, CLS ≤0.1, INP ≤200ms on homepage and menu.
+* Image optimization: dimensions, lazy loading, modern formats where possible.
+* SEO: titles, meta descriptions, canonical, hreflang, sitemap.xml, robots.txt, favicon, OpenGraph, schema.org Restaurant/LocalBusiness.
+
+6. Fixes to apply if mismatched
+
+* Content/Style: copy missing content, restore section order, classNames, spacing, and typography to match legacy.
+* Instagram: remove any IG items from Gallery; render provided posts via iframes on homepage IG section.
+* Gallery upload: enforce 120-file cap client+server; raise server body/file limits accordingly; reject 121 with proper error.
+* Admin: repair all CRUD endpoints; verify reservations/menu/events/gallery operations persist; fix image delete.
+* i18n: remove hard-coded strings; ensure every text is in translation files; verify both /de and /en render fully localized.
+* Routing: ensure all legacy URLs resolve or 301 to current equivalents.
+
+7. Verification and deliverables
+
+* Provide:
+
+  * Route map CSV.
+  * Before/after screenshots per page (desktop + mobile).
+  * Visual diff images where differences existed and were fixed.
+  * DOM diff summary listing elements fixed.
+  * Lighthouse reports (legacy vs current) and confirmation no category regressed >2 points.
+  * Admin panel test log: create/edit/delete items, 120-file upload success, 121-file rejection, gallery pagination working.
+  * Console log check: zero CSP and 404 noise on main pages.
+
+Acceptance criteria
+
+* All public pages visually and functionally match the legacy site.
+* Homepage shows Instagram iframes; Gallery excludes Instagram and supports 120-file uploads per operation.
+* Admin panel fully functional for reservations, menu, events, and gallery including delete.
+* No mixed-language strings; /de and /en fully localized.
+* No performance or SEO regressions relative to legacy.

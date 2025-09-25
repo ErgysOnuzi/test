@@ -6,6 +6,9 @@ import * as schema from "../../shared/schema";
 
 // Configure Neon for Node.js environment
 neonConfig.webSocketConstructor = ws;
+// Use HTTP fetch transport to avoid WebSocket issues on Replit
+neonConfig.poolQueryViaFetch = true;
+neonConfig.useSecureWebSocket = true;
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
