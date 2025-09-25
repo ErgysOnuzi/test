@@ -29,7 +29,7 @@ export default function InstagramEmbed({ url, aspect = 1.25 }: Props) {
           border: 0, 
           overflow: "hidden" 
         }}
-        allowTransparency
+        allowtransparency="true"
         loading="lazy"
       />
     </div>
