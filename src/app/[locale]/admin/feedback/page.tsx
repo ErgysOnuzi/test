@@ -21,6 +21,8 @@ export default function AdminFeedbackPage() {
   const [feedbacks, setFeedbacks] = useState<AdminFeedback[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<{ [key: number]: string }>({});
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchFeedbacks();
@@ -57,9 +59,15 @@ export default function AdminFeedbackPage() {
             feedback.id === id ? { ...feedback, status } : feedback
           )
         );
+        setSuccessMessage(status === 'approved' ? t('feedback_approved') : t('feedback_rejected'));
+        setError(null);
+        setTimeout(() => setSuccessMessage(null), 5000);
+      } else {
+        setError(t('error_updating_feedback'));
       }
     } catch (error) {
       console.error('Error updating feedback:', error);
+      setError(t('error_updating_feedback'));
     } finally {
       setActionLoading(prev => {
         const newState = { ...prev };
@@ -87,9 +95,15 @@ export default function AdminFeedbackPage() {
             feedback.id === id ? { ...feedback, isPublic: !currentVisibility } : feedback
           )
         );
+        setSuccessMessage(!currentVisibility ? t('feedback_made_visible') : t('feedback_hidden'));
+        setError(null);
+        setTimeout(() => setSuccessMessage(null), 5000);
+      } else {
+        setError(t('error_toggling_visibility'));
       }
     } catch (error) {
       console.error('Error toggling visibility:', error);
+      setError(t('error_toggling_visibility'));
     } finally {
       setActionLoading(prev => {
         const newState = { ...prev };
@@ -110,9 +124,15 @@ export default function AdminFeedbackPage() {
 
       if (response.ok) {
         setFeedbacks(prev => prev.filter(feedback => feedback.id !== id));
+        setSuccessMessage(t('feedback_deleted'));
+        setError(null);
+        setTimeout(() => setSuccessMessage(null), 5000);
+      } else {
+        setError(t('error_deleting_feedback'));
       }
     } catch (error) {
       console.error('Error deleting feedback:', error);
+      setError(t('error_deleting_feedback'));
     } finally {
       setActionLoading(prev => {
         const newState = { ...prev };
@@ -176,6 +196,19 @@ export default function AdminFeedbackPage() {
                 {t('subtitle')}
               </p>
             </div>
+
+            {/* Success/Error Messages */}
+            {error && (
+              <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg mb-6">
+                {error}
+              </div>
+            )}
+            
+            {successMessage && (
+              <div className="bg-green-100 border border-green-200 text-green-700 dark:bg-green-900/30 dark:border-green-700/50 dark:text-green-400 px-4 py-3 rounded-lg mb-6">
+                {successMessage}
+              </div>
+            )}
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

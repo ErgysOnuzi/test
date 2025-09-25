@@ -26,6 +26,7 @@ export default function AdminGalleryPage() {
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ uploaded: number; total: number } | null>(null);
 
@@ -61,6 +62,9 @@ export default function AdminGalleryPage() {
         });
         if (response.ok) {
           setImages(prev => prev.filter(img => img.id !== id));
+          setSuccessMessage(t('image_deleted_success'));
+          setError(null);
+          setTimeout(() => setSuccessMessage(null), 5000);
         } else {
           setError(t('failed_to_delete_image'));
         }
@@ -127,7 +131,8 @@ export default function AdminGalleryPage() {
         if (result.errors > 0) {
           setError(`Upload completed: ${result.uploaded} successful, ${result.errors} failed. ${result.errorMessages.join(', ')}`);
         } else {
-          setError(`Successfully uploaded ${result.uploaded} images!`);
+          setSuccessMessage(`Successfully uploaded ${result.uploaded} images!`);
+          setError(null);
         }
       } else {
         setError('Failed to upload images');
@@ -140,7 +145,8 @@ export default function AdminGalleryPage() {
       setTimeout(() => {
         setUploadProgress(null);
         setError(null);
-      }, 3000);
+        setSuccessMessage(null);
+      }, 5000);
     }
   };
 
@@ -178,12 +184,14 @@ export default function AdminGalleryPage() {
           </div>
           
           {error && (
-            <div className={`border px-4 py-3 rounded-lg mb-6 ${
-              error.includes('Successfully') 
-                ? 'bg-green-50 border-green-200 text-green-700' 
-                : 'bg-destructive/10 border-destructive/20 text-destructive'
-            }`}>
+            <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg mb-6">
               {error}
+            </div>
+          )}
+          
+          {successMessage && (
+            <div className="bg-green-100 border border-green-200 text-green-700 dark:bg-green-900/30 dark:border-green-700/50 dark:text-green-400 px-4 py-3 rounded-lg mb-6">
+              {successMessage}
             </div>
           )}
 
