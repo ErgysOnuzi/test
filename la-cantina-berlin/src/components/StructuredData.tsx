@@ -117,12 +117,14 @@ export function RestaurantSchema({ locale }: RestaurantSchemaProps) {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(restaurantData, null, 2)
         }}
+        suppressHydrationWarning={true}
       />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(breadcrumbData, null, 2)
         }}
+        suppressHydrationWarning={true}
       />
     </>
   );
