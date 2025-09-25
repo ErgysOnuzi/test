@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Instagram, ExternalLink } from 'lucide-react';
 import InstagramEmbed from './InstagramEmbed';
 
@@ -18,9 +18,23 @@ const IG_URLS = [
   "https://www.instagram.com/p/C0e_9IcLnk-/",
   "https://www.instagram.com/p/Cztz53rN1km/",
   "https://www.instagram.com/p/CroTpxftUqg/",
+  "https://www.instagram.com/p/C3xB9KuNmPR/",
+  "https://www.instagram.com/p/C2pL7VuoTqX/",
+  "https://www.instagram.com/p/C1mZ8KuRvQ4/",
 ];
 
+// Function to randomly select 3 posts from all available posts
+const selectRandomPosts = (posts: string[], count: number): string[] => {
+  const shuffled = [...posts].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+};
+
 export default function InstagramFeed({ showHeader = true }: InstagramFeedProps) {
+  // Use useMemo to select 3 random posts on each component mount/refresh
+  const selectedPosts = useMemo(() => {
+    return selectRandomPosts(IG_URLS, 3);
+  }, []);
+
   return (
     <div className="bg-card/80 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-border">
       {showHeader && (
@@ -41,7 +55,7 @@ export default function InstagramFeed({ showHeader = true }: InstagramFeedProps)
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {IG_URLS.map(url => (
+        {selectedPosts.map(url => (
           <InstagramEmbed key={url} url={url} />
         ))}
       </div>

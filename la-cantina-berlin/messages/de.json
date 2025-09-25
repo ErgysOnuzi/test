@@ -284,9 +284,13 @@
     "submit": "Feedback senden",
     "submit_feedback": "Feedback senden",
     "success": "Vielen Dank für Ihr Feedback!",
+    "google_reviews": "Google-Bewertungen",
+    "website_reviews": "Website-Bewertungen",
     "customer_reviews": "Kundenbewertungen",
     "loading_reviews": "Bewertungen werden geladen...",
-    "no_reviews_yet": "Noch keine Bewertungen. Seien Sie der Erste, der seine Erfahrung teilt!"
+    "no_reviews_yet": "Noch keine Bewertungen. Seien Sie der Erste, der seine Erfahrung teilt!",
+    "thank_you_message": "Vielen Dank für Ihr Feedback! Wir schätzen Ihre Meinung.",
+    "submitting": "Wird gesendet..."
   },
   "legal": {
     "title": "Impressum",
