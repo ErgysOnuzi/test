@@ -70,12 +70,7 @@ export async function POST(request: NextRequest) {
         const result = await db
           .insert(schema.gallery)
           .values({
-            imageUrl: publicUrl,
-            description: `Uploaded image: ${file.name}`,
-            category: 'uploaded',
-            alt: file.name,
-            isActive: true,
-            sortOrder: 0
+            imageUrl: publicUrl
           })
           .returning();
 

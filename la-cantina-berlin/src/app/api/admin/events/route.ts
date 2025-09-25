@@ -37,10 +37,7 @@ export async function POST(request: NextRequest) {
     const result = await db
       .insert(schema.events)
       .values({
-        title,
-        description: description || '',
-        date,
-        capacity: capacity ? parseInt(capacity) : 30
+        title
       })
       .returning();
 

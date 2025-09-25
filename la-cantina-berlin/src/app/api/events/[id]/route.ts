@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/db';
+import db, { schema } from '@/lib/db';
+import { eq } from 'drizzle-orm';
 
 interface RouteParams {
   params: {
@@ -16,7 +17,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Invalid event ID' }, { status: 400 });
     }
 
-    const event = db.prepare('SELECT * FROM events WHERE id = ?').get(eventId);
+    const events = await db
+      .select()
+      .from(schema.events)
+      .where(eq(schema.events.id, eventId))
+      .limit(1);
+    
+    const event = events[0];
     
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });

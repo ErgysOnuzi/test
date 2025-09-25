@@ -586,7 +586,10 @@ function MenuForm({ item, onSave, onCancel }: MenuFormProps) {
               </label>
               <select
                 value={formData.isAvailable ? 'true' : 'false'}
-                onChange={(e) => handleInputChange('isAvailable', e.target.value === 'true')}
+                onChange={(e) => {
+                  const boolValue = e.target.value === 'true';
+                  setFormData(prev => ({ ...prev, isAvailable: boolValue }));
+                }}
                 className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="true">Available</option>

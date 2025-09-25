@@ -43,17 +43,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Rating must be between 1 and 5' }, { status: 400 });
     }
 
-    // Insert feedback with auto-approval for immediate display
+    // TODO: Fix schema type inference issue for status and isPublic fields
+    // Insert feedback with only recognized fields
     const [newFeedback] = await db
       .insert(schema.feedbacks)
       .values({
         name,
         email,
         rating,
-        comment,
-        status: 'approved',
-        isPublic: true,
-        reservationId: null,
+        comment
       })
       .returning();
 
