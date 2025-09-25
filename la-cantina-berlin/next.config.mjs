@@ -31,9 +31,10 @@ const nextConfig = {
     },
   }),
   
-  turbopack: { enabled: true },
-  experimental: { serverActions: { allowedOrigins: ["*"] } },
-  i18n: { locales: ["de","en"], defaultLocale: "de" },
+  experimental: { 
+    serverActions: { allowedOrigins: ["*"] },
+    turbo: true
+  },
 
   // Cross-origin headers handled in headers() function below
   
