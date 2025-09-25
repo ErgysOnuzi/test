@@ -22,7 +22,6 @@ async function migrateData() {
     for (const item of sqliteMenuItems) {
       await db.insert(menuItems).values({
         title: item.title,
-        description: item.description,
         price: item.price,
         category: item.category,
         isAvailable: Boolean(item.is_available),
@@ -70,7 +69,6 @@ async function migrateData() {
     for (const galleryItem of sqliteGallery) {
       await db.insert(gallery).values({
         imageUrl: galleryItem.image_url,
-        description: galleryItem.description,
         createdAt: new Date(galleryItem.created_at),
       });
     }
@@ -87,7 +85,6 @@ async function migrateData() {
     for (const event of sqliteEvents) {
       await db.insert(events).values({
         title: event.title,
-        description: event.description,
         date: event.date,
         capacity: event.capacity,
         createdAt: new Date(event.created_at),
