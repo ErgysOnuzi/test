@@ -72,5 +72,5 @@ externalPort = 5173
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["cd", "la-cantina-berlin", "&&", "npm", "start"]
-build = ["cd", "la-cantina-berlin", "&&", "npm", "run", "build"]
+run = ["bash", "-c", "cd la-cantina-berlin && npm start"]
+build = ["bash", "-c", "cd la-cantina-berlin && npm run build"]
