@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
         comment,
         status: 'approved',
         isPublic: true,
+        reservationId: null,
       })
       .returning();
 
