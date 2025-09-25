@@ -11,11 +11,46 @@ export default function ContactForm() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    // Name validation
+    if (!formData.name.trim()) {
+      newErrors.name = t('name_required');
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = t('name_min_length');
+    }
+    
+    // Email validation
+    if (!formData.email.trim()) {
+      newErrors.email = t('email_required');
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = t('email_invalid');
+    }
+    
+    // Message validation
+    if (!formData.message.trim()) {
+      newErrors.message = t('message_required');
+    } else if (formData.message.trim().length < 10) {
+      newErrors.message = t('message_min_length');
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setMessage('');
+    setErrors({});
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    setIsSubmitting(true);
 
     try {
       const response = await fetch('/api/contact', {
@@ -34,7 +69,8 @@ export default function ContactForm() {
           message: ''
         });
       } else {
-        setMessage(t('error_message'));
+        const errorData = await response.json();
+        setMessage(errorData.error || t('error_message'));
       }
     } catch (error) {
       setMessage(t('error_message'));
@@ -49,6 +85,14 @@ export default function ContactForm() {
       ...prev,
       [name]: value
     }));
+    
+    // Clear error for this field when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
   };
 
   return (
@@ -64,9 +108,14 @@ export default function ContactForm() {
           required
           value={formData.name}
           onChange={handleChange}
-          className="w-full px-4 py-3 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
+          className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
+            errors.name ? 'border-destructive' : 'border-border'
+          }`}
           data-testid="input-contact-name"
         />
+        {errors.name && (
+          <p className="text-destructive text-sm mt-1">{errors.name}</p>
+        )}
       </div>
 
       <div>
@@ -80,9 +129,14 @@ export default function ContactForm() {
           required
           value={formData.email}
           onChange={handleChange}
-          className="w-full px-4 py-3 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
+          className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
+            errors.email ? 'border-destructive' : 'border-border'
+          }`}
           data-testid="input-contact-email"
         />
+        {errors.email && (
+          <p className="text-destructive text-sm mt-1">{errors.email}</p>
+        )}
       </div>
 
       <div>
@@ -96,9 +150,14 @@ export default function ContactForm() {
           rows={5}
           value={formData.message}
           onChange={handleChange}
-          className="w-full px-4 py-3 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
+          className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
+            errors.message ? 'border-destructive' : 'border-border'
+          }`}
           data-testid="textarea-contact-message"
         />
+        {errors.message && (
+          <p className="text-destructive text-sm mt-1">{errors.message}</p>
+        )}
       </div>
 
       {message && (
