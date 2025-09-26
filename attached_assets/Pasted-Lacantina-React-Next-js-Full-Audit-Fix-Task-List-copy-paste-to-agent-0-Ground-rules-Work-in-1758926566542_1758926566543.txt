@@ -1,0 +1,365 @@
+Lacantina React/Next.js—Full Audit + Fix Task List (copy-paste to agent)
+
+0) Ground rules
+	•	Work in a feature branch fix/lacantina-audit.
+	•	No speculative changes: every change must link to a failing build, lint, type, or runtime issue.
+	•	After each section, run the verification commands and paste outputs into PR notes.
+
+⸻
+
+1) Repo hygiene
+	•	Remove editor/OS cruft: .DS_Store, Thumbs.db, *.log, *.tmp, *.swp.
+	•	Ensure .gitignore includes:
+node_modules, .next, out, .vercel, .turbo, dist, coverage, *.local, .env*, *.map, *.zip, *.rar, *.7z, *.mp4, *.mov, *.psd, *.ai, *.woff, *.woff2 (binary assets belong in /public only).
+	•	Locate oversized files (>2MB) inside src/ and move to /public or remove if unused.
+
+Commands
+
+git clean -xdf -e .env* 
+fd -HI '^\.' -tf | grep -E '\.DS_Store|Thumbs\.db' | xargs -I{} rm -f "{}" || true
+git ls-files -s | awk '$4 ~ /\.(mp4|mov|psd|ai|zip|rar|7z)$/ {print $4}'
+find src -type f -size +2M -print
+
+
+⸻
+
+2) Node/Next toolchain
+	•	Use Node 20.x LTS. Lock with .nvmrc = 20 and "engines": {"node": "20.x"} in package.json.
+	•	Remove global/legacy flags; migrate experimental.turbo → turbopack (Next 15+).
+
+Commands
+
+node -v
+jq '.engines.node="20.x"' package.json | sponge package.json
+
+
+⸻
+
+3) Dependency integrity
+	•	Fresh install with lockfile recreation.
+	•	Detect and remove unused/duplicated deps; pin versions; eliminate GitHub tarball deps unless necessary.
+
+Commands
+
+rm -rf node_modules package-lock.json pnpm-lock.yaml yarn.lock
+npm i --include=dev
+npx depcheck || true
+npm prune
+npm dedupe
+
+Fix: remove deps reported as unused; add missing peers.
+
+⸻
+
+4) Type safety (even if JS)
+	•	If TS present: turn on strict mode.
+	•	If JS only: run @tsconfig/strictest via checkjs or convert high-risk files to .ts/.tsx.
+
+Actions
+	•	tsconfig.json:
+
+{
+  "compilerOptions": {
+    "strict": true, "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": true, "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}
+
+Commands
+
+npx tsc --noEmit
+
+
+⸻
+
+5) Linting + formatting
+	•	ESLint: Next.js recommended + React hooks + i18n rule for text literals.
+	•	Prettier: enforce line length, trailing commas, tabs/spaces consistent.
+
+Commands
+
+npx eslint . --ext .js,.jsx,.ts,.tsx
+npx prettier -c .
+
+Fix all --fix safe issues, commit manual ones.
+
+⸻
+
+6) Routing, locales, and file structure
+	•	Confirm App Router or Pages Router—do not mix arbitrarily.
+	•	If using App Router with locales /[locale], validate:
+	•	default locale
+	•	generateStaticParams present where needed
+	•	no hardcoded language text in shared components
+	•	Ensure dynamic routes have defined notFound and error boundaries.
+
+Checks
+
+fd -t d 'app' -E node_modules
+fd -t f 'page\.(tsx|jsx)'
+fd -t f 'layout\.(tsx|jsx)'
+
+
+⸻
+
+7) Environment variables
+	•	Centralize .env.example with exact keys used.
+	•	Validate all process.env.* usages exist and are typed (via env.mjs or zod).
+
+Commands
+
+rg -n 'process\.env\.[A-Z0-9_]+'
+
+Add a runtime guard (build fails if missing).
+
+⸻
+
+8) Data fetching: SSR/SSG/ISR correctness
+	•	For each fetch:
+	•	Choose fetch() caching (force-cache, no-store, revalidate) intentionally.
+	•	No client components doing server-only work.
+	•	Replace ad-hoc Axios on server with native fetch.
+
+Commands
+
+rg -n 'axios\(|fetch\('
+rg -n 'export const revalidate'
+
+
+⸻
+
+9) API routes and admin panel
+	•	Audit /api/* handlers: validate input (zod), consistent HTTP codes, no leaked stack traces.
+	•	Admin endpoints must enforce auth/role checks server-side; no client-trust.
+	•	Fix broken CRUD paths for reservations, menu, gallery, events (previously reported failing).
+
+Tests
+
+# Smoke the key endpoints (adjust paths)
+curl -sS -o /dev/null -w "%{http_code}\n" https://localhost:3000/api/reservations
+curl -sS -o /dev/null -w "%{http_code}\n" https://localhost:3000/api/menu
+
+
+⸻
+
+10) Static assets & images
+	•	All images under /public; use next/image.
+	•	Replace external <img> with <Image> and set explicit width/height.
+
+Commands
+
+rg -n '<img '
+rg -n 'from "next/image"'
+
+
+⸻
+
+11) CSS, fonts, and render safety
+	•	Remove global CSS not needed; co-locate styles.
+	•	Ensure no blocking @import in runtime.
+	•	Self-host fonts or use next/font.
+
+Commands
+
+rg -n '@import ' src/**/*
+fd -e css -S +200K src
+
+
+⸻
+
+12) Internationalization (DE/EN)
+	•	Extract all text into locale JSONs.
+	•	Run a hardcoded-text check on shared components/layouts.
+	•	Verify language toggle updates lang attribute and route.
+
+Commands
+
+rg -n '(["'\''])[^"'\''\n]{3,}[A-Za-zÄÖÜäöüß]' src --hidden -g '!**/*.json' -g '!**/*.test.*' | rg -v 'aria-label|alt|title'
+
+
+⸻
+
+13) Accessibility
+	•	Add <html lang>, landmarks, focus styles, alt text, form labels.
+	•	Ensure admin forms have proper name and validation messages.
+
+Commands
+
+npx @axe-core/cli http://localhost:3000 --exit 1 || true
+
+
+⸻
+
+14) SEO
+	•	Use generateMetadata() (App Router) or <Head> (Pages) consistently.
+	•	Unique titles/descriptions per route.
+	•	Add OpenGraph and structured data for Restaurant.
+
+Commands
+
+rg -n 'generateMetadata|<Head>' app pages
+
+
+⸻
+
+15) Performance hardening
+	•	Dynamic imports for heavy components.
+	•	Remove console logs in prod.
+	•	Verify tree-shaking; analyze bundles.
+
+Commands
+
+npm i -D @next/bundle-analyzer source-map-explorer babel-plugin-transform-remove-console
+NEXT_ANALYZE=true npm run build
+npx source-map-explorer .next/static/chunks/*.js --html bundles.html
+
+Add .babelrc for prod:
+
+{ "env": { "production": { "plugins": ["transform-remove-console"] } } }
+
+
+⸻
+
+16) Dead code and unused exports
+	•	Remove unused exports, files, and CSS.
+	•	Prune stale components and assets.
+
+Commands
+
+npm i -D ts-prune
+npx ts-prune
+npx depcheck --specials=next
+rg -n 'TODO|FIXME|HACK' src
+
+Delete offenders or justify in code comments.
+
+⸻
+
+17) Runtime config and error boundaries
+	•	Ensure error.tsx and not-found.tsx at key route levels.
+	•	Wrap client areas with error boundaries.
+
+Commands
+
+fd -a 'error.tsx' app
+fd -a 'not-found.tsx' app
+
+
+⸻
+
+18) Security
+	•	Strip secrets from repo; verify none in code.
+	•	Helmet-like headers via Next config or middleware.
+	•	Validate all external URLs with allowlists.
+
+Commands
+
+rg -n '(API_KEY|SECRET|TOKEN|PASSWORD|DATABASE_URL)' -g '!**/.env*'
+rg -n 'http(s)?://'
+
+next.config.js—set images.domains, CSP via headers().
+
+⸻
+
+19) Build + Start reproducibility
+	•	Standardize scripts:
+
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "analyze": "NEXT_ANALYZE=true next build"
+  }
+}
+
+	•	Ensure next build is warning-free or documented.
+
+Commands
+
+npm run lint && npm run typecheck && npm run build
+
+
+⸻
+
+20) Replit specifics
+	•	Use Node 20 in Replit Nix; cache node_modules if possible.
+	•	Set run to npm run start with PORT env.
+	•	Add .replit:
+
+run = "npm run dev"
+entrypoint = "next.config.js"
+
+	•	Configure Replit Secrets: replicate .env.example. Never commit .env.
+
+⸻
+
+21) Admin panel functional test
+	•	Verify CRUD for: reservations, menu, gallery, events.
+	•	Confirm DB connection string present, migrations applied, image upload works, and delete actually deletes blobs/rows.
+	•	Add integration tests for these endpoints with supertest (if API exists).
+
+Commands
+
+# Pseudo examples; adjust to actual endpoints
+http :3000/api/reservations
+http POST :3000/api/reservations name=Test phone=123 time=2025-10-01T19:00 seats:=2
+
+
+⸻
+
+22) Logging and diagnostics
+	•	Replace console.* with a small logger that is silent in prod.
+	•	Add server-side request logging for API routes (redact PII).
+
+⸻
+
+23) Final cleanup
+	•	Remove leftover demo pages, unused locales, test data.
+	•	Compress oversized images (sharp or pre-optimized).
+	•	Ensure public/ has only referenced assets.
+
+Commands
+
+rg -n '/public/' -g '!public/**' src | true
+rg -n 'public/.*\.(png|jpg|webp)' src | awk '{print $2}' | sed 's/["'\'']//g' > used_assets.txt
+ls public/**/*.{png,jpg,webp,svg} | sed 's#^./##' > all_assets.txt
+comm -23 <(sort all_assets.txt) <(sort used_assets.txt)
+
+Delete assets not in use.
+
+⸻
+
+24) Build + publish gate
+	•	CI-style gate (run locally/Replit):
+
+npm ci
+npm run lint
+npm run typecheck
+npm run build
+npm run start & sleep 5; curl -I http://localhost:3000 | head -n1
+
+	•	If any step fails or returns non-200, block publish and fix.
+
+⸻
+
+25) Deliverables
+	•	PR with:
+	•	Summary of removed files and why.
+	•	Before/after bundle sizes and Lighthouse scores.
+	•	List of fixed build/runtime errors with root cause and code diff.
+	•	Updated .env.example and README with run/publish steps.
+
+⸻
+
+26) Acceptance criteria
+	•	npm run build passes with zero errors and zero unhandled warnings.
+	•	npm run lint and npm run typecheck pass.
+	•	All API CRUD paths return correct codes and persist changes.
+	•	No secrets in repo.
+	•	No unused deps/exports detected by depcheck and ts-prune.
+	•	Clean asset list: no orphan binaries in src/, only in public/.
+	•	Replit deploy boots and serves without runtime errors.

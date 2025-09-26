@@ -65,3 +65,15 @@ replit.nix
 .vercel
 .turbo
 *.tsbuildinfo
+
+# Additional binary assets (should be in /public only)
+*.map
+*.zip
+*.rar
+*.7z
+*.mp4
+*.mov
+*.psd
+*.ai
+*.woff
+*.woff2
