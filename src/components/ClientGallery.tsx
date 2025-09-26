@@ -110,7 +110,7 @@ export default function ClientGallery() {
           <h2 className="text-4xl font-serif font-bold text-foreground mb-6">
             {t('gallery_coming_soon')}
           </h2>
-          <p className="text-muted-foreground text-xl max-w-2xl mx-auto leading-relaxed">
+          <p className="text-foreground/80 text-xl max-w-2xl mx-auto leading-relaxed">
             {t('currently_curating')}
           </p>
         </div>
@@ -122,7 +122,7 @@ export default function ClientGallery() {
             <h3 className="text-xl font-serif font-bold text-foreground mb-3">
               {t('signature_dishes')}
             </h3>
-            <p className="text-muted-foreground">
+            <p className="text-foreground/75">
               {t('beautiful_photos')}
             </p>
           </div>
@@ -132,7 +132,7 @@ export default function ClientGallery() {
             <h3 className="text-xl font-serif font-bold text-foreground mb-3">
               {t('cozy_atmosphere_title')}
             </h3>
-            <p className="text-muted-foreground">
+            <p className="text-foreground/75">
               {t('restaurant_ambiance_desc')}
             </p>
           </div>
@@ -142,7 +142,7 @@ export default function ClientGallery() {
             <h3 className="text-xl font-serif font-bold text-foreground mb-3">
               {t('special_events_title')}
             </h3>
-            <p className="text-muted-foreground">
+            <p className="text-foreground/75">
               {t('special_events_desc')}
             </p>
           </div>
@@ -168,7 +168,7 @@ export default function ClientGallery() {
         <h2 className="text-4xl font-serif font-bold text-foreground mb-4">
           {t('visual_stories')}
         </h2>
-        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+        <p className="text-foreground/80 text-lg max-w-2xl mx-auto">
           {t('every_image_story')}
         </p>
       </div>
@@ -203,7 +203,7 @@ export default function ClientGallery() {
                 <p className="text-foreground leading-relaxed group-hover:text-primary transition-colors duration-300">
                   {image.description}
                 </p>
-                <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="mt-4 flex items-center gap-2 text-sm text-foreground/70">
                   <Image className="w-4 h-4" />
                   <span>Ristorante La Cantina Bleibtreu</span>
                 </div>

@@ -37,7 +37,7 @@ export default function Header() {
               <h1 className="text-2xl font-serif font-bold text-primary">
                 La Cantina
               </h1>
-              <p className="text-xs text-muted-foreground font-script">Berlin</p>
+              <p className="text-xs text-foreground/70 font-script">Berlin</p>
             </Link>
           </div>
 
