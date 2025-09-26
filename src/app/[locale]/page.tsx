@@ -1,16 +1,30 @@
-"use client";
-
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { ChefHat, Flame, Wine } from 'lucide-react';
 import Hero from '@/components/Hero';
 import GoogleReviews from '@/components/GoogleReviews';
 import ServerInstagramFeed from '@/components/ServerInstagramFeed';
+import { generateSEOMetadata } from '@/components/StructuredData';
 
-export default function HomePage() {
-  const t = useTranslations('home');
-  
-  // Get locale from params for components
-  const locale = 'de'; // This should ideally come from params
+// Enable ISR with 5-minute revalidation
+export const revalidate = 300;
+export const dynamic = 'force-static';
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params;
+  return generateSEOMetadata('home', locale);
+}
+
+export default async function HomePage({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations('home');
 
   return (
     <div className="min-h-screen">

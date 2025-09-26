@@ -86,30 +86,6 @@ export default function AdminEventsPage() {
     // This should be connected to a proper form - placeholder functionality disabled
     setError('Event creation form not yet implemented. Please add events through the main admin interface.');
     return; // Exit early - no further execution needed
-    
-    try {
-      const response = await fetch('/api/admin/events', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newEventData),
-      });
-      
-      if (response.ok) {
-        const newEvent = await response.json();
-        setEvents(prev => [newEvent, ...prev]);
-        setShowAddForm(false);
-        setSuccessMessage(t('event_added_success'));
-        setError(null);
-        setTimeout(() => setSuccessMessage(null), 5000);
-      } else {
-        setError(t('failed_to_create_event'));
-      }
-    } catch (err) {
-      setError(t('network_error_creating_event'));
-      console.error('Error creating event:', err);
-    }
   };
 
   if (loading) {

@@ -1,22 +1,26 @@
 import createNextIntlPlugin from 'next-intl/plugin';
+import bundleAnalyzer from '@next/bundle-analyzer';
 import crypto from 'crypto';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Production optimizations
+  reactStrictMode: true,
+  productionBrowserSourceMaps: false,
+  compress: true,
+  poweredByHeader: false,
+  trailingSlash: false,
+  
   // Performance optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
     styledComponents: true,
   },
-  
-  // Production optimizations
-  compress: true,
-  poweredByHeader: false,
-  
-  // Force static generation and prefetching
-  trailingSlash: false,
   
   // Webpack optimizations for faster builds
   webpack: (config, { dev, isServer }) => {
@@ -68,12 +72,15 @@ const nextConfig = {
       allowedOrigins: process.env.NODE_ENV === 'development' 
         ? ['*'] 
         : ['lacantina-berlin.de', '*.lacantina-berlin.de', '*.replit.dev']
-    }
+    },
+    optimizePackageImports: ['react', 'react-dom', 'date-fns', 'lucide-react'],
   },
 
   // Cross-origin headers handled in headers() function below
   
   images: {
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24, // 24 hours
     qualities: [50, 75, 85, 95, 100],
     remotePatterns: [
       {
@@ -96,6 +103,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**', // Allow all HTTPS images
       }
     ]
   },
@@ -143,4 +154,4 @@ const nextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+export default withBundleAnalyzer(withNextIntl(nextConfig));

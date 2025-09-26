@@ -20,8 +20,26 @@ if (!process.env.DATABASE_URL) {
 // Use the DATABASE_URL as-is - it already has proper SSL configuration
 const dbUrl = process.env.DATABASE_URL;
 
-const pool = new Pool({ connectionString: dbUrl });
+// Optimize connection pool for performance
+const pool = new Pool({ 
+  connectionString: dbUrl,
+  max: 5, // Maximum connections in pool
+  idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
+  allowExitOnIdle: false, // Keep pool alive
+});
+
 const db = drizzle({ client: pool, schema });
+
+// Helper function to log slow queries
+export async function query(q: string, params?: any[]) {
+  const start = Date.now();
+  const res = await pool.query(q, params);
+  const duration = Date.now() - start;
+  if (duration > 50) {
+    console.warn(`SLOW QUERY (${duration}ms):`, q);
+  }
+  return res;
+}
 
 export default db;
 export { schema };

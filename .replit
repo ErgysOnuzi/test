@@ -53,17 +53,25 @@ author = "agent"
 task = "workflow.run"
 args = "Server"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Production Server"
+
+[[workflows.workflow]]
+name = "Production Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm start -- -p 5000"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 33813
-externalPort = 3003
-
-[[ports]]
-localPort = 39507
-externalPort = 3001
 
 [[ports]]
 localPort = 42935

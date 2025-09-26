@@ -1,0 +1,155 @@
+Target: LCP ≤ 2.5s, TTFB ≤ 300ms, JS < 200 KB initial, page load ≤ 3s on first view, ≤ 1.5s on repeat.
+
+Apply—in order:
+	1.	Build/serve like production
+
+	•	Run only next build && next start -p 3000. Stop next dev.
+	•	In next.config.mjs:
+
+const withBundleAnalyzer = require('@next/bundle-analyzer')({ enabled: process.env.ANALYZE === 'true' });
+/** @type {import('next').NextConfig} */
+module.exports = withBundleAnalyzer({
+  reactStrictMode: true,
+  swcMinify: true,
+  productionBrowserSourceMaps: false,
+  compress: true,
+  experimental: {
+    turbopack: { // replaces deprecated experimental.turbo
+      reactProfiling: false,
+    },
+    optimizePackageImports: ['react', 'react-dom', 'lodash-es', 'date-fns'],
+  },
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24,
+    remotePatterns: [{ protocol: 'https', hostname: '**' }],
+  },
+  poweredByHeader: false,
+});
+
+	•	Add analyzer: npm i -D @next/bundle-analyzer then ANALYZE=true next build and remove anything bloating the bundle.
+
+	2.	Kill bundle bloat
+
+	•	Replace lodash with lodash-es and import per-method: import debounce from 'lodash-es/debounce'.
+	•	Drop Moment.js; use date-fns or Intl.DateTimeFormat.
+	•	Remove unused UI kits/icons. Import icons per-icon, not whole packs.
+	•	Dynamic import heavy client components:
+
+const AdminChart = dynamic(() => import('../components/AdminChart'), { ssr: false });
+
+	•	Prefer Server Components for data-fetching pages; keep client components minimal and local state only.
+	•	Turn off client hydration where static is fine:
+
+export const dynamic = 'error'; // force static
+export const revalidate = 3600; // ISR
+
+	3.	Render mode: prebuild everything you can
+
+	•	Convert slow pages to SSG/ISR:
+
+// app/menu/page.tsx
+export const revalidate = 300; // 5 min
+
+	•	For listings that don’t need per-request auth, never use cache: 'no-store'. Use force-cache + ISR.
+
+	4.	API latency + DB
+
+	•	Use a pooled DB connection (Neon/pgbouncer) and keep-alive agent:
+
+import { Pool } from 'pg';
+const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 5, idleTimeoutMillis: 30000, allowExitOnIdle: false });
+export async function query(q: string, params?: any[]) {
+  const start = Date.now();
+  const res = await pool.query(q, params);
+  if (Date.now() - start > 50) console.warn('SLOW QUERY', q);
+  return res;
+}
+
+	•	Add obvious indexes: CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_menu_visible ON menu(visible); and for lookups by slug/date: CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_menu_slug ON menu(slug);
+	•	Cache hot API responses at the route level:
+
+// app/api/menu/route.ts
+export const revalidate = 300;
+export const dynamic = 'force-static';
+
+Or set headers on Response:
+
+return new Response(JSON.stringify(data), { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400' }});
+
+	5.	Images/media
+
+	•	Replace <img> with next/image everywhere.
+	•	Convert all hero/gallery images to AVIF/WEBP, width-capped (≤ 1600px). Do not ship raw 3–10 MB JPEGs.
+	•	Lazy-load below-the-fold:
+
+<Image src={...} loading="lazy" />
+
+	•	Remove GIFs; use MP4/webm with preload="none".
+
+	6.	CSS/JS delivery
+
+	•	Purge unused CSS. If using Tailwind, enable purge on all app/**/*.{ts,tsx}.
+	•	Remove large polyfills; target modern browsers in .browserslistrc.
+	•	Avoid global client state libraries for simple pages; keep it server-driven.
+
+	7.	Prefetching and font cost
+
+	•	Add:
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
+
+	•	Or self-host fonts; set font-display: swap.
+	•	Use Next’s Link with default prefetch for internal routes; add priority to the LCP image only.
+
+	8.	HTTP and server on Replit
+
+	•	Ensure compression is on; Next enables when compress: true. If you run a custom server, also:
+
+import compression from 'compression';
+app.use(compression());
+
+	•	Enable HTTP/2 via Replit proxy if available; otherwise keep connections alive.
+	•	Serve static assets with strong caching:
+
+// middleware.ts
+import { NextResponse } from 'next/server';
+export function middleware(req: Request) {
+  const res = NextResponse.next();
+  const url = new URL(req.url);
+  if (url.pathname.startsWith('/_next/') || url.pathname.startsWith('/static/')) {
+    res.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+  }
+  return res;
+}
+
+	9.	Route hygiene
+
+	•	Remove any console.log on the server that flushes stdout.
+	•	Eliminate await chains on the critical path; parallelize:
+
+const [menu, gallery] = await Promise.all([getMenu(), getGallery()]);
+
+	•	Move non-critical work off the request path (send webhooks, analytics, emails) to background cron or deferred API with ISR revalidation.
+
+	10.	Quick wins now (≤30 minutes)
+
+	•	Convert hero images to AVIF/WEBP and cap widths.
+	•	Make Menu and Home pages ISR (revalidate = 300) and stop no-store.
+	•	Dynamic-import all admin-only components with ssr:false.
+	•	Remove lodash, moment; use lodash-es per-method, date-fns.
+	•	Turn on compress, turn off source maps in prod.
+	•	Preconnect to DB host and any image CDN domains in <head>.
+
+Verification commands
+	•	Build size:
+
+ANALYZE=true npm run build
+
+Inspect First Load JS for / route; target < 200 KB.
+	•	Runtime timing:
+	•	Log server timings: x-response-time or wrap handlers and log durations > 200 ms.
+	•	Lighthouse in Chrome: confirm LCP ≤ 2.5s, TTI ≤ 2.0s on repeat view.
+
+If still >3s after these, move static asset delivery behind Cloudflare proxy and keep Next on Replit only for dynamic routes.
