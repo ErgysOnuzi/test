@@ -1,35 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Instagram, ExternalLink, Image as ImageIcon } from 'lucide-react';
 import InstagramEmbed from './InstagramEmbed';
 import { selectDailyInstagramPosts } from '@/lib/instagram';
 
-interface InstagramPost {
-  id: string;
-  imageUrl: string;
-  caption: string;
-  likes: number;
-  comments: number;
-  timestamp: string;
-  postUrl: string;
-}
-
-// Real Instagram URLs - integrated with existing Instagram system
-const IG_URLS = [
-  "https://www.instagram.com/p/DAvXTRFidcu/",
-  "https://www.instagram.com/p/C_vwvupNoNR/",
-  "https://www.instagram.com/p/C8HwJgmt8aL/",
-  "https://www.instagram.com/p/C6gz8uSiGlb/",
-  "https://www.instagram.com/p/C6Mg0uGLdNH/",
-  "https://www.instagram.com/p/C4lqzQMrscT/",
-  "https://www.instagram.com/p/C4kriK-NmpI/",
-  "https://www.instagram.com/p/C0e_9IcLnk-/",
-  "https://www.instagram.com/p/Cztz53rN1km/",
-  "https://www.instagram.com/p/CroTpxftUqg/",
-  "https://www.instagram.com/p/C3xB9KuNmPR/",
-  "https://www.instagram.com/p/C2pL7VuoTqX/",
-];
+// Component uses daily rotating Instagram posts from shared lib/instagram.ts
 
 interface InstagramGalleryProps {
   locale: string;
@@ -63,28 +39,6 @@ export default function InstagramGallery({ locale }: InstagramGalleryProps) {
   };
 
   const translations = t[locale as 'de' | 'en'] || t.de;
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'k';
-    }
-    return num.toString();
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (diffInDays === 0) return locale === 'de' ? 'Heute' : 'Today';
-    if (diffInDays === 1) return locale === 'de' ? 'Gestern' : 'Yesterday';
-    if (diffInDays < 7) return locale === 'de' ? `vor ${diffInDays} Tagen` : `${diffInDays} days ago`;
-    
-    return date.toLocaleDateString(locale === 'de' ? 'de-DE' : 'en-US', {
-      month: 'short',
-      day: 'numeric'
-    });
-  };
 
   // Show empty state with call-to-action when no real posts available
   if (selectedPostUrls.length === 0) {
