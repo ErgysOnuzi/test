@@ -303,7 +303,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
               <div className="bg-card/80 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-border">
                 <h2 className="text-3xl font-serif font-bold text-foreground mb-6">{t('about_this_event')}</h2>
                 <div className="prose prose-lg max-w-none text-muted-foreground">
-                  {longDescription.split('\n').map((paragraph, index) => (
+                  {longDescription.split('\n').map((paragraph: string, index: number) => (
                     paragraph.trim() && (
                       <p key={index} className="mb-4 leading-relaxed">
                         {paragraph.trim()}

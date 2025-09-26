@@ -179,7 +179,7 @@ export default async function BlogPage({
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {posts.map((post) => (
+            {posts?.map((post) => (
               <article 
                 key={post.id}
                 className="group bg-card rounded-3xl shadow-lg border border-border/30 overflow-hidden hover:shadow-2xl hover:scale-[1.02] transition-all duration-500"

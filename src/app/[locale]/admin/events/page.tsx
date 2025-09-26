@@ -168,12 +168,12 @@ export default function AdminEventsPage() {
                     <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
-                        {new Date(event.date).toLocaleDateString(locale === 'de' ? 'de-DE' : 'en-US', {
+                        {event.date ? new Date(event.date).toLocaleDateString(locale === 'de' ? 'de-DE' : 'en-US', {
                           weekday: 'long',
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric'
-                        })}
+                        }) : 'Invalid date'}
                       </div>
                       {event.capacity && (
                         <div className="flex items-center gap-2">

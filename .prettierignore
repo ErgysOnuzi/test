@@ -1,0 +1,10 @@
+node_modules
+.next
+out
+build
+.cache
+.vercel
+.turbo
+*.log
+package-lock.json
+*.md

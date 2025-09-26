@@ -74,6 +74,7 @@ export default function ClientGallery() {
       
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [images.length, timeoutReached, isLoading, handleLoadingComplete]);
 
   // Load more images function

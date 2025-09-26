@@ -42,6 +42,11 @@ export async function POST(request: NextRequest) {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       
+      if (!file) {
+        errors.push(`File at index ${i}: No file found`);
+        continue;
+      }
+      
       try {
         // Check file type
         if (!file.type.startsWith('image/')) {

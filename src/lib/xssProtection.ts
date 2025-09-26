@@ -16,7 +16,7 @@ export function escapeHtml(text: string): string {
     '/': '&#x2F;'
   };
   
-  return text.replace(/[&<>"'/]/g, (match) => htmlEscapeMap[match]);
+  return text.replace(/[&<>"'/]/g, (match) => htmlEscapeMap[match] || match);
 }
 
 /**
