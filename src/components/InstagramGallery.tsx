@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { Instagram, ExternalLink, Heart, MessageCircle, Image as ImageIcon } from 'lucide-react';
-import NextImage from 'next/image';
+import { useState, useMemo } from 'react';
+import { Instagram, ExternalLink, Image as ImageIcon } from 'lucide-react';
+import InstagramEmbed from './InstagramEmbed';
+import { selectDailyInstagramPosts } from '@/lib/instagram';
 
 interface InstagramPost {
   id: string;
@@ -14,62 +15,20 @@ interface InstagramPost {
   postUrl: string;
 }
 
-// Instagram posts data - currently using static data, can be extended with Instagram Graph API
-const instagramPosts: InstagramPost[] = [
-  {
-    id: '1',
-    imageUrl: '/uploads/gallery/WhatsApp_Image_2025-09-25_at_12.06.01_AM.jpeg',
-    caption: 'Frische Pasta aus unserer Küche - jeden Tag mit Liebe zubereitet ❤️ #LaCantinaBerlin #FreshPasta #ItalianCuisine',
-    likes: 247,
-    comments: 18,
-    timestamp: '2025-01-20T18:30:00Z',
-    postUrl: 'https://instagram.com/lacantina_berlin'
-  },
-  {
-    id: '2', 
-    imageUrl: '/uploads/gallery/WhatsApp_Image_2025-09-25_at_12.06.01_AM_(1).jpeg',
-    caption: 'Gemütliche Atmosphäre für den perfekten Abend mit Familie und Freunden 🍷 #LaCantinaBerlin #Atmosphere #ItalianDining',
-    likes: 189,
-    comments: 12,
-    timestamp: '2025-01-18T19:45:00Z',
-    postUrl: 'https://instagram.com/lacantina_berlin'
-  },
-  {
-    id: '3',
-    imageUrl: '/uploads/gallery/WhatsApp_Image_2025-09-25_at_12.06.01_AM_(2).jpeg', 
-    caption: 'Authentische italienische Küche mitten in Berlin 🇮🇹 Besucht uns in der Bleibtreustraße! #Berlin #ItalianFood #Authentic',
-    likes: 312,
-    comments: 25,
-    timestamp: '2025-01-16T12:15:00Z',
-    postUrl: 'https://instagram.com/lacantina_berlin'
-  },
-  {
-    id: '4',
-    imageUrl: '/uploads/gallery/WhatsApp_Image_2025-09-25_at_12.06.01_AM_(3).jpeg',
-    caption: 'Unser Chef kreiert täglich neue Köstlichkeiten mit den besten Zutaten 👨‍🍳 #ChefSpecial #LaCantinaBerlin #ItalianChef',
-    likes: 156,
-    comments: 9,
-    timestamp: '2025-01-14T16:20:00Z',
-    postUrl: 'https://instagram.com/lacantina_berlin'
-  },
-  {
-    id: '5',
-    imageUrl: '/uploads/gallery/WhatsApp_Image_2025-09-25_at_12.06.02_AM.jpeg',
-    caption: 'Weekend Special: Homemade Tiramisu - der perfekte Abschluss eines wunderbaren Abends 🍮 #Tiramisu #Dessert #LaCantina',
-    likes: 278,
-    comments: 21,
-    timestamp: '2025-01-12T20:30:00Z', 
-    postUrl: 'https://instagram.com/lacantina_berlin'
-  },
-  {
-    id: '6',
-    imageUrl: '/uploads/gallery/WhatsApp_Image_2025-09-25_at_12.06.02_AM_(1).jpeg',
-    caption: 'Frische Zutaten, traditionelle Rezepte - so schmeckt Italien in Berlin! 🍅🧄 #FreshIngredients #Traditional #LaCantinaBerlin',
-    likes: 201,
-    comments: 14,
-    timestamp: '2025-01-10T14:45:00Z',
-    postUrl: 'https://instagram.com/lacantina_berlin'
-  }
+// Real Instagram URLs - integrated with existing Instagram system
+const IG_URLS = [
+  "https://www.instagram.com/p/DAvXTRFidcu/",
+  "https://www.instagram.com/p/C_vwvupNoNR/",
+  "https://www.instagram.com/p/C8HwJgmt8aL/",
+  "https://www.instagram.com/p/C6gz8uSiGlb/",
+  "https://www.instagram.com/p/C6Mg0uGLdNH/",
+  "https://www.instagram.com/p/C4lqzQMrscT/",
+  "https://www.instagram.com/p/C4kriK-NmpI/",
+  "https://www.instagram.com/p/C0e_9IcLnk-/",
+  "https://www.instagram.com/p/Cztz53rN1km/",
+  "https://www.instagram.com/p/CroTpxftUqg/",
+  "https://www.instagram.com/p/C3xB9KuNmPR/",
+  "https://www.instagram.com/p/C2pL7VuoTqX/",
 ];
 
 interface InstagramGalleryProps {
@@ -77,7 +36,10 @@ interface InstagramGalleryProps {
 }
 
 export default function InstagramGallery({ locale }: InstagramGalleryProps) {
-  const [hoveredPost, setHoveredPost] = useState<string | null>(null);
+  // Generate daily rotating Instagram posts with real data
+  const selectedPostUrls = useMemo(() => {
+    return selectDailyInstagramPosts(6); // Select 6 posts for gallery display
+  }, []);
 
   const t = {
     de: {
@@ -124,9 +86,50 @@ export default function InstagramGallery({ locale }: InstagramGalleryProps) {
     });
   };
 
-  // Don't show Instagram gallery if no real posts available
-  if (instagramPosts.length === 0) {
-    return null;
+  // Show empty state with call-to-action when no real posts available
+  if (selectedPostUrls.length === 0) {
+    return (
+      <section className="py-16 px-6 bg-gradient-to-br from-background via-secondary/5 to-muted/10">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Instagram className="w-8 h-8 text-pink-500" />
+              <h2 className="text-4xl font-serif font-bold text-foreground">
+                {translations.title}
+              </h2>
+            </div>
+            <p className="text-xl text-muted-foreground mb-6">
+              {translations.subtitle}
+            </p>
+            
+            {/* Empty State Message */}
+            <div className="bg-card/80 backdrop-blur-sm rounded-3xl p-8 mb-8 border border-border">
+              <ImageIcon className="w-16 h-16 text-muted-foreground/50 mx-auto mb-4" />
+              <h3 className="text-2xl font-semibold text-foreground mb-3">
+                {locale === 'de' ? 'Neue Posts kommen bald!' : 'New posts coming soon!'}
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                {locale === 'de' 
+                  ? 'Folgen Sie uns auf Instagram für die neuesten Updates aus unserer Küche und Restaurant.'
+                  : 'Follow us on Instagram for the latest updates from our kitchen and restaurant.'}
+              </p>
+            </div>
+            
+            <a
+              href="https://instagram.com/lacantina_berlin"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-full font-medium hover:from-pink-600 hover:to-purple-700 transition-all duration-300 hover:scale-105"
+            >
+              <Instagram className="w-5 h-5" />
+              {translations.followUs}
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -157,77 +160,34 @@ export default function InstagramGallery({ locale }: InstagramGalleryProps) {
 
         {/* Instagram Posts Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {instagramPosts.map((post) => (
-            <div
-              key={post.id}
-              className="group relative bg-card rounded-2xl overflow-hidden shadow-lg border border-border/30 hover:shadow-2xl transition-all duration-500"
-              onMouseEnter={() => setHoveredPost(post.id)}
-              onMouseLeave={() => setHoveredPost(null)}
-            >
-              {/* Image Container */}
-              <div className="aspect-square relative overflow-hidden bg-gradient-to-br from-primary/20 to-secondary/20">
-                <NextImage
-                  src={post.imageUrl}
-                  alt={post.caption.slice(0, 100)}
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-110"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                />
-                
-                {/* Overlay on hover */}
-                <div className={`absolute inset-0 bg-black/60 flex items-center justify-center transition-opacity duration-300 ${
-                  hoveredPost === post.id ? 'opacity-100' : 'opacity-0'
-                }`}>
-                  <div className="flex items-center gap-6 text-white">
-                    <div className="flex items-center gap-2">
-                      <Heart className="w-6 h-6 fill-white" />
-                      <span className="font-semibold">{formatNumber(post.likes)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MessageCircle className="w-6 h-6 fill-white" />
-                      <span className="font-semibold">{formatNumber(post.comments)}</span>
-                    </div>
-                  </div>
+          {selectedPostUrls.map((url, index) => {
+            const postId = url.split('/p/')[1]?.split('/')[0] || `post-${index}`;
+            return (
+              <div
+                key={postId}
+                className="group relative bg-card rounded-2xl overflow-hidden shadow-lg border border-border/30 hover:shadow-2xl transition-all duration-500"
+              >
+                {/* Real Instagram Embed */}
+                <div className="aspect-square relative overflow-hidden">
+                  <InstagramEmbed url={url} aspect={1} />
                 </div>
-
-                {/* View Post Button */}
-                <div className={`absolute top-4 right-4 transition-opacity duration-300 ${
-                  hoveredPost === post.id ? 'opacity-100' : 'opacity-0'
-                }`}>
+                
+                {/* View on Instagram Link */}
+                <div className="p-4 text-center">
                   <a
-                    href={post.postUrl}
+                    href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-white/90 text-foreground p-2 rounded-full hover:bg-white transition-colors"
-                    title={translations.viewPost}
+                    className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors"
                   >
+                    <Instagram className="w-4 h-4" />
+                    {locale === 'de' ? 'Auf Instagram ansehen' : 'View on Instagram'}
                     <ExternalLink className="w-4 h-4" />
                   </a>
                 </div>
               </div>
-
-              {/* Post Info */}
-              <div className="p-4">
-                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                  {post.caption}
-                </p>
-                
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                      <Heart className="w-4 h-4" />
-                      <span>{formatNumber(post.likes)}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <MessageCircle className="w-4 h-4" />
-                      <span>{formatNumber(post.comments)}</span>
-                    </div>
-                  </div>
-                  <span>{formatDate(post.timestamp)}</span>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Call to Action */}
