@@ -17,13 +17,10 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Only modify SSL for development - keep secure for production
-const dbUrl = new URL(process.env.DATABASE_URL);
-if (process.env.NODE_ENV !== 'production') {
-  dbUrl.searchParams.set('sslmode', 'disable');
-}
+// Use the DATABASE_URL as-is - it already has proper SSL configuration
+const dbUrl = process.env.DATABASE_URL;
 
-const pool = new Pool({ connectionString: dbUrl.toString() });
+const pool = new Pool({ connectionString: dbUrl });
 const db = drizzle({ client: pool, schema });
 
 export default db;

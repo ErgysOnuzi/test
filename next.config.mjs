@@ -60,7 +60,7 @@ const nextConfig = {
   },
   
   allowedDevOrigins: process.env.NODE_ENV === 'development' 
-    ? ['127.0.0.1:5000', 'localhost:5000', '*.replit.dev'] 
+    ? ['127.0.0.1', 'localhost', '*.replit.dev'] 
     : [],
     
   experimental: { 
