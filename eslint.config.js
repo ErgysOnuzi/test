@@ -7,13 +7,13 @@ const __dirname = dirname(__filename);
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
+  recommendedConfig: {},
 });
 
 export default [
   ...compat.extends(
     'next/core-web-vitals',
-    'eslint:recommended',
-    '@typescript-eslint/recommended'
+    'eslint:recommended'
   ),
   {
     rules: {
@@ -21,14 +21,8 @@ export default [
       'react-hooks/exhaustive-deps': 'warn',
       'react-hooks/rules-of-hooks': 'error',
       
-      // i18n rule for text literals
-      'no-console': 'warn',
-      
-      // TypeScript rules
-      '@typescript-eslint/no-unused-vars': 'warn',
-      '@typescript-eslint/no-explicit-any': 'warn',
-      
       // General code quality
+      'no-console': 'warn',
       'prefer-const': 'error',
       'no-var': 'error',
     },

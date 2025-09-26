@@ -1,6 +1,7 @@
 'use client'
  
 import React from 'react';
+import Link from 'next/link';
 import { logError } from '@/lib/errorHandling';
 
 export default function Error({
@@ -33,12 +34,12 @@ export default function Error({
         >
           Try Again
         </button>
-        <a
+        <Link
           href="/de"
           className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors inline-block"
         >
           Return Home
-        </a>
+        </Link>
       </div>
     </div>
   );

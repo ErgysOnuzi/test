@@ -106,7 +106,7 @@ export default function GoogleReviews({ maxReviews = 3, showViewMore = true }: G
           </div>
           <h3 className="text-xl font-semibold text-foreground mb-2">Reviews Temporarily Unavailable</h3>
           <p className="text-muted-foreground">
-            We're working to display our Google reviews. Meanwhile, you can view them directly on Google.
+            We&apos;re working to display our Google reviews. Meanwhile, you can view them directly on Google.
           </p>
           <a
             href="https://maps.google.com/maps?q=Ristorante+La+Cantina+Bleibtreu+Bleibtreustra%C3%9Fe+17+Berlin"
