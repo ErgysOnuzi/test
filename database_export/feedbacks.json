@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "ergys onuzi",
+    "email": "ergysonuzi12@gmail.com",
+    "rating": 5,
+    "comment": "Outstanding experience—delicious food, attentive service, and a warm atmosphere. Every detail was perfect. A true 5-star restaurant.",
+    "status": "pending",
+    "is_public": false,
+    "reservation_id": null,
+    "created_at": "2025-09-25T12:14:38.806432Z",
+    "updated_at": "2025-09-25T12:14:38.806432Z"
+  },
+  {
+    "id": 2,
+    "name": "ergys",
+    "email": "ergysonuzi12@gmail.com",
+    "rating": 5,
+    "comment": "Outstanding experience—delicious food, attentive service, and a warm atmosphere. Every detail was perfect. A true 5-star restaurant.",
+    "status": "approved",
+    "is_public": true,
+    "reservation_id": null,
+    "created_at": "2025-09-25T12:47:07.672951Z",
+    "updated_at": "2025-09-25T12:47:07.672951Z"
+  }
+]

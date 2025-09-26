@@ -1,0 +1,13 @@
+[
+  {
+    "id": 1,
+    "username": "admin",
+    "email": "admin@lacantina.berlin",
+    "password_hash": "$2a$12$XLPfXYZabcdef123456789O.MNOpqrs.tuvwxyz123456789abcdef",
+    "role": "admin",
+    "is_active": true,
+    "last_login": null,
+    "created_at": "2025-09-25T18:40:57.287797Z",
+    "updated_at": "2025-09-25T18:40:57.287797Z"
+  }
+]
