@@ -63,9 +63,14 @@ const nextConfig = {
     return config;
   },
   
-  allowedDevOrigins: process.env.NODE_ENV === 'development' 
-    ? ['127.0.0.1', 'localhost', '*.replit.dev'] 
-    : [],
+  allowedDevOrigins: [
+    'localhost',
+    '127.0.0.1',
+    '*.replit.dev',
+    '*.replit.com',
+    '*.replit.co',
+    process.env.REPL_SLUG ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.dev` : null
+  ].filter(Boolean),
     
   experimental: { 
     serverActions: { 
