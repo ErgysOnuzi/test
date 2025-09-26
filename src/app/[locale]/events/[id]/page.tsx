@@ -167,7 +167,9 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
   // Fetch event from database
   let event;
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000'}/api/events/${id}`, {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+                    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '');
+    const response = await fetch(`${baseUrl}/api/events/${id}`, {
       cache: 'no-store' // Always get fresh data
     });
     

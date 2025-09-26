@@ -20,7 +20,7 @@ async function getMenuItems() {
     // Get base URL for server-side fetching
     const baseUrl = process.env.VERCEL_URL 
       ? `https://${process.env.VERCEL_URL}`
-      : process.env.NEXTAUTH_URL || 'http://localhost:5000';
+      : process.env.NEXT_PUBLIC_BASE_URL || '';
     
     const response = await fetch(`${baseUrl}/api/menu`, {
       next: { 
