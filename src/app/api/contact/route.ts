@@ -3,23 +3,37 @@ import db, { schema } from '@/lib/db';
 import { desc } from 'drizzle-orm';
 import { sendEmail } from '@/utils/replitmail';
 import { handleAPIError, logError } from '@/lib/errorHandling';
+import { sanitizeContactInput } from '@/lib/xssProtection';
+import { createSecureResponse } from '@/lib/securityHeaders';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    // Validate required fields
-    if (!body.name || !body.email || !body.message) {
-      return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });
+    // Sanitize input to prevent XSS attacks
+    const sanitized = sanitizeContactInput(body);
+    
+    // Validate required fields after sanitization
+    if (!sanitized.name || !sanitized.email || !sanitized.message) {
+      return createSecureResponse({ error: 'All fields are required and must be valid.' }, 400);
+    }
+    
+    // Additional validation
+    if (sanitized.name.length < 2 || sanitized.name.length > 100) {
+      return createSecureResponse({ error: 'Name must be between 2 and 100 characters.' }, 400);
+    }
+    
+    if (sanitized.message.length < 10 || sanitized.message.length > 1000) {
+      return createSecureResponse({ error: 'Message must be between 10 and 1000 characters.' }, 400);
     }
 
-    // Insert contact message into database
+    // Insert sanitized contact message into database
     const [newMessage] = await db
       .insert(schema.contactMessages)
       .values({
-        name: body.name,
-        email: body.email,
-        message: body.message,
+        name: sanitized.name,
+        email: sanitized.email,
+        message: sanitized.message,
       })
       .returning();
 
@@ -36,10 +50,10 @@ export async function POST(request: NextRequest) {
         subject: 'New Contact Message - Ristorante La Cantina Bleibtreu',
         text: `New contact message received:
 
-Name: ${body.name}
-Email: ${body.email}
+Name: ${sanitized.name}
+Email: ${sanitized.email}
 Message:
-${body.message}
+${sanitized.message}
 
 Message ID: ${newMessage.id}
 Received: ${new Date().toLocaleString('de-DE')}
@@ -47,11 +61,11 @@ Received: ${new Date().toLocaleString('de-DE')}
 Please respond to this inquiry promptly.`,
         html: `
           <h2>New Contact Message - Ristorante La Cantina Bleibtreu</h2>
-          <p><strong>Name:</strong> ${body.name}</p>
-          <p><strong>Email:</strong> ${body.email}</p>
+          <p><strong>Name:</strong> ${sanitized.name}</p>
+          <p><strong>Email:</strong> ${sanitized.email}</p>
           <p><strong>Message:</strong></p>
           <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 10px 0;">
-            ${body.message.replace(/\n/g, '<br>')}
+            ${sanitized.message.replace(/\n/g, '<br>')}
           </div>
           <hr>
           <p><small>Message ID: ${newMessage.id} | Received: ${new Date().toLocaleString('de-DE')}</small></p>
@@ -63,10 +77,10 @@ Please respond to this inquiry promptly.`,
       // Don't fail the entire request if email fails
     }
 
-    return NextResponse.json({ 
+    return createSecureResponse({ 
       message: 'Message sent successfully!',
       contact: newMessage 
-    }, { status: 201 });
+    }, 201);
 
   } catch (error) {
     return handleAPIError(
