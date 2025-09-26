@@ -36,25 +36,34 @@ name = "Server"
 mode = "parallel"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev -- --port 5000 --hostname 0.0.0.0"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Server"
 
 [[ports]]
 localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 35919
-externalPort = 3002
-
-[[ports]]
 localPort = 39507
 externalPort = 3001
+
+[[ports]]
+localPort = 42935
+externalPort = 3002
 
 [[ports]]
 localPort = 46483
