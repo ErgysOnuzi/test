@@ -105,12 +105,14 @@ const getCachedGoogleReviews = unstable_cache(
       const detailsData = await detailsResponse.json();
 
       if (!detailsResponse.ok || detailsData.status !== 'OK') {
-        // Log the issue but return graceful fallback instead of throwing
-        const { logError } = await import('@/lib/errorHandling');
-        logError('Google Places API Details', new Error(`API Status: ${detailsData.status || detailsResponse.statusText}`), {
-          status: detailsData.status,
-          errorMessage: detailsData.error_message
-        });
+        // Silently handle invalid place ID for production stability
+        if (process.env.NODE_ENV !== 'production') {
+          const { logError } = await import('@/lib/errorHandling');
+          logError('Google Places API Details', new Error(`API Status: ${detailsData.status || detailsResponse.statusText}`), {
+            status: detailsData.status,
+            errorMessage: detailsData.error_message
+          });
+        }
         
         // Return fallback data to prevent 503 errors
         return {
