@@ -1,4 +1,4 @@
-import type { Viewport } from 'next'
+import type { Viewport } from 'next';
 
 export function generateViewport(): Viewport {
   return {
@@ -8,5 +8,5 @@ export function generateViewport(): Viewport {
     initialScale: 1,
     maximumScale: 5,
     userScalable: true,
-  }
+  };
 }

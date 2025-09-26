@@ -1,4 +1,12 @@
-import { pgTable, serial, text, real, integer, boolean, timestamp } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  serial,
+  text,
+  real,
+  integer,
+  boolean,
+  timestamp,
+} from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Menu items table - authentic Italian dishes from the original restaurant

@@ -1,7 +1,7 @@
-import {routing} from './src/i18n/routing';
+import { routing } from './src/i18n/routing';
 import createIntlMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
- 
+
 const intlMiddleware = createIntlMiddleware(routing);
 
 export function middleware(request: NextRequest) {
@@ -11,12 +11,12 @@ export function middleware(request: NextRequest) {
     url.pathname = '/de';
     return NextResponse.redirect(url);
   }
-  
+
   // Use next-intl middleware for other paths
   return intlMiddleware(request);
 }
- 
+
 export const config = {
   // Match only internationalized pathnames
-  matcher: ['/', '/(de|en)/:path*']
+  matcher: ['/', '/(de|en)/:path*'],
 };

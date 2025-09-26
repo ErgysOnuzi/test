@@ -9,28 +9,46 @@ import { createSecureResponse } from '@/lib/securityHeaders';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // Sanitize input to prevent XSS attacks
     const sanitized = sanitizeContactInput(body);
-    
+
     // Validate required fields after sanitization
-    if (!sanitized.name || !sanitized.phone || !body.date || !body.time || !body.guests) {
-      return createSecureResponse({ error: 'Required fields missing or invalid.' }, 400);
+    if (
+      !sanitized.name ||
+      !sanitized.phone ||
+      !body.date ||
+      !body.time ||
+      !body.guests
+    ) {
+      return createSecureResponse(
+        { error: 'Required fields missing or invalid.' },
+        400
+      );
     }
-    
+
     // Additional validation
     if (sanitized.name.length < 2 || sanitized.name.length > 100) {
-      return createSecureResponse({ error: 'Name must be between 2 and 100 characters.' }, 400);
+      return createSecureResponse(
+        { error: 'Name must be between 2 and 100 characters.' },
+        400
+      );
     }
-    
+
     if (!sanitized.phone || sanitized.phone.length < 7) {
-      return createSecureResponse({ error: 'Please provide a valid phone number.' }, 400);
+      return createSecureResponse(
+        { error: 'Please provide a valid phone number.' },
+        400
+      );
     }
 
     // Validate guests count (1-100)
     const guestCount = parseInt(body.guests);
     if (isNaN(guestCount) || guestCount < 1 || guestCount > 100) {
-      return createSecureResponse({ error: 'Number of guests must be between 1 and 100.' }, 400);
+      return createSecureResponse(
+        { error: 'Number of guests must be between 1 and 100.' },
+        400
+      );
     }
 
     // Insert sanitized reservation into database
@@ -41,20 +59,22 @@ export async function POST(request: NextRequest) {
         phone: sanitized.phone,
         date: body.date, // Date validation handled by frontend
         time: body.time, // Time validation handled by frontend
-        guests: guestCount
+        guests: guestCount,
       })
       .returning();
 
     if (!result || result.length === 0 || !result[0]?.id) {
-      throw new Error('Failed to create reservation - database insert returned no result');
+      throw new Error(
+        'Failed to create reservation - database insert returned no result'
+      );
     }
 
     const newReservation = result[0];
 
     // Log success securely without exposing sensitive details
-    logError('Reservation Success', null, { 
+    logError('Reservation Success', null, {
       reservationReceived: true,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     // Send email notification to restaurant
@@ -90,7 +110,7 @@ Please prepare for this reservation.`,
           </div>
           <hr>
           <p><small>Reservation ID: ${newReservation.id} | Received: ${new Date().toLocaleString('de-DE')}</small></p>
-        `
+        `,
       });
       // Log email success without exposing details
     } catch (emailError) {
@@ -98,11 +118,13 @@ Please prepare for this reservation.`,
       // Don't fail the entire request if email fails
     }
 
-    return createSecureResponse({ 
-      message: 'Reservation successfully saved',
-      reservation: newReservation 
-    }, 200);
-
+    return createSecureResponse(
+      {
+        message: 'Reservation successfully saved',
+        reservation: newReservation,
+      },
+      200
+    );
   } catch (error) {
     return handleAPIError(
       'Reservation Processing',

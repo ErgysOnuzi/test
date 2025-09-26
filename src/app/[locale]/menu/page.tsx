@@ -7,9 +7,9 @@ export const revalidate = 300;
 export const dynamic = 'force-static';
 
 export async function generateMetadata({
-  params
+  params,
 }: {
-  params: Promise<{ locale: string }>
+  params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
   return generateSEOMetadata('menu', locale);
@@ -18,42 +18,44 @@ export async function generateMetadata({
 async function getMenuItems() {
   try {
     // Get base URL for server-side fetching
-    const baseUrl = process.env.VERCEL_URL 
+    const baseUrl = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
       : process.env.NEXT_PUBLIC_BASE_URL || '';
-    
+
     const response = await fetch(`${baseUrl}/api/menu`, {
-      next: { 
+      next: {
         tags: ['menu'],
-        revalidate: 300 // Cache for 5 minutes
-      }
+        revalidate: 300, // Cache for 5 minutes
+      },
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch menu items');
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error fetching menu items:', error);
     // Return empty array if API fails - no mock data
-    console.error('Menu API failed, returning empty array. Check database connection.');
+    console.error(
+      'Menu API failed, returning empty array. Check database connection.'
+    );
     return [];
   }
 }
 
 export default async function MenuPage({
-  params
+  params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
   const menuItems = await getMenuItems();
-  
+
   return (
     <>
       <MenuSchema menuItems={menuItems} locale={locale} />
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/5">
+      <div className='min-h-screen bg-gradient-to-br from-background via-background to-secondary/5'>
         <MenuWithFilters menuItems={menuItems} locale={locale} />
       </div>
     </>

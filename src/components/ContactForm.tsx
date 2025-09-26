@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
@@ -7,7 +7,7 @@ export default function ContactForm() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    message: ''
+    message: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
@@ -15,28 +15,28 @@ export default function ContactForm() {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     // Name validation
     if (!formData.name.trim()) {
       newErrors.name = t('name_required');
     } else if (formData.name.trim().length < 2) {
       newErrors.name = t('name_min_length');
     }
-    
+
     // Email validation
     if (!formData.email.trim()) {
       newErrors.email = t('email_required');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = t('email_invalid');
     }
-    
+
     // Message validation
     if (!formData.message.trim()) {
       newErrors.message = t('message_required');
     } else if (formData.message.trim().length < 10) {
       newErrors.message = t('message_min_length');
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -45,11 +45,11 @@ export default function ContactForm() {
     e.preventDefault();
     setMessage('');
     setErrors({});
-    
+
     if (!validateForm()) {
       return;
     }
-    
+
     setIsSubmitting(true);
 
     try {
@@ -66,7 +66,7 @@ export default function ContactForm() {
         setFormData({
           name: '',
           email: '',
-          message: ''
+          message: '',
         });
       } else {
         const errorData = await response.json();
@@ -79,32 +79,37 @@ export default function ContactForm() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    
+
     // Clear error for this field when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: '',
       }));
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className='space-y-6'>
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
+        <label
+          htmlFor='name'
+          className='block text-sm font-medium text-foreground mb-2'
+        >
           {t('name')} *
         </label>
         <input
-          type="text"
-          id="name"
-          name="name"
+          type='text'
+          id='name'
+          name='name'
           required
           value={formData.name}
           onChange={handleChange}
@@ -113,21 +118,30 @@ export default function ContactForm() {
           }`}
           aria-invalid={errors.name ? 'true' : 'false'}
           aria-describedby={errors.name ? 'name-error' : undefined}
-          data-testid="input-contact-name"
+          data-testid='input-contact-name'
         />
         {errors.name && (
-          <p id="name-error" className="text-destructive text-sm mt-1" role="alert">{errors.name}</p>
+          <p
+            id='name-error'
+            className='text-destructive text-sm mt-1'
+            role='alert'
+          >
+            {errors.name}
+          </p>
         )}
       </div>
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+        <label
+          htmlFor='email'
+          className='block text-sm font-medium text-foreground mb-2'
+        >
           {t('email')} *
         </label>
         <input
-          type="email"
-          id="email"
-          name="email"
+          type='email'
+          id='email'
+          name='email'
           required
           value={formData.email}
           onChange={handleChange}
@@ -136,20 +150,29 @@ export default function ContactForm() {
           }`}
           aria-invalid={errors.email ? 'true' : 'false'}
           aria-describedby={errors.email ? 'email-error' : undefined}
-          data-testid="input-contact-email"
+          data-testid='input-contact-email'
         />
         {errors.email && (
-          <p id="email-error" className="text-destructive text-sm mt-1" role="alert">{errors.email}</p>
+          <p
+            id='email-error'
+            className='text-destructive text-sm mt-1'
+            role='alert'
+          >
+            {errors.email}
+          </p>
         )}
       </div>
 
       <div>
-        <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
+        <label
+          htmlFor='message'
+          className='block text-sm font-medium text-foreground mb-2'
+        >
           {t('message')} *
         </label>
         <textarea
-          id="message"
-          name="message"
+          id='message'
+          name='message'
           required
           rows={5}
           value={formData.message}
@@ -159,24 +182,32 @@ export default function ContactForm() {
           }`}
           aria-invalid={errors.message ? 'true' : 'false'}
           aria-describedby={errors.message ? 'message-error' : undefined}
-          data-testid="textarea-contact-message"
+          data-testid='textarea-contact-message'
         />
         {errors.message && (
-          <p id="message-error" className="text-destructive text-sm mt-1" role="alert">{errors.message}</p>
+          <p
+            id='message-error'
+            className='text-destructive text-sm mt-1'
+            role='alert'
+          >
+            {errors.message}
+          </p>
         )}
       </div>
 
       {message && (
-        <div className={`p-4 rounded-md ${message === t('success_message') ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-destructive/10 text-destructive'}`}>
+        <div
+          className={`p-4 rounded-md ${message === t('success_message') ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-destructive/10 text-destructive'}`}
+        >
           {message}
         </div>
       )}
 
       <button
-        type="submit"
+        type='submit'
         disabled={isSubmitting}
-        className="w-full bg-primary text-primary-foreground px-8 py-4 rounded-md hover:bg-primary/90 transition-colors text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-        data-testid="button-submit-contact"
+        className='w-full bg-primary text-primary-foreground px-8 py-4 rounded-md hover:bg-primary/90 transition-colors text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed'
+        data-testid='button-submit-contact'
       >
         {isSubmitting ? t('sending') : t('submit')}
       </button>

@@ -13,11 +13,11 @@ export async function DELETE(
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
-  
+
   // CSRF Protection
   const csrfError = await csrfProtection(request);
   if (csrfError) return csrfError;
-  
+
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
@@ -29,7 +29,7 @@ export async function DELETE(
       .delete(schema.menuItems)
       .where(eq(schema.menuItems.id, id))
       .returning();
-    
+
     if (result.length === 0) {
       return NextResponse.json({ error: 'Item not found' }, { status: 404 });
     }
@@ -40,7 +40,10 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting menu item:', error);
-    return NextResponse.json({ error: 'Failed to delete item' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to delete item' },
+      { status: 500 }
+    );
   }
 }
 
@@ -52,11 +55,11 @@ export async function PATCH(
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
-  
+
   // CSRF Protection
   const csrfError = await csrfProtection(request);
   if (csrfError) return csrfError;
-  
+
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
@@ -66,17 +69,22 @@ export async function PATCH(
 
     const body = await request.json();
     const { isAvailable } = body;
-    
+
     if (typeof isAvailable !== 'boolean') {
-      return NextResponse.json({ error: 'Invalid availability status' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid availability status' },
+        { status: 400 }
+      );
     }
 
     // TODO: Fix schema type inference issue for isAvailable field
-    console.log(`Menu item ${id} availability update requested: ${isAvailable}`);
-    
+    console.log(
+      `Menu item ${id} availability update requested: ${isAvailable}`
+    );
+
     // Placeholder response until schema typing issue is resolved
     const result = [{ id, isAvailable }];
-    
+
     if (result.length === 0) {
       return NextResponse.json({ error: 'Item not found' }, { status: 404 });
     }
@@ -87,7 +95,10 @@ export async function PATCH(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error updating menu item:', error);
-    return NextResponse.json({ error: 'Failed to update item' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to update item' },
+      { status: 500 }
+    );
   }
 }
 
@@ -99,11 +110,11 @@ export async function PUT(
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
-  
+
   // CSRF Protection
   const csrfError = await csrfProtection(request);
   if (csrfError) return csrfError;
-  
+
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
@@ -112,40 +123,57 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { 
-      titleDe, 
-      titleEn, 
-      descriptionDe, 
-      descriptionEn, 
-      price, 
-      categoryDe, 
-      categoryEn, 
+    const {
+      titleDe,
+      titleEn,
+      descriptionDe,
+      descriptionEn,
+      price,
+      categoryDe,
+      categoryEn,
       allergens,
       isAvailable,
-      imageUrl 
+      imageUrl,
     } = body;
-    
+
     // Validation
     if (!titleDe || !titleEn || !price || !categoryDe || !categoryEn) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
     }
-    
+
     if (typeof price !== 'number' || price <= 0) {
       return NextResponse.json({ error: 'Invalid price' }, { status: 400 });
     }
 
     // TODO: Fix schema type inference issue for multilingual fields
     console.log(`Menu item ${id} update requested with data:`, {
-      titleDe, titleEn, descriptionDe, descriptionEn, 
-      categoryDe, categoryEn, price, allergens, isAvailable
+      titleDe,
+      titleEn,
+      descriptionDe,
+      descriptionEn,
+      categoryDe,
+      categoryEn,
+      price,
+      allergens,
+      isAvailable,
     });
-    
+
     // Placeholder response until schema typing issue is resolved
-    const result = [{
-      id, title: titleEn, titleDe, titleEn,
-      description: descriptionEn, price: parseFloat(String(price)), isAvailable
-    }];
-    
+    const result = [
+      {
+        id,
+        title: titleEn,
+        titleDe,
+        titleEn,
+        description: descriptionEn,
+        price: parseFloat(String(price)),
+        isAvailable,
+      },
+    ];
+
     if (result.length === 0) {
       return NextResponse.json({ error: 'Item not found' }, { status: 404 });
     }
@@ -156,6 +184,9 @@ export async function PUT(
     return NextResponse.json(result[0]);
   } catch (error) {
     console.error('Error updating menu item:', error);
-    return NextResponse.json({ error: 'Failed to update item' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to update item' },
+      { status: 500 }
+    );
   }
 }

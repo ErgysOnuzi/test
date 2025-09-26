@@ -13,9 +13,9 @@ export function escapeHtml(text: string): string {
     '>': '&gt;',
     '"': '&quot;',
     "'": '&#x27;',
-    '/': '&#x2F;'
+    '/': '&#x2F;',
   };
-  
+
   return text.replace(/[&<>"'/]/g, (match) => htmlEscapeMap[match] || match);
 }
 
@@ -24,10 +24,10 @@ export function escapeHtml(text: string): string {
  */
 export function sanitizeTextInput(input: string): string {
   if (typeof input !== 'string') return '';
-  
+
   // First trim and limit length
   const trimmed = input.trim().slice(0, 1000);
-  
+
   // Escape ALL HTML characters to prevent any markup injection
   return escapeHtml(trimmed);
 }
@@ -37,10 +37,10 @@ export function sanitizeTextInput(input: string): string {
  */
 export function sanitizeEmail(email: string): string {
   if (typeof email !== 'string') return '';
-  
+
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const sanitized = email.trim().toLowerCase();
-  
+
   return emailRegex.test(sanitized) ? sanitized : '';
 }
 
@@ -49,10 +49,10 @@ export function sanitizeEmail(email: string): string {
  */
 export function sanitizePhoneNumber(phone: string): string {
   if (typeof phone !== 'string') return '';
-  
+
   // Remove all non-digit characters except + at the beginning
   const cleaned = phone.replace(/[^\d+]/g, '').replace(/(?!^)\+/g, '');
-  
+
   // Validate format (basic international format)
   const phoneRegex = /^(\+\d{1,3})?[\d\s-()]{7,15}$/;
   return phoneRegex.test(cleaned) ? cleaned : '';
@@ -63,15 +63,15 @@ export function sanitizePhoneNumber(phone: string): string {
  */
 export function sanitizeUrl(url: string): string {
   if (typeof url !== 'string') return '';
-  
+
   try {
     const parsed = new URL(url);
-    
+
     // Only allow http, https, and mailto protocols
     if (!['http:', 'https:', 'mailto:'].includes(parsed.protocol)) {
       return '';
     }
-    
+
     return parsed.toString();
   } catch {
     return '';
@@ -94,7 +94,7 @@ export function sanitizeContactInput(input: {
     email: input.email ? sanitizeEmail(input.email) : '',
     phone: input.phone ? sanitizePhoneNumber(input.phone) : '',
     message: input.message ? sanitizeTextInput(input.message) : '',
-    subject: input.subject ? sanitizeTextInput(input.subject) : ''
+    subject: input.subject ? sanitizeTextInput(input.subject) : '',
   };
 }
 
@@ -109,11 +109,11 @@ export function testXSSProtection() {
     '<svg onload="alert(1)">',
     '<style>body { background: red; }</style>',
     'javascript:alert(1)',
-    '<div onclick="alert(1)">Click me</div>'
+    '<div onclick="alert(1)">Click me</div>',
   ];
-  
-  return maliciousInputs.map(input => ({
+
+  return maliciousInputs.map((input) => ({
     original: input,
-    sanitized: sanitizeTextInput(input)
+    sanitized: sanitizeTextInput(input),
   }));
 }

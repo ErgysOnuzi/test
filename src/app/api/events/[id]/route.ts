@@ -8,11 +8,14 @@ interface RouteParams {
   };
 }
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const { id } = await params;
   try {
     const eventId = parseInt(id);
-    
+
     if (isNaN(eventId)) {
       return NextResponse.json({ error: 'Invalid event ID' }, { status: 400 });
     }
@@ -22,9 +25,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .from(schema.events)
       .where(eq(schema.events.id, eventId))
       .limit(1);
-    
+
     const event = events[0];
-    
+
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
@@ -32,6 +35,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json(event);
   } catch (error) {
     console.error('Database error:', error);
-    return NextResponse.json({ error: 'Failed to fetch event' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch event' },
+      { status: 500 }
+    );
   }
 }

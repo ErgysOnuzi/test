@@ -9,22 +9,31 @@ import { createSecureResponse } from '@/lib/securityHeaders';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // Sanitize input to prevent XSS attacks
     const sanitized = sanitizeContactInput(body);
-    
+
     // Validate required fields after sanitization
     if (!sanitized.name || !sanitized.email || !sanitized.message) {
-      return createSecureResponse({ error: 'All fields are required and must be valid.' }, 400);
+      return createSecureResponse(
+        { error: 'All fields are required and must be valid.' },
+        400
+      );
     }
-    
+
     // Additional validation
     if (sanitized.name.length < 2 || sanitized.name.length > 100) {
-      return createSecureResponse({ error: 'Name must be between 2 and 100 characters.' }, 400);
+      return createSecureResponse(
+        { error: 'Name must be between 2 and 100 characters.' },
+        400
+      );
     }
-    
+
     if (sanitized.message.length < 10 || sanitized.message.length > 1000) {
-      return createSecureResponse({ error: 'Message must be between 10 and 1000 characters.' }, 400);
+      return createSecureResponse(
+        { error: 'Message must be between 10 and 1000 characters.' },
+        400
+      );
     }
 
     // Insert sanitized contact message into database
@@ -38,15 +47,17 @@ export async function POST(request: NextRequest) {
       .returning();
 
     if (!result || result.length === 0 || !result[0]?.id) {
-      throw new Error('Failed to create contact message - database insert returned no result');
+      throw new Error(
+        'Failed to create contact message - database insert returned no result'
+      );
     }
 
     const newMessage = result[0];
 
     // Log success securely without exposing sensitive details
-    logError('Contact Message Success', null, { 
+    logError('Contact Message Success', null, {
       messageReceived: true,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     // Send email notification to restaurant
@@ -75,7 +86,7 @@ Please respond to this inquiry promptly.`,
           </div>
           <hr>
           <p><small>Message ID: ${newMessage.id} | Received: ${new Date().toLocaleString('de-DE')}</small></p>
-        `
+        `,
       });
       // Log email success without exposing details
     } catch (emailError) {
@@ -83,11 +94,13 @@ Please respond to this inquiry promptly.`,
       // Don't fail the entire request if email fails
     }
 
-    return createSecureResponse({ 
-      message: 'Message sent successfully!',
-      contact: newMessage 
-    }, 201);
-
+    return createSecureResponse(
+      {
+        message: 'Message sent successfully!',
+        contact: newMessage,
+      },
+      201
+    );
   } catch (error) {
     return handleAPIError(
       'Contact Form Processing',

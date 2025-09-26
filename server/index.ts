@@ -8,7 +8,7 @@ console.log('Starting La Cantina Berlin Next.js Application...');
 const nextProcess = spawn('npx', ['next', 'dev', '--port', '5000'], {
   cwd: process.cwd(),
   stdio: 'inherit',
-  env: { ...process.env, NODE_ENV: 'development' }
+  env: { ...process.env, NODE_ENV: 'development' },
 });
 
 nextProcess.on('error', (error) => {

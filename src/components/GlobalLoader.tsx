@@ -5,13 +5,13 @@ import NextTopLoader from 'nextjs-toploader';
 export default function GlobalLoader() {
   return (
     <NextTopLoader
-      color="hsl(15, 75%, 45%)"
+      color='hsl(15, 75%, 45%)'
       initialPosition={0.08}
       crawlSpeed={200}
       height={3}
       crawl={true}
       showSpinner={false}
-      easing="ease"
+      easing='ease'
       speed={200}
     />
   );

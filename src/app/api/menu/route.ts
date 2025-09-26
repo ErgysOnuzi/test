@@ -12,7 +12,7 @@ export async function GET() {
       .select()
       .from(schema.menuItems)
       .orderBy(asc(schema.menuItems.categoryDe), asc(schema.menuItems.titleDe));
-    
+
     return NextResponse.json(items, {
       headers: {
         'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400',
@@ -20,6 +20,9 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Error fetching menu items:', error);
-    return NextResponse.json({ error: 'Failed to fetch menu items' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch menu items' },
+      { status: 500 }
+    );
   }
 }

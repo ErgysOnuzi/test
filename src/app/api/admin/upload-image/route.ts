@@ -20,13 +20,19 @@ export async function POST(request: NextRequest) {
 
     // Check file type
     if (!file.type.startsWith('image/')) {
-      return NextResponse.json({ error: 'File must be an image' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'File must be an image' },
+        { status: 400 }
+      );
     }
 
     // Check file size (5MB limit)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      return NextResponse.json({ error: 'File size must be less than 5MB' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'File size must be less than 5MB' },
+        { status: 400 }
+      );
     }
 
     // Create uploads directory if it doesn't exist
@@ -48,15 +54,17 @@ export async function POST(request: NextRequest) {
 
     // Return the public URL
     const publicUrl = `/uploads/menu/${fileName}`;
-    
-    return NextResponse.json({ 
-      success: true, 
-      imageUrl: publicUrl,
-      fileName 
-    });
 
+    return NextResponse.json({
+      success: true,
+      imageUrl: publicUrl,
+      fileName,
+    });
   } catch (error) {
     console.error('Error uploading file:', error);
-    return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to upload file' },
+      { status: 500 }
+    );
   }
 }

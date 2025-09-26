@@ -11,16 +11,13 @@ const compat = new FlatCompat({
 });
 
 export default [
-  ...compat.extends(
-    'next/core-web-vitals',
-    'eslint:recommended'
-  ),
+  ...compat.extends('next/core-web-vitals', 'eslint:recommended'),
   {
     rules: {
       // Next.js and React rules
       'react-hooks/exhaustive-deps': 'warn',
       'react-hooks/rules-of-hooks': 'error',
-      
+
       // General code quality
       'no-console': 'warn',
       'prefer-const': 'error',

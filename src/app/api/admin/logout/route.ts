@@ -6,11 +6,11 @@ export async function POST(request: NextRequest) {
   const csrfError = await csrfProtection(request);
   if (csrfError) return csrfError;
   try {
-    const response = NextResponse.json({ 
+    const response = NextResponse.json({
       success: true,
-      message: 'Logout successful' 
+      message: 'Logout successful',
     });
-    
+
     // Clear the admin session and CSRF cookies
     response.cookies.set({
       name: 'la_cantina_admin_session',
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge: 0, // Expire immediately
-      path: '/'
+      path: '/',
     });
     response.cookies.set({
       name: 'la_cantina_csrf_secret',
@@ -28,9 +28,9 @@ export async function POST(request: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge: 0, // Expire immediately
-      path: '/'
+      path: '/',
     });
-    
+
     return response;
   } catch (error) {
     console.error('Logout error:', error);

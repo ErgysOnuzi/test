@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const offset = parseInt(searchParams.get('offset') || '0');
     const limit = parseInt(searchParams.get('limit') || '36');
-    
+
     // Get active uploaded gallery items with optimized fields and pagination
     const galleryItems = await db
       .select({
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       .orderBy(asc(schema.gallery.sortOrder), asc(schema.gallery.createdAt))
       .limit(limit)
       .offset(offset);
-    
+
     // Get total count for pagination info
     const totalResults = await db
       .select({ count: sql`COUNT(*)` })
@@ -42,14 +42,20 @@ export async function GET(request: NextRequest) {
           eq(schema.gallery.category, 'uploaded')
         )
       );
-    
-    if (!totalResults || totalResults.length === 0 || totalResults[0]?.count === undefined) {
-      throw new Error('Failed to get gallery count - database query returned no valid count');
+
+    if (
+      !totalResults ||
+      totalResults.length === 0 ||
+      totalResults[0]?.count === undefined
+    ) {
+      throw new Error(
+        'Failed to get gallery count - database query returned no valid count'
+      );
     }
 
     const totalCount = Number(totalResults[0].count);
     const hasMore = offset + limit < totalCount;
-    
+
     const response = NextResponse.json({
       images: galleryItems,
       pagination: {
@@ -57,16 +63,22 @@ export async function GET(request: NextRequest) {
         limit,
         total: totalCount,
         hasMore,
-        nextOffset: hasMore ? offset + limit : null
-      }
+        nextOffset: hasMore ? offset + limit : null,
+      },
     });
-    
+
     // Add cache headers for better performance
-    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
-    
+    response.headers.set(
+      'Cache-Control',
+      'public, s-maxage=300, stale-while-revalidate=86400'
+    );
+
     return response;
   } catch (error) {
     console.error('Error fetching gallery items:', error);
-    return NextResponse.json({ error: 'Failed to fetch gallery items' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch gallery items' },
+      { status: 500 }
+    );
   }
 }

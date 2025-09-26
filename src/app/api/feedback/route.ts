@@ -25,7 +25,10 @@ export async function GET() {
     return NextResponse.json(feedbacks);
   } catch (error) {
     console.error('Error fetching feedbacks:', error);
-    return NextResponse.json({ error: 'Failed to fetch feedbacks' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch feedbacks' },
+      { status: 500 }
+    );
   }
 }
 
@@ -35,12 +38,18 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!name || !email || !rating || !comment) {
-      return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'All fields are required' },
+        { status: 400 }
+      );
     }
 
     // Validate rating
     if (rating < 1 || rating > 5) {
-      return NextResponse.json({ error: 'Rating must be between 1 and 5' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Rating must be between 1 and 5' },
+        { status: 400 }
+      );
     }
 
     // TODO: Fix schema type inference issue for status and isPublic fields
@@ -51,22 +60,30 @@ export async function POST(request: NextRequest) {
         name,
         email,
         rating,
-        comment
+        comment,
       })
       .returning();
 
     if (!result || result.length === 0 || !result[0]?.id) {
-      throw new Error('Failed to create feedback - database insert returned no result');
+      throw new Error(
+        'Failed to create feedback - database insert returned no result'
+      );
     }
 
     const newFeedback = result[0];
 
-    return NextResponse.json({ 
-      message: 'Feedback submitted successfully', 
-      id: newFeedback.id 
-    }, { status: 201 });
+    return NextResponse.json(
+      {
+        message: 'Feedback submitted successfully',
+        id: newFeedback.id,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Error creating feedback:', error);
-    return NextResponse.json({ error: 'Failed to submit feedback' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to submit feedback' },
+      { status: 500 }
+    );
   }
 }

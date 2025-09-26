@@ -25,59 +25,76 @@ const getCachedGoogleReviews = unstable_cache(
   async () => {
     try {
       const apiKey = process.env.GOOGLE_API_KEY;
-      
+
       if (!apiKey) {
         // Log the issue but return graceful fallback instead of throwing
         const { logError } = await import('@/lib/errorHandling');
-        logError('Google API Configuration', new Error('Google API key not configured'), {
-          hasApiKey: false,
-          hasPlaceId: !!process.env.GOOGLE_PLACE_ID
-        });
-        
+        logError(
+          'Google API Configuration',
+          new Error('Google API key not configured'),
+          {
+            hasApiKey: false,
+            hasPlaceId: !!process.env.GOOGLE_PLACE_ID,
+          }
+        );
+
         return {
           name: 'Ristorante La Cantina Bleibtreu',
           rating: 0,
           reviewCount: 0,
-          reviews: []
+          reviews: [],
         };
       }
 
       // For better performance, use a known place_id if available
       // Otherwise, search for the restaurant
       let placeId = process.env.GOOGLE_PLACE_ID; // Add this to your environment if known
-      
+
       if (!placeId) {
         // Search for the restaurant
         const restaurantName = 'Ristorante La Cantina Bleibtreu';
         const address = 'Bleibtreustraße 17, Berlin';
         const searchQuery = `${restaurantName} ${address}`;
-        
+
         const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(searchQuery)}&language=de&region=DE&key=${apiKey}`;
-        
+
         const searchResponse = await fetch(searchUrl);
         const searchData = await searchResponse.json();
-        
-        if (searchData.status === 'OK' && searchData.results && searchData.results.length > 0) {
-          const exactMatch = searchData.results.find((result: any) => 
-            result.name?.toLowerCase().includes('cantina') && 
-            result.formatted_address?.toLowerCase().includes('bleibtreustraße')
+
+        if (
+          searchData.status === 'OK' &&
+          searchData.results &&
+          searchData.results.length > 0
+        ) {
+          const exactMatch = searchData.results.find(
+            (result: any) =>
+              result.name?.toLowerCase().includes('cantina') &&
+              result.formatted_address
+                ?.toLowerCase()
+                .includes('bleibtreustraße')
           );
-          
-          placeId = exactMatch ? exactMatch.place_id : searchData.results[0].place_id;
+
+          placeId = exactMatch
+            ? exactMatch.place_id
+            : searchData.results[0].place_id;
         } else {
           // Log the issue but return graceful fallback instead of throwing
           const { logError } = await import('@/lib/errorHandling');
-          logError('Google Places Text Search', new Error('Restaurant not found in search results'), {
-            status: searchData.status,
-            resultsCount: searchData.results?.length || 0,
-            query: searchQuery
-          });
-          
+          logError(
+            'Google Places Text Search',
+            new Error('Restaurant not found in search results'),
+            {
+              status: searchData.status,
+              resultsCount: searchData.results?.length || 0,
+              query: searchQuery,
+            }
+          );
+
           return {
             name: 'Ristorante La Cantina Bleibtreu',
             rating: 0,
             reviewCount: 0,
-            reviews: []
+            reviews: [],
           };
         }
       }
@@ -85,22 +102,26 @@ const getCachedGoogleReviews = unstable_cache(
       if (!placeId) {
         // Log the issue but return graceful fallback instead of throwing
         const { logError } = await import('@/lib/errorHandling');
-        logError('Google Places PlaceId', new Error('Missing placeId after search'), {
-          query: 'Ristorante La Cantina Bleibtreu Bleibtreustraße 17, Berlin',
-          hasSearchResults: false
-        });
-        
+        logError(
+          'Google Places PlaceId',
+          new Error('Missing placeId after search'),
+          {
+            query: 'Ristorante La Cantina Bleibtreu Bleibtreustraße 17, Berlin',
+            hasSearchResults: false,
+          }
+        );
+
         return {
           name: 'Ristorante La Cantina Bleibtreu',
           rating: 0,
           reviewCount: 0,
-          reviews: []
+          reviews: [],
         };
       }
 
       // Get the place details with reviews
       const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,rating,user_ratings_total,reviews&key=${apiKey}`;
-      
+
       const detailsResponse = await fetch(detailsUrl);
       const detailsData = await detailsResponse.json();
 
@@ -108,61 +129,70 @@ const getCachedGoogleReviews = unstable_cache(
         // Silently handle invalid place ID for production stability
         if (process.env.NODE_ENV !== 'production') {
           const { logError } = await import('@/lib/errorHandling');
-          logError('Google Places API Details', new Error(`API Status: ${detailsData.status || detailsResponse.statusText}`), {
-            status: detailsData.status,
-            errorMessage: detailsData.error_message
-          });
+          logError(
+            'Google Places API Details',
+            new Error(
+              `API Status: ${detailsData.status || detailsResponse.statusText}`
+            ),
+            {
+              status: detailsData.status,
+              errorMessage: detailsData.error_message,
+            }
+          );
         }
-        
+
         // Return fallback data to prevent 503 errors
         return {
           name: 'Ristorante La Cantina Bleibtreu',
           rating: 0,
           reviewCount: 0,
-          reviews: []
+          reviews: [],
         };
       }
 
       const { result } = detailsData;
-      
+
       // Check if Google Places API returned valid data
       if (!result || !result.name) {
         // Log the issue but return graceful fallback
         const { logError } = await import('@/lib/errorHandling');
-        logError('Google Places API Result', new Error('Invalid result structure'), {
-          hasResult: !!result,
-          resultKeys: result ? Object.keys(result) : []
-        });
-        
+        logError(
+          'Google Places API Result',
+          new Error('Invalid result structure'),
+          {
+            hasResult: !!result,
+            resultKeys: result ? Object.keys(result) : [],
+          }
+        );
+
         return {
           name: 'Ristorante La Cantina Bleibtreu',
           rating: 0,
           reviewCount: 0,
-          reviews: []
+          reviews: [],
         };
       }
-      
+
       return {
         name: result.name,
         rating: result.rating || 0,
         reviewCount: result.user_ratings_total || 0,
-        reviews: result.reviews || []
+        reviews: result.reviews || [],
       };
-
     } catch (error) {
       // Log error securely and return fallback instead of rethrowing
       const { logError } = await import('@/lib/errorHandling');
-      logError('Google Reviews Cache', error, { 
+      logError('Google Reviews Cache', error, {
         hasApiKey: !!process.env.GOOGLE_API_KEY,
-        hasPlaceId: !!process.env.GOOGLE_PLACE_ID
+        hasPlaceId: !!process.env.GOOGLE_PLACE_ID,
       });
-      
+
       // Return fallback data instead of throwing to prevent 503 errors
       return {
         name: 'Ristorante La Cantina Bleibtreu',
         rating: 0,
         reviewCount: 0,
-        reviews: []
+        reviews: [],
       };
     }
   },
@@ -173,15 +203,15 @@ const getCachedGoogleReviews = unstable_cache(
 export async function GET(request: NextRequest) {
   // Add caching headers for additional client-side caching
   const headers = {
-    'Cache-Control': 'public, max-age=300, s-maxage=1800, stale-while-revalidate=3600',
+    'Cache-Control':
+      'public, max-age=300, s-maxage=1800, stale-while-revalidate=3600',
   };
-  
+
   try {
     // Use server-side cached data
     const reviewData = await getCachedGoogleReviews();
-    
-    return NextResponse.json(reviewData, { headers });
 
+    return NextResponse.json(reviewData, { headers });
   } catch (error) {
     return handleAPIError(
       'Google Reviews API',

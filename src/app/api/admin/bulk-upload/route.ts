@@ -26,7 +26,10 @@ export async function POST(request: NextRequest) {
 
     // Check if we have too many files
     if (files.length > 120) {
-      return NextResponse.json({ error: 'Maximum 120 files allowed' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Maximum 120 files allowed' },
+        { status: 400 }
+      );
     }
 
     // Create uploads directory if it doesn't exist
@@ -41,12 +44,12 @@ export async function POST(request: NextRequest) {
     // Process each file
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      
+
       if (!file) {
         errors.push(`File at index ${i}: No file found`);
         continue;
       }
-      
+
       try {
         // Check file type
         if (!file.type.startsWith('image/')) {
@@ -80,21 +83,22 @@ export async function POST(request: NextRequest) {
         const result = await db
           .insert(schema.gallery)
           .values({
-            imageUrl: publicUrl
+            imageUrl: publicUrl,
           })
           .returning();
 
         if (!result || result.length === 0 || !result[0]?.id) {
-          throw new Error('Failed to save image to database - insert returned no result');
+          throw new Error(
+            'Failed to save image to database - insert returned no result'
+          );
         }
 
         uploadResults.push({
           success: true,
           fileName: file.name,
           imageUrl: publicUrl,
-          id: result[0].id
+          id: result[0].id,
         });
-
       } catch (error) {
         console.error(`Error uploading file ${file.name}:`, error);
         errors.push(`File ${file.name}: Upload failed`);
@@ -106,11 +110,13 @@ export async function POST(request: NextRequest) {
       uploaded: uploadResults.length,
       errors: errors.length,
       results: uploadResults,
-      errorMessages: errors
+      errorMessages: errors,
     });
-
   } catch (error) {
     console.error('Error in bulk upload:', error);
-    return NextResponse.json({ error: 'Failed to process bulk upload' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to process bulk upload' },
+      { status: 500 }
+    );
   }
 }

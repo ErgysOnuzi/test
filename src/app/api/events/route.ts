@@ -8,11 +8,14 @@ export async function GET() {
       .select()
       .from(schema.events)
       .orderBy(asc(schema.events.date));
-    
+
     return NextResponse.json(events);
   } catch (error) {
     console.error('Database error:', error);
-    return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch events' },
+      { status: 500 }
+    );
   }
 }
 

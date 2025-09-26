@@ -1,5 +1,5 @@
 // SECURITY: NO hardcoded credentials - all authentication handled server-side
-const AUTH_STORAGE_KEY = "la_cantina_admin_auth";
+const AUTH_STORAGE_KEY = 'la_cantina_admin_auth';
 
 export const adminAuth = {
   async login(password: string): Promise<boolean> {
@@ -8,13 +8,13 @@ export const adminAuth = {
       const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
+        body: JSON.stringify({ password }),
       });
-      
+
       if (response.ok) {
         // Store authentication status in localStorage only after server confirms
         if (typeof window !== 'undefined') {
-          localStorage.setItem(AUTH_STORAGE_KEY, "authenticated");
+          localStorage.setItem(AUTH_STORAGE_KEY, 'authenticated');
         }
         return true;
       }
@@ -31,7 +31,7 @@ export const adminAuth = {
       if (response.ok) {
         // Only update localStorage if server confirms authentication
         if (typeof window !== 'undefined') {
-          localStorage.setItem(AUTH_STORAGE_KEY, "authenticated");
+          localStorage.setItem(AUTH_STORAGE_KEY, 'authenticated');
         }
         return true;
       } else {
@@ -50,11 +50,11 @@ export const adminAuth = {
     if (typeof window !== 'undefined') {
       localStorage.removeItem(AUTH_STORAGE_KEY);
     }
-    
+
     try {
       await fetch('/api/admin/logout', { method: 'POST' });
     } catch {
       // Silent fail
     }
-  }
+  },
 };

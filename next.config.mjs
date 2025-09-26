@@ -15,13 +15,13 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   trailingSlash: false,
-  
+
   // Performance optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
     styledComponents: true,
   },
-  
+
   // Webpack optimizations for faster builds
   webpack: (config, { dev, isServer }) => {
     // Optimize chunks for faster navigation
@@ -41,7 +41,10 @@ const nextConfig = {
           },
           lib: {
             test(module) {
-              return module.size() > 160000 && /node_modules[/\\]/.test(module.identifier());
+              return (
+                module.size() > 160000 &&
+                /node_modules[/\\]/.test(module.identifier())
+              );
             },
             name(module) {
               const hash = crypto.createHash('sha1');
@@ -62,27 +65,30 @@ const nextConfig = {
     }
     return config;
   },
-  
+
   allowedDevOrigins: [
     'localhost',
     '127.0.0.1',
     '*.replit.dev',
     '*.replit.com',
     '*.replit.co',
-    process.env.REPL_SLUG ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.dev` : null
+    process.env.REPL_SLUG
+      ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.dev`
+      : null,
   ].filter(Boolean),
-    
-  experimental: { 
-    serverActions: { 
-      allowedOrigins: process.env.NODE_ENV === 'development' 
-        ? ['*'] 
-        : ['lacantina-berlin.de', '*.lacantina-berlin.de', '*.replit.dev']
+
+  experimental: {
+    serverActions: {
+      allowedOrigins:
+        process.env.NODE_ENV === 'development'
+          ? ['*']
+          : ['lacantina-berlin.de', '*.lacantina-berlin.de', '*.replit.dev'],
     },
     optimizePackageImports: ['react', 'react-dom', 'date-fns', 'lucide-react'],
   },
 
   // Cross-origin headers handled in headers() function below
-  
+
   images: {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60 * 60 * 24, // 24 hours
@@ -97,7 +103,7 @@ const nextConfig = {
         hostname: '*.replit.app',
       },
       {
-        protocol: 'https', 
+        protocol: 'https',
         hostname: '*.repl.it',
       },
       {
@@ -112,8 +118,8 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '**', // Allow all HTTPS images
-      }
-    ]
+      },
+    ],
   },
 
   // Redirect root to German locale for Replit preview
@@ -144,8 +150,8 @@ const nextConfig = {
               "frame-src 'self' https://www.instagram.com https://*.instagram.com https://*.cdninstagram.com",
               "frame-ancestors 'self'",
               "img-src 'self' data: https: https://*.cdninstagram.com",
-              process.env.NODE_ENV === 'development' 
-                ? "script-src 'self' 'unsafe-eval' 'unsafe-inline'" 
+              process.env.NODE_ENV === 'development'
+                ? "script-src 'self' 'unsafe-eval' 'unsafe-inline'"
                 : "script-src 'self'",
               process.env.NODE_ENV === 'development'
                 ? "style-src 'self' 'unsafe-inline'"

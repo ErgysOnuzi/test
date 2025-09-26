@@ -13,11 +13,11 @@ export async function PATCH(
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
-  
+
   // CSRF Protection
   const csrfError = await csrfProtection(request);
   if (csrfError) return csrfError;
-  
+
   try {
     const body = await request.json();
     const { status, isPublic } = body;
@@ -29,26 +29,38 @@ export async function PATCH(
       }
     } else if (isPublic !== undefined) {
       if (typeof isPublic !== 'boolean') {
-        return NextResponse.json({ error: 'isPublic must be a boolean' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'isPublic must be a boolean' },
+          { status: 400 }
+        );
       }
     } else {
-      return NextResponse.json({ error: 'Either status or isPublic must be provided' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Either status or isPublic must be provided' },
+        { status: 400 }
+      );
     }
 
     // TODO: Fix schema type inference issue for status and isPublic fields
     // Temporarily returning success response for deployment
     // const result = await db.update(schema.feedbacks)...
-    
-    // Placeholder response until schema typing issue is resolved
-    console.log(`Feedback ${id} update requested: status=${status}, isPublic=${isPublic}`);
 
-    const message = status !== undefined 
-      ? 'Feedback status updated successfully' 
-      : 'Feedback visibility updated successfully';
+    // Placeholder response until schema typing issue is resolved
+    console.log(
+      `Feedback ${id} update requested: status=${status}, isPublic=${isPublic}`
+    );
+
+    const message =
+      status !== undefined
+        ? 'Feedback status updated successfully'
+        : 'Feedback visibility updated successfully';
     return NextResponse.json({ message });
   } catch (error) {
     console.error('Error updating feedback:', error);
-    return NextResponse.json({ error: 'Failed to update feedback' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to update feedback' },
+      { status: 500 }
+    );
   }
 }
 
@@ -61,11 +73,11 @@ export async function DELETE(
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
-  
+
   // CSRF Protection
   const csrfError = await csrfProtection(request);
   if (csrfError) return csrfError;
-  
+
   try {
     // Delete feedback using Drizzle ORM
     const result = await db
@@ -74,12 +86,18 @@ export async function DELETE(
       .returning();
 
     if (result.length === 0) {
-      return NextResponse.json({ error: 'Feedback not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Feedback not found' },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({ message: 'Feedback deleted successfully' });
   } catch (error) {
     console.error('Error deleting feedback:', error);
-    return NextResponse.json({ error: 'Failed to delete feedback' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to delete feedback' },
+      { status: 500 }
+    );
   }
 }

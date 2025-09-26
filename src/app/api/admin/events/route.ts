@@ -3,6 +3,7 @@ import db, { schema } from '@/lib/db';
 import { desc, eq } from 'drizzle-orm';
 import { verifyAdminAuth, unauthorizedResponse } from '@/lib/serverAuth';
 import { csrfProtection } from '@/lib/csrf';
+import { logError } from '@/lib/errorHandling';
 
 export async function GET(request: NextRequest) {
   // Verify admin authentication
@@ -14,11 +15,14 @@ export async function GET(request: NextRequest) {
       .select()
       .from(schema.events)
       .orderBy(desc(schema.events.date));
-    
+
     return NextResponse.json(events);
   } catch (error) {
-    console.error('Error fetching events:', error);
-    return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 });
+    logError('Admin Events Fetch', error, { operation: 'GET /api/admin/events' });
+    return NextResponse.json(
+      { error: 'Failed to fetch events' },
+      { status: 500 }
+    );
   }
 }
 
@@ -27,30 +31,36 @@ export async function POST(request: NextRequest) {
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
-  
+
   // CSRF Protection
   const csrfError = await csrfProtection(request);
   if (csrfError) return csrfError;
-  
+
   try {
     const body = await request.json();
     const { title, description, date, capacity } = body;
 
     if (!title || !date) {
-      return NextResponse.json({ error: 'Title and date are required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Title and date are required' },
+        { status: 400 }
+      );
     }
 
     const result = await db
       .insert(schema.events)
       .values({
-        title
+        title,
       })
       .returning();
 
     return NextResponse.json(result[0]);
   } catch (error) {
-    console.error('Error creating event:', error);
-    return NextResponse.json({ error: 'Failed to create event' }, { status: 500 });
+    logError('Admin Event Create', error, { operation: 'POST /api/admin/events' });
+    return NextResponse.json(
+      { error: 'Failed to create event' },
+      { status: 500 }
+    );
   }
 }
 
@@ -59,17 +69,20 @@ export async function DELETE(request: NextRequest) {
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
-  
+
   // CSRF Protection
   const csrfError = await csrfProtection(request);
   if (csrfError) return csrfError;
-  
+
   try {
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
 
     if (!id) {
-      return NextResponse.json({ error: 'Event ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Event ID is required' },
+        { status: 400 }
+      );
     }
 
     const result = await db
@@ -83,7 +96,10 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ message: 'Event deleted successfully' });
   } catch (error) {
-    console.error('Error deleting event:', error);
-    return NextResponse.json({ error: 'Failed to delete event' }, { status: 500 });
+    logError('Admin Event Delete', error, { operation: 'DELETE /api/admin/events' });
+    return NextResponse.json(
+      { error: 'Failed to delete event' },
+      { status: 500 }
+    );
   }
 }

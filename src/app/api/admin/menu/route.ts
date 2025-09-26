@@ -12,14 +12,15 @@ export async function GET(request: NextRequest) {
     return unauthorizedResponse();
   }
   try {
-    const items = await db
-      .select()
-      .from(schema.menuItems);
-    
+    const items = await db.select().from(schema.menuItems);
+
     return NextResponse.json(items);
   } catch (error) {
     console.error('Error fetching menu items:', error);
-    return NextResponse.json({ error: 'Failed to fetch menu items' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch menu items' },
+      { status: 500 }
+    );
   }
 }
 
@@ -28,35 +29,38 @@ export async function POST(request: NextRequest) {
   if (!(await verifyAdminAuth(request))) {
     return unauthorizedResponse();
   }
-  
+
   // CSRF Protection
   const csrfError = await csrfProtection(request);
   if (csrfError) return csrfError;
-  
+
   try {
     const body = await request.json();
-    const { 
-      titleDe, 
-      titleEn, 
-      descriptionDe, 
-      descriptionEn, 
-      price, 
-      categoryDe, 
-      categoryEn, 
+    const {
+      titleDe,
+      titleEn,
+      descriptionDe,
+      descriptionEn,
+      price,
+      categoryDe,
+      categoryEn,
       allergens,
       isAvailable = true,
-      imageUrl 
+      imageUrl,
     } = body;
-    
+
     // Validation
     if (!titleDe || !titleEn || !price || !categoryDe || !categoryEn) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
     }
-    
+
     if (typeof price !== 'number' || price <= 0) {
       return NextResponse.json({ error: 'Invalid price' }, { status: 400 });
     }
-    
+
     const insertData = {
       title: titleEn, // Primary title field
       titleDe: titleDe || null,
@@ -70,20 +74,23 @@ export async function POST(request: NextRequest) {
       categoryEn: categoryEn || null,
       allergens: allergens || null,
       imageUrl: imageUrl || null,
-      isAvailable: isAvailable ?? true
+      isAvailable: isAvailable ?? true,
     };
 
     const result = await db
       .insert(schema.menuItems)
       .values(insertData)
       .returning();
-    
+
     // Invalidate menu cache so public pages update
     revalidateTag('menu');
-    
+
     return NextResponse.json(result[0], { status: 201 });
   } catch (error) {
     console.error('Error creating menu item:', error);
-    return NextResponse.json({ error: 'Failed to create menu item' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to create menu item' },
+      { status: 500 }
+    );
   }
 }

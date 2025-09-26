@@ -1,7 +1,14 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import { db } from '../server/db';
-import { menuItems, reservations, gallery, events, contactMessages, feedbacks } from '../shared/schema';
+import {
+  menuItems,
+  reservations,
+  gallery,
+  events,
+  contactMessages,
+  feedbacks,
+} from '../shared/schema';
 
 // Type definitions for SQLite data
 interface SqliteMenuItem {
@@ -74,12 +81,16 @@ async function migrateData() {
   try {
     // Migrate menu items (123 records)
     console.log('Migrating menu items...');
-    const sqliteMenuItems = sqliteDb.prepare(`
+    const sqliteMenuItems = sqliteDb
+      .prepare(
+        `
       SELECT * FROM menu_items ORDER BY id
-    `).all() as SqliteMenuItem[];
-    
+    `
+      )
+      .all() as SqliteMenuItem[];
+
     console.log(`Found ${sqliteMenuItems.length} menu items to migrate`);
-    
+
     for (const item of sqliteMenuItems) {
       await db.insert(menuItems).values({
         title: item.title,
@@ -100,12 +111,16 @@ async function migrateData() {
 
     // Migrate reservations (5 records)
     console.log('Migrating reservations...');
-    const sqliteReservations = sqliteDb.prepare(`
+    const sqliteReservations = sqliteDb
+      .prepare(
+        `
       SELECT * FROM reservations ORDER BY id
-    `).all() as SqliteReservation[];
-    
+    `
+      )
+      .all() as SqliteReservation[];
+
     console.log(`Found ${sqliteReservations.length} reservations to migrate`);
-    
+
     for (const reservation of sqliteReservations) {
       await db.insert(reservations).values({
         name: reservation.name,
@@ -122,12 +137,16 @@ async function migrateData() {
 
     // Migrate gallery items (0 records expected)
     console.log('Migrating gallery items...');
-    const sqliteGallery = sqliteDb.prepare(`
+    const sqliteGallery = sqliteDb
+      .prepare(
+        `
       SELECT * FROM gallery ORDER BY id
-    `).all() as SqliteGalleryItem[];
-    
+    `
+      )
+      .all() as SqliteGalleryItem[];
+
     console.log(`Found ${sqliteGallery.length} gallery items to migrate`);
-    
+
     for (const galleryItem of sqliteGallery) {
       await db.insert(gallery).values({
         imageUrl: galleryItem.image_url,
@@ -138,12 +157,16 @@ async function migrateData() {
 
     // Migrate events (3 records)
     console.log('Migrating events...');
-    const sqliteEvents = sqliteDb.prepare(`
+    const sqliteEvents = sqliteDb
+      .prepare(
+        `
       SELECT * FROM events ORDER BY id
-    `).all() as SqliteEvent[];
-    
+    `
+      )
+      .all() as SqliteEvent[];
+
     console.log(`Found ${sqliteEvents.length} events to migrate`);
-    
+
     for (const event of sqliteEvents) {
       await db.insert(events).values({
         title: event.title,
@@ -156,12 +179,18 @@ async function migrateData() {
 
     // Migrate contact messages (3 records)
     console.log('Migrating contact messages...');
-    const sqliteContactMessages = sqliteDb.prepare(`
+    const sqliteContactMessages = sqliteDb
+      .prepare(
+        `
       SELECT * FROM contact_messages ORDER BY id
-    `).all() as SqliteContactMessage[];
-    
-    console.log(`Found ${sqliteContactMessages.length} contact messages to migrate`);
-    
+    `
+      )
+      .all() as SqliteContactMessage[];
+
+    console.log(
+      `Found ${sqliteContactMessages.length} contact messages to migrate`
+    );
+
     for (const message of sqliteContactMessages) {
       await db.insert(contactMessages).values({
         name: message.name,
@@ -174,12 +203,16 @@ async function migrateData() {
 
     // Migrate feedbacks (0 records expected)
     console.log('Migrating feedbacks...');
-    const sqliteFeedbacks = sqliteDb.prepare(`
+    const sqliteFeedbacks = sqliteDb
+      .prepare(
+        `
       SELECT * FROM feedbacks ORDER BY id
-    `).all() as SqliteFeedback[];
-    
+    `
+      )
+      .all() as SqliteFeedback[];
+
     console.log(`Found ${sqliteFeedbacks.length} feedbacks to migrate`);
-    
+
     for (const feedback of sqliteFeedbacks) {
       await db.insert(feedbacks).values({
         name: feedback.name,
@@ -200,7 +233,6 @@ async function migrateData() {
     console.log(`- Events: ${sqliteEvents.length}`);
     console.log(`- Contact messages: ${sqliteContactMessages.length}`);
     console.log(`- Feedbacks: ${sqliteFeedbacks.length}`);
-
   } catch (error) {
     console.error('❌ Migration failed:', error);
     process.exit(1);
