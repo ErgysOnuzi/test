@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
 interface MenuItem {
@@ -547,9 +548,11 @@ function MenuForm({ item, onSave, onCancel }: MenuFormProps) {
             )}
             {formData.imageUrl && (
               <div className='mt-2'>
-                <img
+                <Image
                   src={formData.imageUrl}
                   alt='Preview'
+                  width={96}
+                  height={96}
                   className='w-24 h-24 object-cover rounded-md border'
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';

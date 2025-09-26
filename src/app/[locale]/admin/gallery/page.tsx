@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ArrowLeft,
   Upload,
@@ -265,10 +266,12 @@ export default function AdminGalleryPage() {
                       </div>
                     </div>
                   ) : (
-                    <img
+                    <Image
                       src={image.imageUrl}
                       alt={image.description || 'Gallery image'}
+                      fill
                       className='w-full h-full object-cover'
+                      sizes='(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw'
                     />
                   )}
                   <div className='absolute top-2 right-2 flex gap-1'>

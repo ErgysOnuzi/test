@@ -15,6 +15,7 @@ import {
   Sparkles,
   Loader2,
 } from 'lucide-react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
 interface MenuItem {
@@ -452,10 +453,13 @@ export default function MenuWithFilters({
           {/* Image Display */}
           {item.imageUrl && (
             <div className='mb-4 relative overflow-hidden rounded-2xl'>
-              <img
+              <Image
                 src={item.imageUrl}
                 alt={title}
+                width={400}
+                height={192}
                 className='w-full h-48 object-cover group-hover:scale-110 transition-transform duration-700'
+                sizes='(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}

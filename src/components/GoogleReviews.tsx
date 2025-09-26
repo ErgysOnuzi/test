@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { Star, User, Calendar, ExternalLink } from 'lucide-react';
+import Image from 'next/image';
 import { logError } from '@/lib/errorHandling';
 
 interface GoogleReview {
@@ -151,10 +152,13 @@ export default function GoogleReviews({
             <div className='flex items-start gap-4'>
               <div className='w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0'>
                 {review.profile_photo_url ? (
-                  <img
+                  <Image
                     src={review.profile_photo_url}
                     alt={review.author_name}
+                    width={48}
+                    height={48}
                     className='w-12 h-12 rounded-full object-cover'
+                    unoptimized
                   />
                 ) : (
                   <User className='w-6 h-6 text-primary' />
