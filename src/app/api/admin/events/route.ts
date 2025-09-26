@@ -18,7 +18,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(events);
   } catch (error) {
-    logError('Admin Events Fetch', error, { operation: 'GET /api/admin/events' });
+    logError('Admin Events Fetch', error, {
+      operation: 'GET /api/admin/events',
+    });
     return NextResponse.json(
       { error: 'Failed to fetch events' },
       { status: 500 }
@@ -56,7 +58,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result[0]);
   } catch (error) {
-    logError('Admin Event Create', error, { operation: 'POST /api/admin/events' });
+    logError('Admin Event Create', error, {
+      operation: 'POST /api/admin/events',
+    });
     return NextResponse.json(
       { error: 'Failed to create event' },
       { status: 500 }
@@ -96,7 +100,9 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ message: 'Event deleted successfully' });
   } catch (error) {
-    logError('Admin Event Delete', error, { operation: 'DELETE /api/admin/events' });
+    logError('Admin Event Delete', error, {
+      operation: 'DELETE /api/admin/events',
+    });
     return NextResponse.json(
       { error: 'Failed to delete event' },
       { status: 500 }

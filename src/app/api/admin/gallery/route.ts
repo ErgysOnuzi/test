@@ -20,7 +20,9 @@ export async function GET(request: NextRequest) {
       .orderBy(desc(schema.gallery.createdAt));
     return NextResponse.json(images);
   } catch (error) {
-    logError('Admin Gallery Fetch', error, { operation: 'GET /api/admin/gallery' });
+    logError('Admin Gallery Fetch', error, {
+      operation: 'GET /api/admin/gallery',
+    });
     return NextResponse.json(
       { error: 'Failed to fetch gallery images' },
       { status: 500 }
@@ -60,7 +62,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result[0]);
   } catch (error) {
-    logError('Admin Gallery Create', error, { operation: 'POST /api/admin/gallery' });
+    logError('Admin Gallery Create', error, {
+      operation: 'POST /api/admin/gallery',
+    });
     return NextResponse.json(
       { error: 'Failed to create gallery image' },
       { status: 500 }
@@ -99,7 +103,9 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ message: 'Image deleted successfully' });
   } catch (error) {
-    logError('Admin Gallery Delete', error, { operation: 'DELETE /api/admin/gallery' });
+    logError('Admin Gallery Delete', error, {
+      operation: 'DELETE /api/admin/gallery',
+    });
     return NextResponse.json(
       { error: 'Failed to delete image' },
       { status: 500 }

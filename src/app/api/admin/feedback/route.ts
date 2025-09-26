@@ -28,7 +28,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(feedbacks);
   } catch (error) {
-    logError('Admin Feedback Fetch', error, { operation: 'GET /api/admin/feedback' });
+    logError('Admin Feedback Fetch', error, {
+      operation: 'GET /api/admin/feedback',
+    });
     return NextResponse.json(
       { error: 'Failed to fetch feedbacks' },
       { status: 500 }

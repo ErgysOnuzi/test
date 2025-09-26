@@ -41,7 +41,9 @@ export default function GoogleReviews({
 
       if (!response.ok) {
         // If API fails, hide the reviews section instead of showing mock data
-        logError('Google Reviews API', new Error('API unavailable'), { endpoint: '/api/google-reviews' });
+        logError('Google Reviews API', new Error('API unavailable'), {
+          endpoint: '/api/google-reviews',
+        });
         setReviews([]); // Empty array - component will handle gracefully
         setError('Google Bewertungen sind derzeit nicht verfügbar.');
         setLoading(false);

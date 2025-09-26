@@ -33,7 +33,10 @@ export async function POST(request: NextRequest) {
 
     if (!validateAdminPassword(password)) {
       const rateLimitHeaders = getRateLimitHeaders(rateLimit.remaining);
-      logError('Admin Login Attempt', new Error('Invalid credentials'), { clientIP, timestamp: new Date().toISOString() });
+      logError('Admin Login Attempt', new Error('Invalid credentials'), {
+        clientIP,
+        timestamp: new Date().toISOString(),
+      });
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401, headers: rateLimitHeaders }
@@ -56,11 +59,17 @@ export async function POST(request: NextRequest) {
 
     response.cookies.set(cookie);
     const responseWithCSRF = addCSRFCookieToResponse(response, csrfSecret);
-    logError('Admin Login Success', null, { timestamp: new Date().toISOString(), clientIP });
+    logError('Admin Login Success', null, {
+      timestamp: new Date().toISOString(),
+      clientIP,
+    });
 
     return responseWithCSRF;
   } catch (error) {
-    logError('Admin Login Error', error, { clientIP, timestamp: new Date().toISOString() });
+    logError('Admin Login Error', error, {
+      clientIP,
+      timestamp: new Date().toISOString(),
+    });
     return NextResponse.json({ error: 'Login failed' }, { status: 500 });
   }
 }
