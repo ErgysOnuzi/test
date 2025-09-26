@@ -86,6 +86,11 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '*.replit.dev',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**',
       }
     ]
   },
