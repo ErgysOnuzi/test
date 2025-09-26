@@ -187,7 +187,7 @@ export default function ClientGallery() {
             <div className="overflow-hidden relative">
               <NextImage
                 src={image.imageUrl}
-                alt={image.description || 'Ristorante La Cantina Bleibtreu'}
+                alt={image.description ? `${image.description} - Ristorante La Cantina Bleibtreu` : 'Authentic Italian dining experience at Ristorante La Cantina Bleibtreu'}
                 width={800}
                 height={600}
                 className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"

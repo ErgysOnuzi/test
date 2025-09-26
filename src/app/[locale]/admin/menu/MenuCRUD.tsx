@@ -275,6 +275,7 @@ export default function MenuCRUD() {
                           ? 'bg-accent text-accent-foreground hover:bg-accent/90' 
                           : 'bg-destructive/10 text-destructive hover:bg-destructive/20'
                       }`}
+                      aria-label={`${item.isAvailable ? 'Mark as unavailable' : 'Mark as available'}: ${item.titleEn}`}
                       data-testid={`button-toggle-availability-${item.id}`}
                     >
                       {item.isAvailable ? 'Verfügbar' : 'Nicht verfügbar'}

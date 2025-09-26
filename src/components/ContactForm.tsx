@@ -111,10 +111,12 @@ export default function ContactForm() {
           className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
             errors.name ? 'border-destructive' : 'border-border'
           }`}
+          aria-invalid={errors.name ? 'true' : 'false'}
+          aria-describedby={errors.name ? 'name-error' : undefined}
           data-testid="input-contact-name"
         />
         {errors.name && (
-          <p className="text-destructive text-sm mt-1">{errors.name}</p>
+          <p id="name-error" className="text-destructive text-sm mt-1" role="alert">{errors.name}</p>
         )}
       </div>
 
@@ -132,10 +134,12 @@ export default function ContactForm() {
           className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
             errors.email ? 'border-destructive' : 'border-border'
           }`}
+          aria-invalid={errors.email ? 'true' : 'false'}
+          aria-describedby={errors.email ? 'email-error' : undefined}
           data-testid="input-contact-email"
         />
         {errors.email && (
-          <p className="text-destructive text-sm mt-1">{errors.email}</p>
+          <p id="email-error" className="text-destructive text-sm mt-1" role="alert">{errors.email}</p>
         )}
       </div>
 
@@ -153,10 +157,12 @@ export default function ContactForm() {
           className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
             errors.message ? 'border-destructive' : 'border-border'
           }`}
+          aria-invalid={errors.message ? 'true' : 'false'}
+          aria-describedby={errors.message ? 'message-error' : undefined}
           data-testid="textarea-contact-message"
         />
         {errors.message && (
-          <p className="text-destructive text-sm mt-1">{errors.message}</p>
+          <p id="message-error" className="text-destructive text-sm mt-1" role="alert">{errors.message}</p>
         )}
       </div>
 

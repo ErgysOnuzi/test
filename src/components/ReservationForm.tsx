@@ -141,10 +141,12 @@ export default function ReservationForm() {
           className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
             errors.name ? 'border-destructive' : 'border-border'
           }`}
+          aria-invalid={errors.name ? 'true' : 'false'}
+          aria-describedby={errors.name ? 'name-error' : undefined}
           data-testid="input-reservation-name"
         />
         {errors.name && (
-          <p className="text-destructive text-sm mt-1">{errors.name}</p>
+          <p id="name-error" className="text-destructive text-sm mt-1" role="alert">{errors.name}</p>
         )}
       </div>
 
@@ -162,10 +164,12 @@ export default function ReservationForm() {
           className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
             errors.phone ? 'border-destructive' : 'border-border'
           }`}
+          aria-invalid={errors.phone ? 'true' : 'false'}
+          aria-describedby={errors.phone ? 'phone-error' : undefined}
           data-testid="input-reservation-phone"
         />
         {errors.phone && (
-          <p className="text-destructive text-sm mt-1">{errors.phone}</p>
+          <p id="phone-error" className="text-destructive text-sm mt-1" role="alert">{errors.phone}</p>
         )}
       </div>
 
@@ -183,10 +187,12 @@ export default function ReservationForm() {
           className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
             errors.email ? 'border-destructive' : 'border-border'
           }`}
+          aria-invalid={errors.email ? 'true' : 'false'}
+          aria-describedby={errors.email ? 'email-error' : undefined}
           data-testid="input-reservation-email"
         />
         {errors.email && (
-          <p className="text-destructive text-sm mt-1">{errors.email}</p>
+          <p id="email-error" className="text-destructive text-sm mt-1" role="alert">{errors.email}</p>
         )}
       </div>
 
@@ -206,10 +212,12 @@ export default function ReservationForm() {
             className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
               errors.date ? 'border-destructive' : 'border-border'
             }`}
+            aria-invalid={errors.date ? 'true' : 'false'}
+            aria-describedby={errors.date ? 'date-error' : undefined}
             data-testid="input-reservation-date"
           />
           {errors.date && (
-            <p className="text-destructive text-sm mt-1">{errors.date}</p>
+            <p id="date-error" className="text-destructive text-sm mt-1" role="alert">{errors.date}</p>
           )}
         </div>
 
@@ -226,6 +234,8 @@ export default function ReservationForm() {
             className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
               errors.time ? 'border-destructive' : 'border-border'
             }`}
+            aria-invalid={errors.time ? 'true' : 'false'}
+            aria-describedby={errors.time ? 'time-error' : undefined}
             data-testid="select-reservation-time"
           >
             <option value="">{t('select_time')}</option>
@@ -241,7 +251,7 @@ export default function ReservationForm() {
             <option value="21:30">21:30</option>
           </select>
           {errors.time && (
-            <p className="text-destructive text-sm mt-1">{errors.time}</p>
+            <p id="time-error" className="text-destructive text-sm mt-1" role="alert">{errors.time}</p>
           )}
         </div>
 
@@ -258,6 +268,8 @@ export default function ReservationForm() {
             className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
               errors.guests ? 'border-destructive' : 'border-border'
             }`}
+            aria-invalid={errors.guests ? 'true' : 'false'}
+            aria-describedby={errors.guests ? 'guests-error' : undefined}
             data-testid="select-reservation-guests"
           >
             {Array.from({length: 100}, (_, i) => i + 1).map(num => (
@@ -265,7 +277,7 @@ export default function ReservationForm() {
             ))}
           </select>
           {errors.guests && (
-            <p className="text-destructive text-sm mt-1">{errors.guests}</p>
+            <p id="guests-error" className="text-destructive text-sm mt-1" role="alert">{errors.guests}</p>
           )}
         </div>
       </div>
