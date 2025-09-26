@@ -124,12 +124,8 @@ export default async function ReservationsPage() {
                       <h3 className="font-semibold text-foreground mb-2">{t('opening_hours')}</h3>
                       <div className="text-muted-foreground space-y-1">
                         <div className="flex justify-between">
-                          <span>{t('monday_thursday')}</span>
-                          <span className="font-medium">{t('monday_thursday_hours')}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>{t('friday_saturday')}</span>
-                          <span className="font-medium">{t('friday_saturday_hours')}</span>
+                          <span>{t('monday_saturday')}</span>
+                          <span className="font-medium">{t('monday_saturday_hours')}</span>
                         </div>
                         <div className="flex justify-between">
                           <span>{t('sunday')}</span>

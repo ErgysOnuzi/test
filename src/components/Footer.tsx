@@ -24,8 +24,7 @@ export default function Footer() {
             <div className="md:text-center">
               <h4 className="font-semibold mb-4 text-foreground">{footerT('opening_hours')}</h4>
               <div className="space-y-2 text-muted-foreground">
-                <p>{footerT('monday_thursday')}</p>
-                <p>{footerT('friday_saturday')}</p>
+                <p>{footerT('monday_saturday')}</p>
                 <p>{footerT('sunday')}</p>
               </div>
             </div>

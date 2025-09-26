@@ -35,21 +35,9 @@ export function RestaurantSchema({ locale }: RestaurantSchemaProps) {
     "openingHoursSpecification": [
       {
         "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday"],
-        "opens": "17:00",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "opens": "15:00",
         "closes": "23:00"
-      },
-      {
-        "@type": "OpeningHoursSpecification", 
-        "dayOfWeek": ["Friday", "Saturday"],
-        "opens": "17:00",
-        "closes": "00:00"
-      },
-      {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": "Sunday",
-        "opens": "17:00", 
-        "closes": "22:00"
       }
     ],
     "servesCuisine": [

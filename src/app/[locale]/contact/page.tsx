@@ -60,8 +60,7 @@ export default async function ContactPage() {
                   <div>
                     <h3 className="font-semibold text-foreground mb-1">{t('opening_hours')}</h3>
                     <div className="text-muted-foreground space-y-1">
-                      <div>{t('monday_thursday')}</div>
-                      <div>{t('friday_saturday')}</div>
+                      <div>{t('monday_saturday')}</div>
                       <div>{t('sunday')}</div>
                     </div>
                   </div>
