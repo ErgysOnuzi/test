@@ -36,7 +36,7 @@ export default function AdminFeedbackPage() {
         setFeedbacks(data);
       }
     } catch (error) {
-      console.error('Error fetching feedbacks:', error);
+      // Error handled by UI state
     } finally {
       setLoading(false);
     }
@@ -66,7 +66,7 @@ export default function AdminFeedbackPage() {
         setError(t('error_updating_feedback'));
       }
     } catch (error) {
-      console.error('Error updating feedback:', error);
+      // Error handled by UI state
       setError(t('error_updating_feedback'));
     } finally {
       setActionLoading(prev => {

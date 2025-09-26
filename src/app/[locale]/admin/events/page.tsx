@@ -52,7 +52,7 @@ export default function AdminEventsPage() {
         }
       } catch (err) {
         setError(t('network_error_loading_events'));
-        console.error('Error fetching events:', err);
+        // Error already captured in UI state
       } finally {
         setLoading(false);
       }
@@ -77,7 +77,7 @@ export default function AdminEventsPage() {
         }
       } catch (err) {
         setError(t('network_error_deleting_event'));
-        console.error('Error deleting event:', err);
+        // Error already captured in UI state
       }
     }
   };
@@ -192,7 +192,7 @@ export default function AdminEventsPage() {
                   
                   <div className="flex items-center gap-2 mt-4 lg:mt-0">
                     <button
-                      onClick={() => console.log('Edit functionality coming soon')}
+                      onClick={() => setError('Edit functionality not yet implemented')}
                       className="inline-flex items-center gap-2 border border-border text-foreground px-4 py-2 rounded-md hover:bg-muted transition-colors font-medium"
                       data-testid={`button-edit-${event.id}`}
                     >

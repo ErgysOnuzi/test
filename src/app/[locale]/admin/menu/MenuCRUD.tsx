@@ -411,7 +411,7 @@ function MenuForm({ item, onSave, onCancel }: MenuFormProps) {
         alert('Failed to upload image. Please try again.');
       }
     } catch (error) {
-      console.error('Error uploading image:', error);
+      // Error handled by alert to user
       alert('Failed to upload image. Please try again.');
     } finally {
       setUploading(false);
