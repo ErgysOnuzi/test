@@ -9,7 +9,9 @@
     "about": "About Us",
     "contact": "Contact",
     "reserve_table": "Reserve Table",
-    "legal": "Legal"
+    "legal": "Legal",
+    "open_menu": "Open menu",
+    "close_menu": "Close menu"
   },
   "home": {
     "title": "Ristorante La Cantina Bleibtreu",

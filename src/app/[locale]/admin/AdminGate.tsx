@@ -136,8 +136,12 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <h2 className="font-semibold text-foreground">{t('admin_area')}</h2>
           <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
+            onClick={() => {
+              if (confirm('Are you sure you want to logout?')) {
+                handleLogout();
+              }
+            }}
+            className="flex items-center gap-2 text-foreground/70 hover:text-destructive transition-colors text-sm font-medium px-3 py-1 rounded hover:bg-destructive/10"
             data-testid="button-admin-logout"
           >
             <LogOut className="w-4 h-4" />
