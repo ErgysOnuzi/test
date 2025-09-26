@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert sanitized reservation into database
-    const [newReservation] = await db
+    const result = await db
       .insert(schema.reservations)
       .values({
         name: sanitized.name,
@@ -44,6 +44,12 @@ export async function POST(request: NextRequest) {
         guests: guestCount
       })
       .returning();
+
+    if (!result || result.length === 0 || !result[0]?.id) {
+      throw new Error('Failed to create reservation - database insert returned no result');
+    }
+
+    const newReservation = result[0];
 
     // Log success securely without exposing sensitive details
     logError('Reservation Success', null, { 

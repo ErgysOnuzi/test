@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       .offset(offset);
     
     // Get total count for pagination info
-    const [totalResult] = await db
+    const totalResults = await db
       .select({ count: sql`COUNT(*)` })
       .from(schema.gallery)
       .where(
@@ -43,7 +43,11 @@ export async function GET(request: NextRequest) {
         )
       );
     
-    const totalCount = Number(totalResult.count);
+    if (!totalResults || totalResults.length === 0 || totalResults[0]?.count === undefined) {
+      throw new Error('Failed to get gallery count - database query returned no valid count');
+    }
+
+    const totalCount = Number(totalResults[0].count);
     const hasMore = offset + limit < totalCount;
     
     const response = NextResponse.json({

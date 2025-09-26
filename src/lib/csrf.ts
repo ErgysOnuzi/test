@@ -60,6 +60,11 @@ export async function validateCSRFToken(request: NextRequest): Promise<boolean> 
     
     const [nonce, submittedHmac] = parts;
     
+    if (!nonce || !submittedHmac) {
+      console.warn('CSRF validation failed: Missing nonce or HMAC');
+      return false;
+    }
+    
     // Compute expected HMAC from secret and nonce
     const expectedHmac = crypto
       .createHmac('sha256', csrfSecretCookie.value)

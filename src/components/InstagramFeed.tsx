@@ -37,7 +37,11 @@ const selectDailyPosts = (posts: string[], count: number): string[] => {
   // Fisher-Yates shuffle with seeded random
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(seededRandom(today + i) * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    const temp = shuffled[i];
+    if (temp !== undefined && shuffled[j] !== undefined) {
+      shuffled[i] = shuffled[j];
+      shuffled[j] = temp;
+    }
   }
   
   return shuffled.slice(0, count);

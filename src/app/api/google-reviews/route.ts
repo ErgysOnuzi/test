@@ -58,7 +58,7 @@ const getCachedGoogleReviews = unstable_cache(
         const searchData = await searchResponse.json();
         
         if (searchData.status === 'OK' && searchData.results && searchData.results.length > 0) {
-          const exactMatch = searchData.results.find(result => 
+          const exactMatch = searchData.results.find((result: any) => 
             result.name?.toLowerCase().includes('cantina') && 
             result.formatted_address?.toLowerCase().includes('bleibtreustraße')
           );

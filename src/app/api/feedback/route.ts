@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     // TODO: Fix schema type inference issue for status and isPublic fields
     // Insert feedback with only recognized fields
-    const [newFeedback] = await db
+    const result = await db
       .insert(schema.feedbacks)
       .values({
         name,
@@ -54,6 +54,12 @@ export async function POST(request: NextRequest) {
         comment
       })
       .returning();
+
+    if (!result || result.length === 0 || !result[0]?.id) {
+      throw new Error('Failed to create feedback - database insert returned no result');
+    }
+
+    const newFeedback = result[0];
 
     return NextResponse.json({ 
       message: 'Feedback submitted successfully', 

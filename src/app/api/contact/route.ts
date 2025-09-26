@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert sanitized contact message into database
-    const [newMessage] = await db
+    const result = await db
       .insert(schema.contactMessages)
       .values({
         name: sanitized.name,
@@ -36,6 +36,12 @@ export async function POST(request: NextRequest) {
         message: sanitized.message,
       })
       .returning();
+
+    if (!result || result.length === 0 || !result[0]?.id) {
+      throw new Error('Failed to create contact message - database insert returned no result');
+    }
+
+    const newMessage = result[0];
 
     // Log success securely without exposing sensitive details
     logError('Contact Message Success', null, { 

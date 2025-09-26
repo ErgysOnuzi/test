@@ -84,6 +84,10 @@ export async function POST(request: NextRequest) {
           })
           .returning();
 
+        if (!result || result.length === 0 || !result[0]?.id) {
+          throw new Error('Failed to save image to database - insert returned no result');
+        }
+
         uploadResults.push({
           success: true,
           fileName: file.name,
