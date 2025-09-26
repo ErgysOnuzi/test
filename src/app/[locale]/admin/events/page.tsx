@@ -83,13 +83,9 @@ export default function AdminEventsPage() {
   };
 
   const handleAddEvent = async () => {
-    // For now, add a sample event - later this would use form data
-    const newEventData = {
-      title: t('sample_event_title'),
-      description: t('sample_event_description'),
-      date: '2025-01-15',
-      capacity: 20
-    };
+    // This should be connected to a proper form - placeholder functionality disabled
+    setError('Event creation form not yet implemented. Please add events through the main admin interface.');
+    return; // Exit early - no further execution needed
     
     try {
       const response = await fetch('/api/admin/events', {

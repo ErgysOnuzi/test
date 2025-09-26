@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations, useLocale } from 'next-intl';
 import LanguageToggle from "@/components/LanguageToggle";
+import { Button } from "@/components/ui/button";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -61,22 +62,23 @@ export default function Header() {
           <div className="hidden md:flex items-center gap-4">
             <LanguageToggle />
             <Link href={`/${locale}/reservations`} prefetch={true}>
-              <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md font-medium transition-colors" data-testid="button-reserve">
+              <Button data-testid="button-reserve">
                 {t('reservations')}
-              </button>
+              </Button>
             </Link>
           </div>
 
           {/* Mobile Language Toggle & Menu */}
           <div className="md:hidden flex items-center gap-2">
             <LanguageToggle />
-            <button
-              className="p-2 hover:bg-accent rounded-md"
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               data-testid="button-mobile-menu"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -100,13 +102,13 @@ export default function Header() {
               ))}
               <div className="pt-4">
                 <Link href={`/${locale}/reservations`} prefetch={true}>
-                  <button 
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md font-medium transition-colors" 
+                  <Button 
+                    className="w-full" 
                     data-testid="button-mobile-reserve" 
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {t('reservations')}
-                  </button>
+                  </Button>
                 </Link>
               </div>
             </div>

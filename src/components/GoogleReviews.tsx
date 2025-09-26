@@ -35,36 +35,10 @@ export default function GoogleReviews({ maxReviews = 3, showViewMore = true }: G
       const response = await fetch('/api/google-reviews');
       
       if (!response.ok) {
-        // If API fails, use fallback realistic data for your restaurant
-        console.log('API unavailable, using fallback data');
-        const fallbackReviews: GoogleReview[] = [
-          {
-            author_name: "Marco R.",
-            rating: 5,
-            relative_time_description: "2 weeks ago",
-            text: "Absolutely fantastic! The pasta is made fresh daily and you can taste the quality. The staff is incredibly welcoming and the atmosphere feels authentically Italian. Highly recommend the Osso Buco!",
-            time: 1737840000000 - 14 * 24 * 60 * 60 * 1000, // Static: Jan 25, 2025 - 14 days
-            profile_photo_url: ""
-          },
-          {
-            author_name: "Sarah K.",
-            rating: 5,
-            relative_time_description: "1 month ago", 
-            text: "Best Italian restaurant in Berlin! We had dinner here for our anniversary and everything was perfect. The wine selection is excellent and the tiramisu is to die for.",
-            time: 1737840000000 - 30 * 24 * 60 * 60 * 1000, // Static: Jan 25, 2025 - 30 days
-            profile_photo_url: ""
-          },
-          {
-            author_name: "Giovanni M.",
-            rating: 4,
-            relative_time_description: "3 weeks ago",
-            text: "Great authentic Italian food. The carbonara was prepared perfectly and the service was attentive. Will definitely be back!",
-            time: 1737840000000 - 21 * 24 * 60 * 60 * 1000, // Static: Jan 25, 2025 - 21 days
-            profile_photo_url: ""
-          }
-        ];
-        
-        setReviews(fallbackReviews.slice(0, maxReviews));
+        // If API fails, hide the reviews section instead of showing mock data
+        console.log('Google reviews API unavailable');
+        setReviews([]); // Empty array - component will handle gracefully
+        setError('Google Bewertungen sind derzeit nicht verfügbar.');
         setLoading(false);
         return;
       }

@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from 'next-intl';
+import { Button } from "@/components/ui/button";
 
 export default function Hero() {
   const t = useTranslations('home');
@@ -35,20 +36,23 @@ export default function Hero() {
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href={`/${locale}/reservations`}>
-            <button 
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg font-medium rounded-md transition-colors border-2 border-primary"
+            <Button 
+              size="lg"
+              className="px-8 py-3 text-lg border-2 border-primary"
               data-testid="button-hero-reserve"
             >
               {t('cta_reserve')}
-            </button>
+            </Button>
           </Link>
           <Link href={`/${locale}/menu`}>
-            <button 
-              className="border-white/80 text-white hover:bg-white/10 bg-white/5 backdrop-blur-sm px-8 py-3 text-lg font-medium rounded-md border-2 transition-colors hover:border-white"
+            <Button 
+              variant="outline"
+              size="lg"
+              className="border-white/80 text-white hover:bg-white/10 bg-white/5 backdrop-blur-sm px-8 py-3 text-lg border-2 hover:border-white [--button-outline:rgba(255,255,255,0.8)]"
               data-testid="button-hero-menu"
             >
               {t('cta_menu')}
-            </button>
+            </Button>
           </Link>
         </div>
       </div>
