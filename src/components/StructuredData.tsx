@@ -305,6 +305,24 @@ export function generateSEOMetadata(
       description: data.description,
       images: ['/images/twitter-card.jpg']
     },
+    icons: {
+      icon: [
+        { rel: 'icon', type: 'image/svg+xml', url: '/favicon.svg' },
+        { rel: 'icon', type: 'image/x-icon', url: '/favicon.ico' },
+        { rel: 'shortcut icon', url: '/favicon.ico' }
+      ],
+      apple: [{ rel: 'apple-touch-icon', sizes: '180x180', url: '/favicon.svg' }]
+    },
+    manifest: '/manifest.json',
+    other: {
+      'msapplication-TileColor': '#D2691E',
+      'msapplication-config': 'none',
+      'google-site-verification': 'your-google-verification-code',
+      'geo.region': 'DE-BE',
+      'geo.placename': 'Berlin',
+      'geo.position': '52.5048;13.3091',
+      'ICBM': '52.5048, 13.3091'
+    },
     alternates: {
       canonical: `https://lacantina-berlin.de/${locale}/${page === 'home' ? '' : page}`,
       languages: {
