@@ -70,6 +70,7 @@ const nextConfig = {
   // Cross-origin headers handled in headers() function below
   
   images: {
+    qualities: [50, 75, 85, 95, 100],
     remotePatterns: [
       {
         protocol: 'http',
