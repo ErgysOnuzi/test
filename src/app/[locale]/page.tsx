@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { ChefHat, Flame, Wine } from 'lucide-react';
+import { ChefHat, Flame, Wine } from '@/lib/icons';
 import Hero from '@/components/Hero';
 import GoogleReviews from '@/components/GoogleReviews';
 import ServerInstagramFeed from '@/components/ServerInstagramFeed';

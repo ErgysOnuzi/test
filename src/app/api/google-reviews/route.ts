@@ -86,8 +86,8 @@ const getCachedGoogleReviews = unstable_cache(
         // Log the issue but return graceful fallback instead of throwing
         const { logError } = await import('@/lib/errorHandling');
         logError('Google Places PlaceId', new Error('Missing placeId after search'), {
-          query: searchQuery,
-          hasSearchResults: !!searchData.results?.length
+          query: 'Ristorante La Cantina Bleibtreu Bleibtreustraße 17, Berlin',
+          hasSearchResults: false
         });
         
         return {
