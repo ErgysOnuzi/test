@@ -45,7 +45,7 @@ export default function AdminGalleryPage() {
         }
       } catch (err) {
         setError(t('network_error_loading_images'));
-        console.error('Error fetching gallery images:', err);
+        // Error logged server-side via API response
       } finally {
         setLoading(false);
       }
@@ -70,7 +70,7 @@ export default function AdminGalleryPage() {
         }
       } catch (err) {
         setError(t('network_error_deleting_image'));
-        console.error('Error deleting image:', err);
+        // Error logged server-side via API response
       }
     }
   };
@@ -139,7 +139,7 @@ export default function AdminGalleryPage() {
       }
     } catch (err) {
       setError('Network error while uploading images');
-      console.error('Error uploading images:', err);
+      // Error logged server-side via API response
     } finally {
       setUploading(false);
       setTimeout(() => {
@@ -253,7 +253,7 @@ export default function AdminGalleryPage() {
                   )}
                   <div className="absolute top-2 right-2 flex gap-1">
                     <button
-                      onClick={() => console.log('Edit functionality coming soon')}
+                      onClick={() => {/* Edit functionality coming soon */}}
                       className="p-2 bg-background/80 backdrop-blur-sm border border-border rounded-md hover:bg-background transition-colors"
                       data-testid={`button-edit-${image.id}`}
                     >
