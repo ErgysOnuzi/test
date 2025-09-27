@@ -99,7 +99,7 @@ export default function AdminPage() {
               <h1 className="text-2xl font-serif font-bold text-foreground">La Cantina Admin</h1>
               {user && (
                 <span className="text-sm text-muted-foreground">
-                  Welcome, {user.firstName || user.email}
+                  Welcome, {(user as any).firstName || (user as any).email || 'User'}
                 </span>
               )}
             </div>
