@@ -3,76 +3,36 @@ import ContactForm from '@/components/ContactForm'
 
 export default function ContactPage() {
   return (
-    <div style={{ 
-      maxWidth: '1200px', 
-      margin: '0 auto', 
-      padding: '20px 16px 32px', 
-      fontFamily: 'Arial, sans-serif' 
-    }}>
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-        gap: '48px' 
-      }}>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
         <div>
-          <h1 style={{ 
-            fontSize: '32px', 
-            fontWeight: 'bold', 
-            color: '#111827', 
-            marginBottom: '24px',
-            margin: '0 0 24px 0'
-          }}>
+          <h1 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-12">
             Contact Us
           </h1>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div>
-              <h3 style={{ 
-                fontSize: '18px', 
-                fontWeight: '600', 
-                marginBottom: '8px',
-                color: '#111827'
-              }}>
+          <div className="space-y-8">
+            <div className="bg-card rounded-lg p-6 border">
+              <h3 className="text-xl font-serif font-semibold text-primary mb-3">
                 Address
               </h3>
-              <p style={{ 
-                color: '#4B5563', 
-                margin: 0,
-                lineHeight: '1.6'
-              }}>
+              <p className="text-muted-foreground leading-relaxed">
                 Bleibtreustraße 49<br />
                 10623 Berlin<br />
                 Deutschland
               </p>
             </div>
-            <div>
-              <h3 style={{ 
-                fontSize: '18px', 
-                fontWeight: '600', 
-                marginBottom: '8px',
-                color: '#111827'
-              }}>
+            <div className="bg-card rounded-lg p-6 border">
+              <h3 className="text-xl font-serif font-semibold text-primary mb-3">
                 Phone
               </h3>
-              <p style={{ 
-                color: '#4B5563',
-                margin: 0
-              }}>
+              <p className="text-muted-foreground">
                 +49 30 881 6562
               </p>
             </div>
-            <div>
-              <h3 style={{ 
-                fontSize: '18px', 
-                fontWeight: '600', 
-                marginBottom: '8px',
-                color: '#111827'
-              }}>
+            <div className="bg-card rounded-lg p-6 border">
+              <h3 className="text-xl font-serif font-semibold text-primary mb-3">
                 Email
               </h3>
-              <p style={{ 
-                color: '#4B5563',
-                margin: 0
-              }}>
+              <p className="text-muted-foreground">
                 info@lacantina-berlin.de
               </p>
             </div>

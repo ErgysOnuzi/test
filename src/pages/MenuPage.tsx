@@ -32,18 +32,18 @@ export default function MenuPage() {
 
   if (isLoading) {
     return (
-      <div style={{ padding: '20px', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '32px', marginBottom: '20px' }}>Menu</h1>
-        <p>Loading menu items...</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+        <h1 className="text-4xl font-serif font-bold text-foreground mb-6">Menu</h1>
+        <p className="text-muted-foreground">Loading menu items...</p>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div style={{ padding: '20px', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '32px', marginBottom: '20px' }}>Menu</h1>
-        <p style={{ color: 'red' }}>Error: {error}</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+        <h1 className="text-4xl font-serif font-bold text-foreground mb-6">Menu</h1>
+        <p className="text-destructive">Error: {error}</p>
       </div>
     )
   }
@@ -51,44 +51,36 @@ export default function MenuPage() {
   const categories = Array.from(new Set(menuItems.map(item => item.category)))
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1 style={{ fontSize: '32px', marginBottom: '20px', textAlign: 'center' }}>
-        La Cantina Berlin Menu
-      </h1>
-      <p style={{ textAlign: 'center', marginBottom: '30px', color: '#666' }}>
-        Authentic Italian cuisine in the heart of Berlin
-      </p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="text-center mb-16">
+        <h1 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-6">
+          La Cantina Berlin Menu
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Authentic Italian cuisine in the heart of Berlin
+        </p>
+      </div>
       
       {categories.map(category => (
-        <div key={category} style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontSize: '24px', marginBottom: '20px', color: '#333', borderBottom: '2px solid #d4a574' }}>
+        <div key={category} className="mb-12">
+          <h2 className="text-2xl md:text-3xl font-serif font-semibold text-foreground mb-8 pb-2 border-b-2 border-primary">
             {category}
           </h2>
-          <div style={{ display: 'grid', gap: '15px' }}>
+          <div className="grid gap-6">
             {menuItems
               .filter(item => item.category === category)
               .map(item => (
-                <div key={item.id} style={{ 
-                  padding: '15px', 
-                  border: '1px solid #ddd', 
-                  borderRadius: '8px',
-                  backgroundColor: '#fafafa'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{ margin: '0 0 5px 0', fontSize: '18px', color: '#333' }}>
+                <div key={item.id} className="bg-card rounded-lg p-6 border hover:shadow-md transition-shadow duration-200">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-serif font-medium text-card-foreground mb-2">
                         {item.title}
                       </h3>
-                      <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>
+                      <p className="text-muted-foreground text-sm leading-relaxed">
                         {item.description}
                       </p>
                     </div>
-                    <div style={{ 
-                      fontSize: '16px', 
-                      fontWeight: 'bold', 
-                      color: '#d4a574',
-                      marginLeft: '15px'
-                    }}>
+                    <div className="text-lg font-bold text-primary ml-6 flex-shrink-0">
                       €{item.price.toFixed(2)}
                     </div>
                   </div>
@@ -98,9 +90,9 @@ export default function MenuPage() {
         </div>
       ))}
       
-      <div style={{ marginTop: '30px', textAlign: 'center', color: '#666' }}>
-        <p>Total menu items: {menuItems.length}</p>
-        <p>Categories: {categories.length}</p>
+      <div className="mt-16 text-center bg-card rounded-lg p-6 border">
+        <p className="text-muted-foreground mb-2">Total menu items: {menuItems.length}</p>
+        <p className="text-muted-foreground">Categories: {categories.length}</p>
       </div>
     </div>
   )
