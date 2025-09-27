@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 
 interface GalleryImage {
   id: number
-  url: string
+  imageUrl: string
   title: string
   description?: string
 }
@@ -45,7 +45,7 @@ export default function GalleryPage() {
           {images.slice(0, 12).map((image) => (
             <div key={image.id} className="bg-card rounded-lg border overflow-hidden hover:shadow-lg transition-shadow duration-300">
               <img 
-                src={image.url} 
+                src={image.imageUrl} 
                 alt={image.title}
                 className="w-full h-64 object-cover"
               />
