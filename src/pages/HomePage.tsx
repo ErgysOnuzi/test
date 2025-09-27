@@ -1,68 +1,82 @@
 import React from 'react'
+import { useParams } from 'react-router-dom'
+import Hero from '@/components/Hero'
 
 export default function HomePage() {
+  const { locale } = useParams<{ locale: string }>()
+  const currentLocale = locale || 'de'
+  const isGerman = currentLocale === 'de'
+
   return (
-    <div style={{ padding: '20px' }}>
-      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <h1 style={{ fontSize: '48px', marginBottom: '20px', color: '#333' }}>
-          Ristorante La Cantina Bleibtreu
-        </h1>
-        <h2 style={{ fontSize: '24px', marginBottom: '20px', color: '#d4a574' }}>
-          Authentic Italian Cuisine near Ku'damm
-        </h2>
-        <p style={{ fontSize: '18px', color: '#666', maxWidth: '600px', margin: '0 auto' }}>
-          There are many cantinas in Berlin – but there is only one Ristorante La Cantina Bleibtreu. 
-          Since March 2025, our traditional restaurant has started a new chapter with fresh energy, 
-          a new team, and our philosophy: stay, enjoy, linger.
-        </p>
-      </div>
+    <>
+      <Hero />
+      
+      {/* About Section */}
+      <section className="py-16 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-6">
+              {isGerman ? 'Das Original!' : 'The Original!'}
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+              {isGerman 
+                ? 'Es gibt viele Cantinas in Berlin – aber es gibt nur ein Ristorante La Cantina Bleibtreu. Seit März 2025 hat unser traditionelles Restaurant ein neues Kapitel mit frischer Energie, einem neuen Team und unserer Philosophie begonnen: bleiben, genießen, verweilen.'
+                : 'There are many cantinas in Berlin – but there is only one Ristorante La Cantina Bleibtreu. Since March 2025, our traditional restaurant has started a new chapter with fresh energy, a new team, and our philosophy: stay, enjoy, linger.'}
+            </p>
+          </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px', marginBottom: '40px' }}>
-        <div style={{ textAlign: 'center', padding: '20px' }}>
-          <h3 style={{ fontSize: '20px', marginBottom: '15px', color: '#333' }}>🍝 Homemade Pasta</h3>
-          <p style={{ color: '#666' }}>
-            Fresh pasta prepared daily with passion and traditional Italian recipes, just like in Italy
-          </p>
-        </div>
-        
-        <div style={{ textAlign: 'center', padding: '20px' }}>
-          <h3 style={{ fontSize: '20px', marginBottom: '15px', color: '#333' }}>🐟 Fresh Mediterranean Fish</h3>
-          <p style={{ color: '#666' }}>
-            Fresh-caught Mediterranean fish prepared with authentic Italian techniques and finest ingredients
-          </p>
-        </div>
-        
-        <div style={{ textAlign: 'center', padding: '20px' }}>
-          <h3 style={{ fontSize: '20px', marginBottom: '15px', color: '#333' }}>🔥 Tableside Flambéed</h3>
-          <p style={{ color: '#666' }}>
-            Experience our signature beef tenderloin flambéed at your table for an unforgettable dining experience
-          </p>
-        </div>
-      </div>
+          {/* Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <div className="text-center p-6 bg-card rounded-lg border">
+              <div className="text-4xl mb-4">🍝</div>
+              <h3 className="text-xl font-serif font-semibold text-foreground mb-3">
+                {isGerman ? 'Hausgemachte Pasta' : 'Homemade Pasta'}
+              </h3>
+              <p className="text-muted-foreground">
+                {isGerman
+                  ? 'Täglich frisch zubereitete Pasta mit Leidenschaft und traditionellen italienischen Rezepten, genau wie in Italien'
+                  : 'Fresh pasta prepared daily with passion and traditional Italian recipes, just like in Italy'}
+              </p>
+            </div>
+            
+            <div className="text-center p-6 bg-card rounded-lg border">
+              <div className="text-4xl mb-4">🐟</div>
+              <h3 className="text-xl font-serif font-semibold text-foreground mb-3">
+                {isGerman ? 'Frischer Mittelmeerfisch' : 'Fresh Mediterranean Fish'}
+              </h3>
+              <p className="text-muted-foreground">
+                {isGerman
+                  ? 'Frisch gefangener Mittelmeerfisch, zubereitet mit authentischen italienischen Techniken und feinsten Zutaten'
+                  : 'Fresh-caught Mediterranean fish prepared with authentic Italian techniques and finest ingredients'}
+              </p>
+            </div>
+            
+            <div className="text-center p-6 bg-card rounded-lg border">
+              <div className="text-4xl mb-4">🔥</div>
+              <h3 className="text-xl font-serif font-semibold text-foreground mb-3">
+                {isGerman ? 'Flambiert am Tisch' : 'Tableside Flambéed'}
+              </h3>
+              <p className="text-muted-foreground">
+                {isGerman
+                  ? 'Erleben Sie unser charakteristisches Rinderfilet, das direkt an Ihrem Tisch flambiert wird – für ein unvergessliches Erlebnis'
+                  : 'Experience our signature beef tenderloin flambéed at your table for an unforgettable dining experience'}
+              </p>
+            </div>
+          </div>
 
-      <div style={{ textAlign: 'center', marginTop: '40px' }}>
-        <h3 style={{ fontSize: '28px', marginBottom: '20px', color: '#d4a574' }}>
-          The Original!
-        </h3>
-        <p style={{ fontSize: '16px', color: '#666', maxWidth: '700px', margin: '0 auto' }}>
-          Ristorante La Cantina Bleibtreu is more than a name. It is a promise: whoever has been there once, comes back.
-        </p>
-      </div>
-
-      <div style={{ textAlign: 'center', marginTop: '40px', padding: '20px', backgroundColor: '#f8f8f8', borderRadius: '8px' }}>
-        <h4 style={{ fontSize: '20px', marginBottom: '15px', color: '#333' }}>
-          🎉 Migration Status: SUCCESS!
-        </h4>
-        <p style={{ color: '#666', marginBottom: '10px' }}>
-          Complete Next.js to React + Vite migration accomplished
-        </p>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
-          <span style={{ color: '#28a745' }}>✅ Frontend: Vite + React</span>
-          <span style={{ color: '#28a745' }}>✅ Backend: Express API</span>
-          <span style={{ color: '#28a745' }}>✅ Database: PostgreSQL + Drizzle</span>
-          <span style={{ color: '#28a745' }}>✅ All Pages Migrated</span>
+          {/* Promise Section */}
+          <div className="text-center bg-card rounded-lg p-8 border">
+            <h3 className="text-2xl font-serif font-semibold text-primary mb-4">
+              {isGerman ? 'Unser Versprechen' : 'Our Promise'}
+            </h3>
+            <p className="text-lg text-muted-foreground">
+              {isGerman
+                ? 'Ristorante La Cantina Bleibtreu ist mehr als ein Name. Es ist ein Versprechen: Wer einmal da war, kommt wieder.'
+                : 'Ristorante La Cantina Bleibtreu is more than a name. It is a promise: whoever has been there once, comes back.'}
+            </p>
+          </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </>
   )
 }

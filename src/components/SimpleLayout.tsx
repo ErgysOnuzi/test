@@ -1,38 +1,181 @@
-import React from 'react'
-import { Outlet, Link, useParams } from 'react-router-dom'
+import React, { useState } from 'react'
+import { Outlet, Link, useParams, useLocation } from 'react-router-dom'
 
 export default function SimpleLayout() {
   const { locale } = useParams<{ locale: string }>()
+  const location = useLocation()
   const currentLocale = locale || 'de'
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+  const isGerman = currentLocale === 'de'
+
+  const navigation = [
+    { name: isGerman ? 'Startseite' : 'Home', href: '', key: 'home' },
+    { name: isGerman ? 'Speisekarte' : 'Menu', href: 'menu', key: 'menu' },
+    { name: isGerman ? 'Galerie' : 'Gallery', href: 'gallery', key: 'gallery' },
+    { name: isGerman ? 'Reservierungen' : 'Reservations', href: 'reservations', key: 'reservations' },
+    { name: isGerman ? 'Veranstaltungen' : 'Events', href: 'events', key: 'events' },
+    { name: isGerman ? 'Kontakt' : 'Contact', href: 'contact', key: 'contact' },
+    { name: isGerman ? 'Feedback' : 'Feedback', href: 'feedback', key: 'feedback' },
+    { name: isGerman ? 'Rechtliches' : 'Legal', href: 'legal', key: 'legal' },
+    { name: 'Blog', href: 'blog', key: 'blog' },
+  ]
+
+  const pathWithoutLocale = location.pathname.replace(`/${currentLocale}`, '') || ''
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <header style={{ background: '#1a1a1a', color: 'white', padding: '20px' }}>
-        <h1 style={{ margin: 0, fontSize: '24px' }}>La Cantina Berlin - Complete Migration</h1>
-        <nav style={{ marginTop: '10px', display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
-          <Link to={`/${currentLocale}`} style={{ color: 'white', textDecoration: 'none' }}>Home</Link>
-          <Link to={`/${currentLocale}/test`} style={{ color: 'white', textDecoration: 'none' }}>Test</Link>
-          <Link to={`/${currentLocale}/menu`} style={{ color: 'white', textDecoration: 'none' }}>Menu</Link>
-          <Link to={`/${currentLocale}/gallery`} style={{ color: 'white', textDecoration: 'none' }}>Gallery</Link>
-          <Link to={`/${currentLocale}/reservations`} style={{ color: 'white', textDecoration: 'none' }}>Reservations</Link>
-          <Link to={`/${currentLocale}/events`} style={{ color: 'white', textDecoration: 'none' }}>Events</Link>
-          <Link to={`/${currentLocale}/contact`} style={{ color: 'white', textDecoration: 'none' }}>Contact</Link>
-          <Link to={`/${currentLocale}/feedback`} style={{ color: 'white', textDecoration: 'none' }}>Feedback</Link>
-          <Link to={`/${currentLocale}/legal`} style={{ color: 'white', textDecoration: 'none' }}>Legal</Link>
-          <Link to={`/${currentLocale}/blog`} style={{ color: 'white', textDecoration: 'none' }}>Blog</Link>
-          <Link to={`/${currentLocale}/admin/login`} style={{ color: 'white', textDecoration: 'none' }}>Admin</Link>
-        </nav>
-        <div style={{ marginTop: '10px', fontSize: '14px' }}>
-          Language: 
-          <Link to="/de" style={{ color: '#d4a574', marginLeft: '10px', marginRight: '10px' }}>DE</Link>
-          <Link to="/en" style={{ color: '#d4a574' }}>EN</Link>
+    <div className="min-h-screen flex flex-col bg-background">
+      <header className='bg-background/90 backdrop-blur-sm border-b sticky top-0 z-50'>
+        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+          <div className='flex items-center justify-between h-16'>
+            {/* Logo */}
+            <div className='flex-shrink-0'>
+              <Link
+                to={`/${currentLocale}`}
+                className='block'
+              >
+                <h1 className='text-2xl font-serif font-bold text-primary'>
+                  La Cantina
+                </h1>
+                <p className='text-xs text-foreground/70 font-script'>Berlin</p>
+              </Link>
+            </div>
+
+            {/* Desktop Navigation */}
+            <nav className='hidden md:flex space-x-8'>
+              {navigation.map((item) => (
+                <Link
+                  key={item.name}
+                  to={`/${currentLocale}/${item.href}`}
+                  className={`text-foreground hover:text-primary transition-colors duration-200 ${
+                    pathWithoutLocale === `/${item.href}` || (item.href === '' && pathWithoutLocale === '')
+                      ? 'text-primary font-medium'
+                      : ''
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </nav>
+
+            {/* Desktop CTA & Language Toggle */}
+            <div className='hidden md:flex items-center gap-4'>
+              <div className="flex items-center gap-2">
+                <Link 
+                  to="/de" 
+                  className={`px-2 py-1 text-sm transition-colors ${currentLocale === 'de' ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
+                >
+                  DE
+                </Link>
+                <span className="text-muted-foreground">|</span>
+                <Link 
+                  to="/en" 
+                  className={`px-2 py-1 text-sm transition-colors ${currentLocale === 'en' ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
+                >
+                  EN
+                </Link>
+              </div>
+              <Link to={`/${currentLocale}/reservations`}>
+                <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md font-medium transition-colors">
+                  {isGerman ? 'Reservieren' : 'Reserve'}
+                </button>
+              </Link>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <div className='md:hidden flex items-center gap-2'>
+              <div className="flex items-center gap-2">
+                <Link 
+                  to="/de" 
+                  className={`px-2 py-1 text-sm transition-colors ${currentLocale === 'de' ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
+                >
+                  DE
+                </Link>
+                <span className="text-muted-foreground">|</span>
+                <Link 
+                  to="/en" 
+                  className={`px-2 py-1 text-sm transition-colors ${currentLocale === 'en' ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
+                >
+                  EN
+                </Link>
+              </div>
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 text-foreground hover:text-primary transition-colors"
+                aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+              >
+                {isMenuOpen ? (
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Navigation */}
+          {isMenuOpen && (
+            <div className='md:hidden'>
+              <div className='px-2 pt-2 pb-3 space-y-1 border-t'>
+                {navigation.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={`/${currentLocale}/${item.href}`}
+                    className={`block px-3 py-2 text-base font-medium transition-colors duration-200 ${
+                      pathWithoutLocale === `/${item.href}` || (item.href === '' && pathWithoutLocale === '')
+                        ? 'text-primary'
+                        : 'text-foreground hover:text-primary'
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+                <div className="px-3 py-2">
+                  <Link to={`/${currentLocale}/reservations`}>
+                    <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md font-medium transition-colors">
+                      {isGerman ? 'Reservieren' : 'Reserve'}
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </header>
-      <main style={{ flex: 1, padding: '20px' }}>
+
+      <main className="flex-1">
         <Outlet />
       </main>
-      <footer style={{ background: '#333', color: 'white', padding: '20px', textAlign: 'center' }}>
-        <p>La Cantina Berlin - Complete Migration: Next.js → Vite + React + Express</p>
+
+      <footer className="bg-card border-t">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <h3 className="text-lg font-serif font-semibold text-primary mb-4">La Cantina Berlin</h3>
+              <p className="text-muted-foreground mb-2">Bleibtreustraße 49</p>
+              <p className="text-muted-foreground mb-2">10623 Berlin</p>
+              <p className="text-muted-foreground">Deutschland</p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">{isGerman ? 'Kontakt' : 'Contact'}</h4>
+              <p className="text-muted-foreground mb-2">+49 30 881 6562</p>
+              <p className="text-muted-foreground">info@lacantina-berlin.de</p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">{isGerman ? 'Öffnungszeiten' : 'Opening Hours'}</h4>
+              <p className="text-muted-foreground mb-2">{isGerman ? 'Montag - Sonntag' : 'Monday - Sunday'}</p>
+              <p className="text-muted-foreground">17:00 - 23:00</p>
+            </div>
+          </div>
+          <div className="border-t mt-8 pt-8 text-center text-muted-foreground">
+            <p>&copy; 2025 La Cantina Berlin. {isGerman ? 'Alle Rechte vorbehalten.' : 'All rights reserved.'}</p>
+          </div>
+        </div>
       </footer>
     </div>
   )
