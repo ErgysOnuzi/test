@@ -66,7 +66,7 @@ export default function MenuPage() {
           </h2>
           <div style={{ display: 'grid', gap: '15px' }}>
             {menuItems
-              .filter(item => item.category === category && item.isAvailable)
+              .filter(item => item.category === category)
               .map(item => (
                 <div key={item.id} style={{ 
                   padding: '15px', 
@@ -99,7 +99,7 @@ export default function MenuPage() {
       ))}
       
       <div style={{ marginTop: '30px', textAlign: 'center', color: '#666' }}>
-        <p>Total menu items: {menuItems.filter(item => item.isAvailable).length}</p>
+        <p>Total menu items: {menuItems.length}</p>
         <p>Categories: {categories.length}</p>
       </div>
     </div>

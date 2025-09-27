@@ -20,11 +20,11 @@ router.get('/', async (req, res) => {
       descriptionEn: item.descriptionEn || item.description || '',
       price: item.price,
       category: item.category || '',
-      categoryDe: item.category_de || item.category || '',
-      categoryEn: item.category_en || item.category || '',
-      isAvailable: item.is_available || false,
+      categoryDe: item.categoryDe || item.category || '',
+      categoryEn: item.categoryEn || item.category || '',
+      isAvailable: item.isAvailable || false,
       allergens: item.allergens || '',
-      imageUrl: item.image_url || null,
+      imageUrl: item.imageUrl || null,
     }))
 
     console.log(`📋 Fetched ${transformedItems.length} menu items`)
@@ -56,11 +56,11 @@ router.get('/:id', async (req, res) => {
       descriptionEn: item.descriptionEn || item.description || '',
       price: item.price,
       category: item.category || '',
-      categoryDe: item.category_de || item.category || '',
-      categoryEn: item.category_en || item.category || '',
-      isAvailable: item.is_available || false,
+      categoryDe: item.categoryDe || item.category || '',
+      categoryEn: item.categoryEn || item.category || '',
+      isAvailable: item.isAvailable || false,
       allergens: item.allergens || '',
-      imageUrl: item.image_url || null,
+      imageUrl: item.imageUrl || null,
     }
 
     res.json(transformedItem)
