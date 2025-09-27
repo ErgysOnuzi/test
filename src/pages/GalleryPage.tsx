@@ -17,7 +17,9 @@ export default function GalleryPage() {
         const response = await fetch('/api/gallery')
         if (!response.ok) throw new Error('Failed to fetch gallery')
         const data = await response.json()
-        setImages(data)
+        // Filter out images without URLs
+        const validImages = data.filter((img: GalleryImage) => img.imageUrl && img.imageUrl.trim() !== '')
+        setImages(validImages)
       } catch (err) {
         console.error('Gallery fetch error:', err)
       } finally {
@@ -40,6 +42,16 @@ export default function GalleryPage() {
       
       {isLoading ? (
         <p className="text-center text-muted-foreground">Loading gallery...</p>
+      ) : images.length === 0 ? (
+        <div className="text-center py-16">
+          <div className="bg-card rounded-lg border p-8">
+            <h3 className="text-xl font-serif font-medium text-card-foreground mb-4">Gallery Coming Soon</h3>
+            <p className="text-muted-foreground">
+              We're preparing beautiful photos of our restaurant atmosphere, delicious dishes, and authentic Italian dining experience. 
+              Please check back soon to see our gallery!
+            </p>
+          </div>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {images.slice(0, 12).map((image) => (
@@ -48,6 +60,9 @@ export default function GalleryPage() {
                 src={image.imageUrl} 
                 alt={image.title}
                 className="w-full h-64 object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
               />
               <div className="p-6">
                 <h3 className="text-lg font-serif font-medium text-card-foreground mb-2">{image.title}</h3>

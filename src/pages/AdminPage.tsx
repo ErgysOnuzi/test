@@ -23,10 +23,13 @@ export default function AdminPage() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([])
 
-  // Redirect to login if not authenticated
+  // Handle authentication redirect more gracefully
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      window.location.href = "/api/login"
+      // Use a more gentle redirect approach
+      setTimeout(() => {
+        window.location.href = "/api/login"
+      }, 1000)
       return
     }
   }, [isAuthenticated, isLoading])
