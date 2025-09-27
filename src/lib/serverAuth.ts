@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { logError } from './errorHandling';
 
 // SECURITY: Use environment variable - NO hardcoded credentials
 const SESSION_COOKIE_NAME = 'la_cantina_admin_session';
@@ -56,11 +57,11 @@ export async function verifyAdminAuth(request?: NextRequest): Promise<boolean> {
       const decoded = jwt.verify(sessionCookie.value, JWT_SECRET) as any;
       return decoded.role === 'admin' && decoded.authenticated === true;
     } catch (jwtError) {
-      console.error('JWT verification failed:', jwtError);
+      logError('JWT Verification Failed', jwtError, { context: 'invalid_token', sessionCookie: '***redacted***' });
       return false;
     }
   } catch (error) {
-    console.error('Auth verification error:', error);
+    logError('Auth Verification Error', error, { context: 'token_processing_failed' });
     return false;
   }
 }
@@ -72,9 +73,7 @@ export function unauthorizedResponse() {
 export function validateAdminPassword(password: string): boolean {
   const adminPassword = process.env.ADMIN_PASSWORD;
   if (!adminPassword) {
-    console.error(
-      'SECURITY ERROR: ADMIN_PASSWORD environment variable not set'
-    );
+    logError('Security Configuration Error', new Error('ADMIN_PASSWORD environment variable not set'), { context: 'missing_admin_password', severity: 'critical' });
     return false;
   }
   return password === adminPassword;

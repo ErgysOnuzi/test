@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import crypto from 'crypto';
+import { logError } from './errorHandling';
 
 const CSRF_TOKEN_NAME = 'la_cantina_csrf_token';
 const CSRF_SECRET_NAME = 'la_cantina_csrf_secret';
@@ -41,7 +42,7 @@ export async function validateCSRFToken(
     const csrfSecretCookie = cookieStore.get(CSRF_SECRET_NAME);
 
     if (!csrfSecretCookie?.value) {
-      console.warn('CSRF validation failed: No secret cookie found');
+      logError('CSRF Validation Failed', new Error('No secret cookie found'), { context: 'missing_secret_cookie' });
       return false;
     }
 
@@ -49,21 +50,21 @@ export async function validateCSRFToken(
     const submittedToken = request.headers.get('x-csrf-token');
 
     if (!submittedToken) {
-      console.warn('CSRF validation failed: No X-CSRF-Token header provided');
+      logError('CSRF Validation Failed', new Error('No X-CSRF-Token header provided'), { context: 'missing_csrf_header' });
       return false;
     }
 
     // Parse token format: nonce.hmac
     const parts = submittedToken.split('.');
     if (parts.length !== 2) {
-      console.warn('CSRF validation failed: Invalid token format');
+      logError('CSRF Validation Failed', new Error('Invalid token format'), { context: 'invalid_token_format' });
       return false;
     }
 
     const [nonce, submittedHmac] = parts;
 
     if (!nonce || !submittedHmac) {
-      console.warn('CSRF validation failed: Missing nonce or HMAC');
+      logError('CSRF Validation Failed', new Error('Missing nonce or HMAC'), { context: 'malformed_token' });
       return false;
     }
 
@@ -80,12 +81,12 @@ export async function validateCSRFToken(
     );
 
     if (!isValid) {
-      console.warn('CSRF validation failed: Token HMAC mismatch');
+      logError('CSRF Validation Failed', new Error('Token HMAC mismatch'), { context: 'hmac_mismatch', suspiciousActivity: true });
     }
 
     return isValid;
   } catch (error) {
-    console.error('CSRF validation error:', error);
+    logError('CSRF Validation', error, { context: 'token validation failed' });
     return false;
   }
 }
@@ -113,7 +114,7 @@ export async function getCSRFTokenForClient(
 
     return `${nonce}.${hmac}`;
   } catch (error) {
-    console.error('Error generating CSRF token for client:', error);
+    logError('CSRF Token Generation', error, { context: 'client token generation failed' });
     return null;
   }
 }

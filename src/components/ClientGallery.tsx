@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
+import { logError } from '@/lib/errorHandling';
 import { Image, Camera } from 'lucide-react';
 import NextImage from 'next/image';
 import GalleryLoadingAnimation from './GalleryLoadingAnimation';
@@ -39,8 +40,8 @@ export default function ClientGallery() {
           setIsImagesFetched(true);
         }
       } catch (error) {
-        console.error('Error fetching gallery images:', error);
-        setIsImagesFetched(true); // Still mark as fetched to prevent infinite loading
+        logError('Gallery Fetch Failed', error, { context: 'initial_load', endpoint: '/api/gallery' });
+        setIsImagesFetched(true);
       }
     };
 
@@ -93,7 +94,7 @@ export default function ClientGallery() {
         setNextOffset(data.pagination?.nextOffset || null);
       }
     } catch (error) {
-      console.error('Error loading more images:', error);
+      logError('Gallery Pagination Failed', error, { context: 'load_more', offset: nextOffset });
     } finally {
       setIsLoadingMore(false);
     }

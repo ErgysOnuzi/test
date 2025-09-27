@@ -9,10 +9,13 @@ import { generateCSRFToken, addCSRFCookieToResponse } from '@/lib/csrf';
 import { logError } from '@/lib/errorHandling';
 
 export async function POST(request: NextRequest) {
+  // Initialize clientIP outside try block for catch scope access
+  let clientIP = 'unknown';
+  
   try {
     // Rate limiting by IP address - extract first IP from forwarded header
     const forwardedFor = request.headers.get('x-forwarded-for');
-    const clientIP = forwardedFor
+    clientIP = forwardedFor
       ? forwardedFor.split(',')[0]?.trim() || 'unknown'
       : request.headers.get('x-real-ip') || 'dev-localhost';
     const rateLimit = checkRateLimit(clientIP);
@@ -35,6 +38,7 @@ export async function POST(request: NextRequest) {
       const rateLimitHeaders = getRateLimitHeaders(rateLimit.remaining);
       logError('Admin Login Attempt', new Error('Invalid credentials'), {
         clientIP,
+        endpoint: '/api/admin/login',
         timestamp: new Date().toISOString(),
       });
       return NextResponse.json(
@@ -60,14 +64,16 @@ export async function POST(request: NextRequest) {
     response.cookies.set(cookie);
     const responseWithCSRF = addCSRFCookieToResponse(response, csrfSecret);
     logError('Admin Login Success', null, {
-      timestamp: new Date().toISOString(),
       clientIP,
+      timestamp: new Date().toISOString(),
+      endpoint: '/api/admin/login',
     });
 
     return responseWithCSRF;
   } catch (error) {
     logError('Admin Login Error', error, {
       clientIP,
+      endpoint: '/api/admin/login',
       timestamp: new Date().toISOString(),
     });
     return NextResponse.json({ error: 'Login failed' }, { status: 500 });

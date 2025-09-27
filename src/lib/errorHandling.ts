@@ -22,18 +22,28 @@ export function logError(
   const timestamp = new Date().toISOString();
 
   if (error instanceof Error) {
-    console.error(`[${timestamp}] ${context}:`, {
+    // Production-safe structured logging
+    const logData = {
+      timestamp,
+      context,
       message: error.message,
-      stack: error.stack,
       name: error.name,
+      ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
       ...additionalInfo,
-    });
+    };
+    // eslint-disable-next-line no-console
+    console.error(`[${timestamp}] ${context}:`, logData);
   } else {
-    console.error(`[${timestamp}] ${context}:`, {
+    // Production-safe structured logging for non-Error types
+    const logData = {
+      timestamp,
+      context,
       error: String(error),
       type: typeof error,
       ...additionalInfo,
-    });
+    };
+    // eslint-disable-next-line no-console
+    console.error(`[${timestamp}] ${context}:`, logData);
   }
 }
 
