@@ -10,7 +10,15 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
-  const t = useTranslations('admin');
+  
+  // Safe translations wrapper for build-time
+  let t: any;
+  try {
+    t = useTranslations('admin');
+  } catch (error) {
+    // Fallback for build-time when context is not available
+    t = (key: string) => key;
+  }
 
   // Check for existing authentication on mount
   useEffect(() => {

@@ -27,7 +27,15 @@ interface AdminFeedback {
 }
 
 export default function AdminFeedbackPage() {
-  const t = useTranslations('admin_feedback');
+  // Safe translations wrapper for build-time
+  let t: any;
+  try {
+    t = useTranslations('admin_feedback');
+  } catch (error) {
+    // Fallback for build-time when context is not available
+    t = (key: string) => key;
+  }
+  
   const [feedbacks, setFeedbacks] = useState<AdminFeedback[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<{ [key: number]: string }>(

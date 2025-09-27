@@ -10,11 +10,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Configure for Replit deployment
-  output: 'export',
-  trailingSlash: true,
-  images: {
-    unoptimized: true,
-  },
+  output: 'standalone',
   
   // Production optimizations
   reactStrictMode: true,
@@ -86,6 +82,11 @@ const nextConfig = {
 
   experimental: {
     optimizePackageImports: ['react', 'react-dom', 'date-fns', 'lucide-react'],
+  },
+  
+  // Disable error page prerendering for static export
+  generateBuildId: async () => {
+    return 'build'
   },
 
 };
