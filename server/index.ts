@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import { config } from 'dotenv'
 import path from 'path'
+import { fileURLToPath } from 'url'
 import db from '../src/lib/db'
 import menuRoutes from './routes/menu'
 import galleryRoutes from './routes/gallery'
@@ -22,6 +23,8 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 // Serve static files from Vite build (production)
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 const distPath = path.join(__dirname, '../dist')
 app.use(express.static(distPath))
 
@@ -42,18 +45,23 @@ app.use('/api/events', eventRoutes)
 app.use('/api/contact', contactRoutes)
 app.use('/api/admin', adminRoutes)
 
-// Error handling middleware
+// Serve React app for all non-API routes (SPA fallback)
+app.use((req, res, next) => {
+  // Skip API routes
+  if (req.path.startsWith('/api/') || req.path === '/health') {
+    return next()
+  }
+  // Serve React app for all other routes
+  res.sendFile(path.join(distPath, 'index.html'))
+})
+
+// Error handling middleware (must be last)
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Error:', err)
   res.status(500).json({ 
     error: 'Internal server error',
     message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
   })
-})
-
-// Serve React app for all non-API routes (SPA fallback)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(distPath, 'index.html'))
 })
 
 app.listen(PORT, () => {
