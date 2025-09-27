@@ -17,6 +17,8 @@ export default function SimpleLayout() {
           <Link to={`/${currentLocale}/reservations`} style={{ color: 'white', textDecoration: 'none' }}>Reservations</Link>
           <Link to={`/${currentLocale}/events`} style={{ color: 'white', textDecoration: 'none' }}>Events</Link>
           <Link to={`/${currentLocale}/contact`} style={{ color: 'white', textDecoration: 'none' }}>Contact</Link>
+          <Link to={`/${currentLocale}/feedback`} style={{ color: 'white', textDecoration: 'none' }}>Feedback</Link>
+          <Link to={`/${currentLocale}/legal`} style={{ color: 'white', textDecoration: 'none' }}>Legal</Link>
           <Link to={`/${currentLocale}/blog`} style={{ color: 'white', textDecoration: 'none' }}>Blog</Link>
           <Link to={`/${currentLocale}/admin/login`} style={{ color: 'white', textDecoration: 'none' }}>Admin</Link>
         </nav>

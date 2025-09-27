@@ -9,6 +9,8 @@ import ReservationsPage from '@/pages/ReservationsPage'
 import EventsPage from '@/pages/EventsPage'
 import EventDetailPage from '@/pages/EventDetailPage'
 import ContactPage from '@/pages/ContactPage'
+import FeedbackPage from '@/pages/FeedbackPage'
+import LegalPage from '@/pages/LegalPage'
 import BlogPage from '@/pages/BlogPage'
 import AdminPage from '@/pages/AdminPage'
 import AdminLoginPage from '@/pages/AdminLoginPage'
@@ -30,6 +32,8 @@ function App() {
         <Route path="events" element={<EventsPage />} />
         <Route path="events/:id" element={<EventDetailPage />} />
         <Route path="contact" element={<ContactPage />} />
+        <Route path="feedback" element={<FeedbackPage />} />
+        <Route path="legal" element={<LegalPage />} />
         <Route path="blog" element={<BlogPage />} />
         <Route path="admin/login" element={<AdminLoginPage />} />
         <Route path="admin/*" element={<AdminPage />} />
