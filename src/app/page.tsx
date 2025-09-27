@@ -1,15 +1,10 @@
-import HeroSection from '@/components/HeroSection';
-import AboutSection from '@/components/AboutSection';
-import MenuHighlights from '@/components/MenuHighlights';
-import ReservationCTA from '@/components/ReservationCTA';
+import { redirect } from 'next/navigation';
 
-export default function HomePage() {
-  return (
-    <main>
-      <HeroSection />
-      <AboutSection />
-      <MenuHighlights />
-      <ReservationCTA />
-    </main>
-  );
+/**
+ * Root page that redirects users from base URL to default locale
+ * This ensures users visiting "/" are automatically redirected to "/de"
+ */
+export default function RootPage() {
+  // Redirect to German locale as the default
+  redirect('/de');
 }

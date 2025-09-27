@@ -1,24 +1,13 @@
-modules = ["nodejs-20", "web", "postgresql-16", "python-3.11"]
+# La Cantina Berlin - Next.js Restaurant Website Configuration
+modules = ["nodejs-20", "web", "postgresql-16"]
 
 [agent]
 expertMode = true
-integrations = [
-  "javascript_database:1.0.0",
-  "replitmail:1.0.0",
-  "javascript_object_storage:1.0.0",
-]
+integrations = ["javascript_database:1.0.0", "replitmail:1.0.0", "javascript_object_storage:1.0.0"]
 
 [nix]
 channel = "stable-25_05"
-packages = [
-  "python3",
-  "gnumake",
-  "gcc",
-  "pkg-config",
-  "sqlite",
-  "openssl",
-  "imagemagick",
-]
+packages = ["python3", "gnumake", "gcc", "pkg-config", "sqlite", "openssl", "imagemagick"]
 
 # Environment Variables
 [env]
@@ -30,40 +19,64 @@ NEXT_TELEMETRY_DISABLED = "1"
 runButton = "Project"
 
 [[workflows.workflow]]
-name = "Project"
+name = "Server"
 mode = "parallel"
 author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "La Cantina Website"
-
-[[workflows.workflow]]
-name = "La Cantina Website"
-author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
 
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Development Server"
+
+[[workflows.workflow]]
+name = "Development Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 46609
+localPort = 36951
+externalPort = 3002
+
+[[ports]]
+localPort = 37951
+externalPort = 3003
+
+[[ports]]
+localPort = 38131
 externalPort = 3000
+
+[[ports]]
+localPort = 38675
+externalPort = 3001
 
 # Deployment Configuration
 [deployment]
-deploymentTarget = "vm"
+deploymentTarget = "autoscale"
 build = ["npm", "run", "build"]
-run = ["npm", "start"]
-
+run = ["npm", "run", "start:replit"]
 
 [deployment.env]
 NODE_ENV = "production"

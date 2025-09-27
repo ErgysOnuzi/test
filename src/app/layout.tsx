@@ -1,26 +1,8 @@
-import type { Metadata } from 'next';
-import { Inter, Playfair_Display } from 'next/font/google';
 import './globals.css';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import NextTopLoader from 'nextjs-toploader';
 
-const inter = Inter({ 
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap'
-});
-
-const playfair = Playfair_Display({ 
-  subsets: ['latin'],
-  variable: '--font-playfair',
-  display: 'swap'
-});
-
-export const metadata: Metadata = {
-  title: 'La Cantina Berlin - Authentic Italian Restaurant',
-  description: 'Experience authentic Italian cuisine in the heart of Berlin. Fresh pasta, traditional recipes, and warm hospitality await you at La Cantina.',
-  keywords: 'Italian restaurant Berlin, pasta, pizza, authentic Italian food, La Cantina'
+export const metadata = {
+  title: 'La Cantina Berlin',
+  description: 'Authentic Italian Restaurant in Berlin',
 };
 
 export default function RootLayout({
@@ -29,23 +11,32 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
-      <body className={`${inter.className} antialiased`}>
-        <NextTopLoader
-          color="#D44A3A"
-          initialPosition={0.08}
-          crawlSpeed={200}
-          height={3}
-          crawl={true}
-          showSpinner={false}
-          easing="ease"
-          speed={200}
-          shadow="0 0 10px #D44A3A,0 0 5px #D44A3A"
+    <html data-scroll-behavior='smooth' suppressHydrationWarning>
+      <head>
+        {/* Preconnect to Google Fonts for faster font loading */}
+        <link rel='preconnect' href='https://fonts.googleapis.com' />
+        <link
+          rel='preconnect'
+          href='https://fonts.gstatic.com'
+          crossOrigin='anonymous'
         />
-        <Header />
-        {children}
-        <Footer />
-      </body>
+
+        {/* Preload critical fonts */}
+        <link
+          rel='preload'
+          href='https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&family=Dancing+Script:wght@400&display=swap'
+          as='style'
+        />
+        <link
+          href='https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&family=Dancing+Script:wght@400&display=swap'
+          rel='stylesheet'
+        />
+
+        {/* DNS prefetch for other domains */}
+        <link rel='dns-prefetch' href='//fonts.googleapis.com' />
+        <link rel='dns-prefetch' href='//fonts.gstatic.com' />
+      </head>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }
