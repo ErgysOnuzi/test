@@ -1,32 +1,37 @@
 import React from 'react'
-import { Routes, Route } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { Helmet } from 'react-helmet-async'
 
 export default function AdminPage() {
-  const { t } = useTranslation()
-
   return (
-    <>
-      <Helmet>
-        <title>{t('meta.admin.title')}</title>
-      </Helmet>
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              {t('admin.title')}
-            </h1>
-            <p className="text-lg text-gray-600">
-              {t('admin.subtitle')}
-            </p>
-          </div>
-          
-          <div className="text-center py-12">
-            <p className="text-gray-500">{t('admin.comingSoon')}</p>
-          </div>
+    <div style={{ minHeight: '100vh', backgroundColor: '#F9FAFB' }}>
+      <div style={{ 
+        maxWidth: '1200px', 
+        margin: '0 auto', 
+        padding: '20px 16px 32px', 
+        fontFamily: 'Arial, sans-serif' 
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <h1 style={{ 
+            fontSize: '32px', 
+            fontWeight: 'bold', 
+            color: '#111827', 
+            marginBottom: '16px',
+            margin: '0 0 16px 0'
+          }}>
+            Admin Dashboard
+          </h1>
+          <p style={{ 
+            fontSize: '18px', 
+            color: '#4B5563',
+            margin: 0
+          }}>
+            Manage your restaurant
+          </p>
+        </div>
+        
+        <div style={{ textAlign: 'center', paddingTop: '48px', paddingBottom: '48px' }}>
+          <p style={{ color: '#6B7280', fontSize: '16px', margin: 0 }}>Coming Soon</p>
         </div>
       </div>
-    </>
+    </div>
   )
 }

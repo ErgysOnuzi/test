@@ -1,28 +1,39 @@
 import React from 'react'
-import { useTranslation } from 'react-i18next'
-import { Helmet } from 'react-helmet-async'
 
 export default function AdminLoginPage() {
-  const { t } = useTranslation()
-
   return (
-    <>
-      <Helmet>
-        <title>{t('meta.adminLogin.title')}</title>
-      </Helmet>
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="max-w-md w-full space-y-8 p-8">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              {t('admin.login.title')}
-            </h1>
-          </div>
-          
-          <div className="text-center py-12">
-            <p className="text-gray-500">{t('admin.login.comingSoon')}</p>
-          </div>
+    <div style={{ 
+      minHeight: '100vh', 
+      backgroundColor: '#F9FAFB', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      fontFamily: 'Arial, sans-serif'
+    }}>
+      <div style={{ 
+        maxWidth: '448px', 
+        width: '100%', 
+        padding: '32px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '32px'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <h1 style={{ 
+            fontSize: '24px', 
+            fontWeight: 'bold', 
+            color: '#111827', 
+            marginBottom: '16px',
+            margin: '0 0 16px 0'
+          }}>
+            Admin Login
+          </h1>
+        </div>
+        
+        <div style={{ textAlign: 'center', paddingTop: '48px', paddingBottom: '48px' }}>
+          <p style={{ color: '#6B7280', fontSize: '16px', margin: 0 }}>Coming Soon</p>
         </div>
       </div>
-    </>
+    </div>
   )
 }

@@ -80,14 +80,18 @@ localPort = 38675
 externalPort = 3001
 
 [[ports]]
+localPort = 39437
+externalPort = 5000
+
+[[ports]]
 localPort = 44967
 externalPort = 3002
 
 # Deployment Configuration
 [deployment]
-deploymentTarget = "autoscale"
+deploymentTarget = "vm"
 build = ["npm", "run", "build"]
-run = ["npm", "run", "start:replit"]
+run = ["bash", "-c", "npm run start:server & npm run preview"]
 
 [deployment.env]
 NODE_ENV = "production"

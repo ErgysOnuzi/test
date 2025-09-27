@@ -1,47 +1,87 @@
 import React from 'react'
-import { useTranslation } from 'react-i18next'
-import { Helmet } from 'react-helmet-async'
 import ContactForm from '@/components/ContactForm'
 
 export default function ContactPage() {
-  const { t } = useTranslation()
-
   return (
-    <>
-      <Helmet>
-        <title>{t('meta.contact.title')}</title>
-        <meta name="description" content={t('meta.contact.description')} />
-      </Helmet>
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-2 gap-12">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-6">
-              {t('contact.title')}
-            </h1>
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">{t('contact.address')}</h3>
-                <p className="text-gray-600">
-                  Bleibtreustraße 49<br />
-                  10623 Berlin<br />
-                  Deutschland
-                </p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold mb-2">{t('contact.phone')}</h3>
-                <p className="text-gray-600">+49 30 881 6562</p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold mb-2">{t('contact.email')}</h3>
-                <p className="text-gray-600">info@lacantina-berlin.de</p>
-              </div>
+    <div style={{ 
+      maxWidth: '1200px', 
+      margin: '0 auto', 
+      padding: '20px 16px 32px', 
+      fontFamily: 'Arial, sans-serif' 
+    }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+        gap: '48px' 
+      }}>
+        <div>
+          <h1 style={{ 
+            fontSize: '32px', 
+            fontWeight: 'bold', 
+            color: '#111827', 
+            marginBottom: '24px',
+            margin: '0 0 24px 0'
+          }}>
+            Contact Us
+          </h1>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div>
+              <h3 style={{ 
+                fontSize: '18px', 
+                fontWeight: '600', 
+                marginBottom: '8px',
+                color: '#111827'
+              }}>
+                Address
+              </h3>
+              <p style={{ 
+                color: '#4B5563', 
+                margin: 0,
+                lineHeight: '1.6'
+              }}>
+                Bleibtreustraße 49<br />
+                10623 Berlin<br />
+                Deutschland
+              </p>
+            </div>
+            <div>
+              <h3 style={{ 
+                fontSize: '18px', 
+                fontWeight: '600', 
+                marginBottom: '8px',
+                color: '#111827'
+              }}>
+                Phone
+              </h3>
+              <p style={{ 
+                color: '#4B5563',
+                margin: 0
+              }}>
+                +49 30 881 6562
+              </p>
+            </div>
+            <div>
+              <h3 style={{ 
+                fontSize: '18px', 
+                fontWeight: '600', 
+                marginBottom: '8px',
+                color: '#111827'
+              }}>
+                Email
+              </h3>
+              <p style={{ 
+                color: '#4B5563',
+                margin: 0
+              }}>
+                info@lacantina-berlin.de
+              </p>
             </div>
           </div>
-          <div>
-            <ContactForm />
-          </div>
+        </div>
+        <div>
+          <ContactForm />
         </div>
       </div>
-    </>
+    </div>
   )
 }

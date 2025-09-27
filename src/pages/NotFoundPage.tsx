@@ -1,33 +1,64 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { Helmet } from 'react-helmet-async'
 
 export default function NotFoundPage() {
-  const { t } = useTranslation()
-
   return (
-    <>
-      <Helmet>
-        <title>{t('meta.notFound.title')}</title>
-      </Helmet>
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-6xl font-bold text-gray-900 mb-4">404</h1>
-          <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-            {t('notFound.title')}
-          </h2>
-          <p className="text-gray-600 mb-8">
-            {t('notFound.description')}
-          </p>
-          <Link
-            to="/de"
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-terracotta-600 hover:bg-terracotta-700"
-          >
-            {t('notFound.backHome')}
-          </Link>
-        </div>
+    <div style={{ 
+      minHeight: '100vh', 
+      backgroundColor: '#F9FAFB', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      fontFamily: 'Arial, sans-serif'
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <h1 style={{ 
+          fontSize: '72px', 
+          fontWeight: 'bold', 
+          color: '#111827', 
+          marginBottom: '16px',
+          margin: '0 0 16px 0'
+        }}>
+          404
+        </h1>
+        <h2 style={{ 
+          fontSize: '24px', 
+          fontWeight: '600', 
+          color: '#374151', 
+          marginBottom: '16px',
+          margin: '0 0 16px 0'
+        }}>
+          Page Not Found
+        </h2>
+        <p style={{ 
+          color: '#4B5563', 
+          marginBottom: '32px',
+          margin: '0 0 32px 0',
+          fontSize: '16px'
+        }}>
+          The page you're looking for doesn't exist.
+        </p>
+        <Link
+          to="/"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '12px 24px',
+            border: 'none',
+            fontSize: '16px',
+            fontWeight: '500',
+            borderRadius: '6px',
+            color: 'white',
+            backgroundColor: '#d4a574',
+            textDecoration: 'none',
+            transition: 'background-color 0.2s'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#c19658'}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#d4a574'}
+        >
+          Back to Home
+        </Link>
       </div>
-    </>
+    </div>
   )
 }

@@ -1,10 +1,6 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { useQuery } from '@tanstack/react-query'
-import { Helmet } from 'react-helmet-async'
 import { format } from 'date-fns'
-import { de, enUS } from 'date-fns/locale'
 
 interface Event {
   id: string
@@ -20,69 +16,134 @@ interface Event {
 
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { t, i18n } = useTranslation()
-  const locale = i18n.language === 'de' ? de : enUS
+  const [event, setEvent] = useState<Event | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const { data: event, isLoading } = useQuery({
-    queryKey: ['event', id],
-    queryFn: async () => {
-      const response = await fetch(`/api/events/${id}`)
-      if (!response.ok) throw new Error('Failed to fetch event')
-      return response.json()
-    },
-    enabled: !!id,
-  })
+  useEffect(() => {
+    if (!id) return
+    
+    const fetchEvent = async () => {
+      try {
+        const response = await fetch(`/api/events/${id}`)
+        if (!response.ok) throw new Error('Failed to fetch event')
+        const data = await response.json()
+        setEvent(data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchEvent()
+  }, [id])
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-terracotta-600"></div>
-        </div>
+      <div style={{ 
+        maxWidth: '1200px', 
+        margin: '0 auto', 
+        padding: '20px 16px 32px', 
+        fontFamily: 'Arial, sans-serif',
+        textAlign: 'center'
+      }}>
+        <p>Loading event...</p>
       </div>
     )
   }
 
-  if (!event) {
+  if (error || !event) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">{t('events.notFound')}</h1>
-        </div>
+      <div style={{ 
+        maxWidth: '1200px', 
+        margin: '0 auto', 
+        padding: '20px 16px 32px', 
+        fontFamily: 'Arial, sans-serif',
+        textAlign: 'center'
+      }}>
+        <h1 style={{ 
+          fontSize: '24px', 
+          fontWeight: 'bold',
+          color: '#111827',
+          margin: '0'
+        }}>
+          Event Not Found
+        </h1>
+        {error && <p style={{ color: 'red', marginTop: '16px' }}>Error: {error}</p>}
       </div>
     )
   }
 
   return (
-    <>
-      <Helmet>
-        <title>{i18n.language === 'de' ? event.title_de : event.title_en} - {t('meta.events.title')}</title>
-        <meta name="description" content={i18n.language === 'de' ? event.description_de : event.description_en} />
-      </Helmet>
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">
-            {i18n.language === 'de' ? event.title_de : event.title_en}
-          </h1>
+    <div style={{ 
+      maxWidth: '1200px', 
+      margin: '0 auto', 
+      padding: '20px 16px 32px', 
+      fontFamily: 'Arial, sans-serif'
+    }}>
+      <div style={{ maxWidth: '768px', margin: '0 auto' }}>
+        <h1 style={{ 
+          fontSize: '32px', 
+          fontWeight: 'bold', 
+          color: '#111827', 
+          marginBottom: '24px',
+          margin: '0 0 24px 0'
+        }}>
+          {event.title_en}
+        </h1>
+        
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '8px',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+          padding: '24px',
+          marginBottom: '32px'
+        }}>
+          <p style={{ 
+            fontSize: '18px', 
+            color: '#374151', 
+            marginBottom: '24px',
+            margin: '0 0 24px 0',
+            lineHeight: '1.6'
+          }}>
+            {event.description_en}
+          </p>
           
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <p className="text-lg text-gray-700 mb-6">
-              {i18n.language === 'de' ? event.description_de : event.description_en}
-            </p>
-            
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">{t('events.details')}</h3>
-                <div className="space-y-2 text-gray-600">
-                  <p><strong>{t('events.date')}:</strong> {format(new Date(event.event_date), 'PPP', { locale })}</p>
-                  <p><strong>{t('events.price')}:</strong> €{event.price}</p>
-                  <p><strong>{t('events.availability')}:</strong> {event.current_attendees}/{event.max_attendees} {t('events.attendees')}</p>
-                </div>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+            gap: '24px' 
+          }}>
+            <div>
+              <h3 style={{ 
+                fontSize: '18px', 
+                fontWeight: '600', 
+                marginBottom: '8px',
+                color: '#111827',
+                margin: '0 0 8px 0'
+              }}>
+                Event Details
+              </h3>
+              <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: '8px', 
+                color: '#4B5563' 
+              }}>
+                <p style={{ margin: 0 }}>
+                  <strong>Date:</strong> {format(new Date(event.event_date), 'PPP')}
+                </p>
+                <p style={{ margin: 0 }}>
+                  <strong>Price:</strong> €{event.price}
+                </p>
+                <p style={{ margin: 0 }}>
+                  <strong>Availability:</strong> {event.current_attendees}/{event.max_attendees} attendees
+                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }

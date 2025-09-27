@@ -1,9 +1,18 @@
 import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import SimpleLayout from '@/components/SimpleLayout'
+import HomePage from '@/pages/HomePage'
 import TestPage from '@/pages/TestPage'
 import MenuPage from '@/pages/MenuPage'
 import GalleryPage from '@/pages/GalleryPage'
+import ReservationsPage from '@/pages/ReservationsPage'
+import EventsPage from '@/pages/EventsPage'
+import EventDetailPage from '@/pages/EventDetailPage'
+import ContactPage from '@/pages/ContactPage'
+import BlogPage from '@/pages/BlogPage'
+import AdminPage from '@/pages/AdminPage'
+import AdminLoginPage from '@/pages/AdminLoginPage'
+import NotFoundPage from '@/pages/NotFoundPage'
 
 function App() {
   return (
@@ -12,11 +21,22 @@ function App() {
       <Route path="/" element={<Navigate to="/de" replace />} />
       
       {/* Locale-based routes */}
-      <Route path="/de" element={<SimpleLayout />}>
-        <Route index element={<TestPage />} />
+      <Route path="/:locale" element={<SimpleLayout />}>
+        <Route index element={<HomePage />} />
+        <Route path="test" element={<TestPage />} />
         <Route path="menu" element={<MenuPage />} />
         <Route path="gallery" element={<GalleryPage />} />
+        <Route path="reservations" element={<ReservationsPage />} />
+        <Route path="events" element={<EventsPage />} />
+        <Route path="events/:id" element={<EventDetailPage />} />
+        <Route path="contact" element={<ContactPage />} />
+        <Route path="blog" element={<BlogPage />} />
+        <Route path="admin/login" element={<AdminLoginPage />} />
+        <Route path="admin/*" element={<AdminPage />} />
       </Route>
+      
+      {/* 404 route */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
 }

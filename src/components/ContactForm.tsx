@@ -1,9 +1,7 @@
 'use client';
 import React, { useState } from 'react';
-import { useTranslations } from 'next-intl';
 
 export default function ContactForm() {
-  const t = useTranslations('contact');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -18,23 +16,23 @@ export default function ContactForm() {
 
     // Name validation
     if (!formData.name.trim()) {
-      newErrors.name = t('name_required');
+      newErrors.name = 'Name is required';
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = t('name_min_length');
+      newErrors.name = 'Name must be at least 2 characters long';
     }
 
     // Email validation
     if (!formData.email.trim()) {
-      newErrors.email = t('email_required');
+      newErrors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = t('email_invalid');
+      newErrors.email = 'Please enter a valid email address';
     }
 
     // Message validation
     if (!formData.message.trim()) {
-      newErrors.message = t('message_required');
+      newErrors.message = 'Message is required';
     } else if (formData.message.trim().length < 10) {
-      newErrors.message = t('message_min_length');
+      newErrors.message = 'Message must be at least 10 characters long';
     }
 
     setErrors(newErrors);
@@ -62,7 +60,7 @@ export default function ContactForm() {
       });
 
       if (response.ok) {
-        setMessage(t('success_message'));
+        setMessage('Thank you! Your message has been sent successfully.');
         setFormData({
           name: '',
           email: '',
@@ -70,10 +68,10 @@ export default function ContactForm() {
         });
       } else {
         const errorData = await response.json();
-        setMessage(errorData.error || t('error_message'));
+        setMessage(errorData.error || 'There was an error sending your message. Please try again.');
       }
     } catch (error) {
-      setMessage(t('error_message'));
+      setMessage('There was an error sending your message. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -98,13 +96,19 @@ export default function ContactForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className='space-y-6'>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px', fontFamily: 'Arial, sans-serif' }}>
       <div>
         <label
           htmlFor='name'
-          className='block text-sm font-medium text-foreground mb-2'
+          style={{
+            display: 'block',
+            fontSize: '14px',
+            fontWeight: '500',
+            color: '#111827',
+            marginBottom: '8px'
+          }}
         >
-          {t('name')} *
+          Name *
         </label>
         <input
           type='text'
@@ -113,9 +117,19 @@ export default function ContactForm() {
           required
           value={formData.name}
           onChange={handleChange}
-          className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
-            errors.name ? 'border-destructive' : 'border-border'
-          }`}
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            border: `1px solid ${errors.name ? '#dc2626' : '#d1d5db'}`,
+            borderRadius: '6px',
+            fontSize: '16px',
+            backgroundColor: '#ffffff',
+            color: '#111827',
+            outline: 'none',
+            transition: 'border-color 0.2s'
+          }}
+          onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = '#2563eb'}
+          onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = errors.name ? '#dc2626' : '#d1d5db'}
           aria-invalid={errors.name ? 'true' : 'false'}
           aria-describedby={errors.name ? 'name-error' : undefined}
           data-testid='input-contact-name'
@@ -123,7 +137,11 @@ export default function ContactForm() {
         {errors.name && (
           <p
             id='name-error'
-            className='text-destructive text-sm mt-1'
+            style={{
+              color: '#dc2626',
+              fontSize: '14px',
+              marginTop: '4px'
+            }}
             role='alert'
           >
             {errors.name}
@@ -134,9 +152,15 @@ export default function ContactForm() {
       <div>
         <label
           htmlFor='email'
-          className='block text-sm font-medium text-foreground mb-2'
+          style={{
+            display: 'block',
+            fontSize: '14px',
+            fontWeight: '500',
+            color: '#111827',
+            marginBottom: '8px'
+          }}
         >
-          {t('email')} *
+          Email *
         </label>
         <input
           type='email'
@@ -145,9 +169,19 @@ export default function ContactForm() {
           required
           value={formData.email}
           onChange={handleChange}
-          className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
-            errors.email ? 'border-destructive' : 'border-border'
-          }`}
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            border: `1px solid ${errors.email ? '#dc2626' : '#d1d5db'}`,
+            borderRadius: '6px',
+            fontSize: '16px',
+            backgroundColor: '#ffffff',
+            color: '#111827',
+            outline: 'none',
+            transition: 'border-color 0.2s'
+          }}
+          onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = '#2563eb'}
+          onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = errors.email ? '#dc2626' : '#d1d5db'}
           aria-invalid={errors.email ? 'true' : 'false'}
           aria-describedby={errors.email ? 'email-error' : undefined}
           data-testid='input-contact-email'
@@ -155,7 +189,11 @@ export default function ContactForm() {
         {errors.email && (
           <p
             id='email-error'
-            className='text-destructive text-sm mt-1'
+            style={{
+              color: '#dc2626',
+              fontSize: '14px',
+              marginTop: '4px'
+            }}
             role='alert'
           >
             {errors.email}
@@ -166,9 +204,15 @@ export default function ContactForm() {
       <div>
         <label
           htmlFor='message'
-          className='block text-sm font-medium text-foreground mb-2'
+          style={{
+            display: 'block',
+            fontSize: '14px',
+            fontWeight: '500',
+            color: '#111827',
+            marginBottom: '8px'
+          }}
         >
-          {t('message')} *
+          Message *
         </label>
         <textarea
           id='message'
@@ -177,9 +221,20 @@ export default function ContactForm() {
           rows={5}
           value={formData.message}
           onChange={handleChange}
-          className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
-            errors.message ? 'border-destructive' : 'border-border'
-          }`}
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            border: `1px solid ${errors.message ? '#dc2626' : '#d1d5db'}`,
+            borderRadius: '6px',
+            fontSize: '16px',
+            backgroundColor: '#ffffff',
+            color: '#111827',
+            outline: 'none',
+            transition: 'border-color 0.2s',
+            resize: 'vertical'
+          }}
+          onFocus={(e) => (e.target as HTMLTextAreaElement).style.borderColor = '#2563eb'}
+          onBlur={(e) => (e.target as HTMLTextAreaElement).style.borderColor = errors.message ? '#dc2626' : '#d1d5db'}
           aria-invalid={errors.message ? 'true' : 'false'}
           aria-describedby={errors.message ? 'message-error' : undefined}
           data-testid='textarea-contact-message'
@@ -187,7 +242,11 @@ export default function ContactForm() {
         {errors.message && (
           <p
             id='message-error'
-            className='text-destructive text-sm mt-1'
+            style={{
+              color: '#dc2626',
+              fontSize: '14px',
+              marginTop: '4px'
+            }}
             role='alert'
           >
             {errors.message}
@@ -197,7 +256,13 @@ export default function ContactForm() {
 
       {message && (
         <div
-          className={`p-4 rounded-md ${message === t('success_message') ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-destructive/10 text-destructive'}`}
+          style={{
+            padding: '16px',
+            borderRadius: '6px',
+            backgroundColor: message === 'Thank you! Your message has been sent successfully.' ? '#dcfce7' : '#fef2f2',
+            color: message === 'Thank you! Your message has been sent successfully.' ? '#166534' : '#dc2626',
+            border: `1px solid ${message === 'Thank you! Your message has been sent successfully.' ? '#bbf7d0' : '#fecaca'}`
+          }}
         >
           {message}
         </div>
@@ -206,10 +271,28 @@ export default function ContactForm() {
       <button
         type='submit'
         disabled={isSubmitting}
-        className='w-full bg-primary text-primary-foreground px-8 py-4 rounded-md hover:bg-primary/90 transition-colors text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed'
+        style={{
+          width: '100%',
+          backgroundColor: isSubmitting ? '#6b7280' : '#2563eb',
+          color: '#ffffff',
+          padding: '16px 32px',
+          borderRadius: '6px',
+          border: 'none',
+          fontSize: '18px',
+          fontWeight: '600',
+          cursor: isSubmitting ? 'not-allowed' : 'pointer',
+          transition: 'background-color 0.2s',
+          opacity: isSubmitting ? 0.6 : 1
+        }}
+        onMouseOver={(e) => {
+          if (!isSubmitting) (e.target as HTMLButtonElement).style.backgroundColor = '#1d4ed8';
+        }}
+        onMouseOut={(e) => {
+          if (!isSubmitting) (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
+        }}
         data-testid='button-submit-contact'
       >
-        {isSubmitting ? t('sending') : t('submit')}
+        {isSubmitting ? 'Sending...' : 'Send Message'}
       </button>
     </form>
   );

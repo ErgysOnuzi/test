@@ -1,9 +1,7 @@
 'use client';
 import React, { useState } from 'react';
-import { useTranslations } from 'next-intl';
 
 export default function ReservationForm() {
-  const t = useTranslations('reservations');
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -22,45 +20,45 @@ export default function ReservationForm() {
 
     // Name validation
     if (!formData.name.trim()) {
-      newErrors.name = t('name_required');
+      newErrors.name = 'Name is required';
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = t('name_min_length');
+      newErrors.name = 'Name must be at least 2 characters long';
     }
 
     // Phone validation
     if (!formData.phone.trim()) {
-      newErrors.phone = t('phone_required');
+      newErrors.phone = 'Phone number is required';
     } else if (!/^[\d\s\-\+\(\)]{10,}$/.test(formData.phone.trim())) {
-      newErrors.phone = t('phone_invalid');
+      newErrors.phone = 'Please enter a valid phone number';
     }
 
     // Email validation
     if (!formData.email.trim()) {
-      newErrors.email = t('email_required');
+      newErrors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = t('email_invalid');
+      newErrors.email = 'Please enter a valid email address';
     }
 
     // Date validation
     if (!formData.date) {
-      newErrors.date = t('date_required');
+      newErrors.date = 'Date is required';
     } else {
       const selectedDate = new Date(formData.date);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       if (selectedDate < today) {
-        newErrors.date = t('date_future');
+        newErrors.date = 'Please select a future date';
       }
     }
 
     // Time validation
     if (!formData.time) {
-      newErrors.time = t('time_required');
+      newErrors.time = 'Time is required';
     }
 
     // Guests validation
     if (!formData.guests || formData.guests < 1 || formData.guests > 100) {
-      newErrors.guests = t('guests_invalid');
+      newErrors.guests = 'Please select a valid number of guests (1-100)';
     }
 
     setErrors(newErrors);
@@ -89,7 +87,7 @@ export default function ReservationForm() {
 
       if (response.ok) {
         setIsSuccess(true);
-        setMessage(t('reservation_success'));
+        setMessage('Thank you! Your reservation has been submitted successfully.');
         setFormData({
           name: '',
           phone: '',
@@ -100,10 +98,10 @@ export default function ReservationForm() {
         });
       } else {
         const errorData = await response.json();
-        setMessage(errorData.error || t('reservation_error'));
+        setMessage(errorData.error || 'There was an error with your reservation. Please try again.');
       }
     } catch (error) {
-      setMessage(t('reservation_error'));
+      setMessage('There was an error with your reservation. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -128,13 +126,19 @@ export default function ReservationForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className='space-y-6'>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px', fontFamily: 'Arial, sans-serif' }}>
       <div>
         <label
           htmlFor='name'
-          className='block text-sm font-medium text-foreground mb-2'
+          style={{
+            display: 'block',
+            fontSize: '14px',
+            fontWeight: '500',
+            color: '#111827',
+            marginBottom: '8px'
+          }}
         >
-          {t('name')} *
+          Name *
         </label>
         <input
           type='text'
@@ -143,9 +147,19 @@ export default function ReservationForm() {
           required
           value={formData.name}
           onChange={handleChange}
-          className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
-            errors.name ? 'border-destructive' : 'border-border'
-          }`}
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            border: `1px solid ${errors.name ? '#dc2626' : '#d1d5db'}`,
+            borderRadius: '6px',
+            fontSize: '16px',
+            backgroundColor: '#ffffff',
+            color: '#111827',
+            outline: 'none',
+            transition: 'border-color 0.2s'
+          }}
+          onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = '#2563eb'}
+          onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = errors.name ? '#dc2626' : '#d1d5db'}
           aria-invalid={errors.name ? 'true' : 'false'}
           aria-describedby={errors.name ? 'name-error' : undefined}
           data-testid='input-reservation-name'
@@ -153,7 +167,11 @@ export default function ReservationForm() {
         {errors.name && (
           <p
             id='name-error'
-            className='text-destructive text-sm mt-1'
+            style={{
+              color: '#dc2626',
+              fontSize: '14px',
+              marginTop: '4px'
+            }}
             role='alert'
           >
             {errors.name}
@@ -164,9 +182,15 @@ export default function ReservationForm() {
       <div>
         <label
           htmlFor='phone'
-          className='block text-sm font-medium text-foreground mb-2'
+          style={{
+            display: 'block',
+            fontSize: '14px',
+            fontWeight: '500',
+            color: '#111827',
+            marginBottom: '8px'
+          }}
         >
-          {t('phone')} *
+          Phone *
         </label>
         <input
           type='tel'
@@ -175,9 +199,19 @@ export default function ReservationForm() {
           required
           value={formData.phone}
           onChange={handleChange}
-          className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
-            errors.phone ? 'border-destructive' : 'border-border'
-          }`}
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            border: `1px solid ${errors.phone ? '#dc2626' : '#d1d5db'}`,
+            borderRadius: '6px',
+            fontSize: '16px',
+            backgroundColor: '#ffffff',
+            color: '#111827',
+            outline: 'none',
+            transition: 'border-color 0.2s'
+          }}
+          onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = '#2563eb'}
+          onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = errors.phone ? '#dc2626' : '#d1d5db'}
           aria-invalid={errors.phone ? 'true' : 'false'}
           aria-describedby={errors.phone ? 'phone-error' : undefined}
           data-testid='input-reservation-phone'
@@ -185,7 +219,11 @@ export default function ReservationForm() {
         {errors.phone && (
           <p
             id='phone-error'
-            className='text-destructive text-sm mt-1'
+            style={{
+              color: '#dc2626',
+              fontSize: '14px',
+              marginTop: '4px'
+            }}
             role='alert'
           >
             {errors.phone}
@@ -196,9 +234,15 @@ export default function ReservationForm() {
       <div>
         <label
           htmlFor='email'
-          className='block text-sm font-medium text-foreground mb-2'
+          style={{
+            display: 'block',
+            fontSize: '14px',
+            fontWeight: '500',
+            color: '#111827',
+            marginBottom: '8px'
+          }}
         >
-          {t('email')} *
+          Email *
         </label>
         <input
           type='email'
@@ -207,9 +251,19 @@ export default function ReservationForm() {
           required
           value={formData.email}
           onChange={handleChange}
-          className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
-            errors.email ? 'border-destructive' : 'border-border'
-          }`}
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            border: `1px solid ${errors.email ? '#dc2626' : '#d1d5db'}`,
+            borderRadius: '6px',
+            fontSize: '16px',
+            backgroundColor: '#ffffff',
+            color: '#111827',
+            outline: 'none',
+            transition: 'border-color 0.2s'
+          }}
+          onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = '#2563eb'}
+          onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = errors.email ? '#dc2626' : '#d1d5db'}
           aria-invalid={errors.email ? 'true' : 'false'}
           aria-describedby={errors.email ? 'email-error' : undefined}
           data-testid='input-reservation-email'
@@ -217,7 +271,11 @@ export default function ReservationForm() {
         {errors.email && (
           <p
             id='email-error'
-            className='text-destructive text-sm mt-1'
+            style={{
+              color: '#dc2626',
+              fontSize: '14px',
+              marginTop: '4px'
+            }}
             role='alert'
           >
             {errors.email}
@@ -225,13 +283,23 @@ export default function ReservationForm() {
         )}
       </div>
 
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '16px'
+      }}>
         <div>
           <label
             htmlFor='date'
-            className='block text-sm font-medium text-foreground mb-2'
+            style={{
+              display: 'block',
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#111827',
+              marginBottom: '8px'
+            }}
           >
-            {t('date')} *
+            Date *
           </label>
           <input
             type='date'
@@ -241,9 +309,19 @@ export default function ReservationForm() {
             value={formData.date}
             onChange={handleChange}
             min={new Date().toISOString().split('T')[0]}
-            className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
-              errors.date ? 'border-destructive' : 'border-border'
-            }`}
+            style={{
+              width: '100%',
+              padding: '12px 16px',
+              border: `1px solid ${errors.date ? '#dc2626' : '#d1d5db'}`,
+              borderRadius: '6px',
+              fontSize: '16px',
+              backgroundColor: '#ffffff',
+              color: '#111827',
+              outline: 'none',
+              transition: 'border-color 0.2s'
+            }}
+            onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = '#2563eb'}
+            onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = errors.date ? '#dc2626' : '#d1d5db'}
             aria-invalid={errors.date ? 'true' : 'false'}
             aria-describedby={errors.date ? 'date-error' : undefined}
             data-testid='input-reservation-date'
@@ -251,7 +329,11 @@ export default function ReservationForm() {
           {errors.date && (
             <p
               id='date-error'
-              className='text-destructive text-sm mt-1'
+              style={{
+                color: '#dc2626',
+                fontSize: '14px',
+                marginTop: '4px'
+              }}
               role='alert'
             >
               {errors.date}
@@ -262,9 +344,15 @@ export default function ReservationForm() {
         <div>
           <label
             htmlFor='time'
-            className='block text-sm font-medium text-foreground mb-2'
+            style={{
+              display: 'block',
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#111827',
+              marginBottom: '8px'
+            }}
           >
-            {t('time')} *
+            Time *
           </label>
           <select
             id='time'
@@ -272,14 +360,24 @@ export default function ReservationForm() {
             required
             value={formData.time}
             onChange={handleChange}
-            className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
-              errors.time ? 'border-destructive' : 'border-border'
-            }`}
+            style={{
+              width: '100%',
+              padding: '12px 16px',
+              border: `1px solid ${errors.time ? '#dc2626' : '#d1d5db'}`,
+              borderRadius: '6px',
+              fontSize: '16px',
+              backgroundColor: '#ffffff',
+              color: '#111827',
+              outline: 'none',
+              transition: 'border-color 0.2s'
+            }}
+            onFocus={(e) => (e.target as HTMLSelectElement).style.borderColor = '#2563eb'}
+            onBlur={(e) => (e.target as HTMLSelectElement).style.borderColor = errors.time ? '#dc2626' : '#d1d5db'}
             aria-invalid={errors.time ? 'true' : 'false'}
             aria-describedby={errors.time ? 'time-error' : undefined}
             data-testid='select-reservation-time'
           >
-            <option value=''>{t('select_time')}</option>
+            <option value=''>Select a time</option>
             <option value='17:00'>17:00</option>
             <option value='17:30'>17:30</option>
             <option value='18:00'>18:00</option>
@@ -294,7 +392,11 @@ export default function ReservationForm() {
           {errors.time && (
             <p
               id='time-error'
-              className='text-destructive text-sm mt-1'
+              style={{
+                color: '#dc2626',
+                fontSize: '14px',
+                marginTop: '4px'
+              }}
               role='alert'
             >
               {errors.time}
@@ -305,9 +407,15 @@ export default function ReservationForm() {
         <div>
           <label
             htmlFor='guests'
-            className='block text-sm font-medium text-foreground mb-2'
+            style={{
+              display: 'block',
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#111827',
+              marginBottom: '8px'
+            }}
           >
-            {t('guests')} *
+            Guests *
           </label>
           <select
             id='guests'
@@ -315,23 +423,37 @@ export default function ReservationForm() {
             required
             value={formData.guests}
             onChange={handleChange}
-            className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground ${
-              errors.guests ? 'border-destructive' : 'border-border'
-            }`}
+            style={{
+              width: '100%',
+              padding: '12px 16px',
+              border: `1px solid ${errors.guests ? '#dc2626' : '#d1d5db'}`,
+              borderRadius: '6px',
+              fontSize: '16px',
+              backgroundColor: '#ffffff',
+              color: '#111827',
+              outline: 'none',
+              transition: 'border-color 0.2s'
+            }}
+            onFocus={(e) => (e.target as HTMLSelectElement).style.borderColor = '#2563eb'}
+            onBlur={(e) => (e.target as HTMLSelectElement).style.borderColor = errors.guests ? '#dc2626' : '#d1d5db'}
             aria-invalid={errors.guests ? 'true' : 'false'}
             aria-describedby={errors.guests ? 'guests-error' : undefined}
             data-testid='select-reservation-guests'
           >
             {Array.from({ length: 100 }, (_, i) => i + 1).map((num) => (
               <option key={num} value={num}>
-                {num} {num === 1 ? t('person') : t('people')}
+                {num} {num === 1 ? 'person' : 'people'}
               </option>
             ))}
           </select>
           {errors.guests && (
             <p
               id='guests-error'
-              className='text-destructive text-sm mt-1'
+              style={{
+                color: '#dc2626',
+                fontSize: '14px',
+                marginTop: '4px'
+              }}
               role='alert'
             >
               {errors.guests}
@@ -342,7 +464,13 @@ export default function ReservationForm() {
 
       {message && (
         <div
-          className={`p-4 rounded-md ${isSuccess ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-destructive/10 text-destructive'}`}
+          style={{
+            padding: '16px',
+            borderRadius: '6px',
+            backgroundColor: isSuccess ? '#dcfce7' : '#fef2f2',
+            color: isSuccess ? '#166534' : '#dc2626',
+            border: `1px solid ${isSuccess ? '#bbf7d0' : '#fecaca'}`
+          }}
         >
           {message}
         </div>
@@ -351,10 +479,28 @@ export default function ReservationForm() {
       <button
         type='submit'
         disabled={isSubmitting}
-        className='w-full bg-primary text-primary-foreground px-8 py-4 rounded-md hover:bg-primary/90 transition-colors text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed'
+        style={{
+          width: '100%',
+          backgroundColor: isSubmitting ? '#6b7280' : '#2563eb',
+          color: '#ffffff',
+          padding: '16px 32px',
+          borderRadius: '6px',
+          border: 'none',
+          fontSize: '18px',
+          fontWeight: '600',
+          cursor: isSubmitting ? 'not-allowed' : 'pointer',
+          transition: 'background-color 0.2s',
+          opacity: isSubmitting ? 0.6 : 1
+        }}
+        onMouseOver={(e) => {
+          if (!isSubmitting) (e.target as HTMLButtonElement).style.backgroundColor = '#1d4ed8';
+        }}
+        onMouseOut={(e) => {
+          if (!isSubmitting) (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
+        }}
         data-testid='button-submit-reservation'
       >
-        {isSubmitting ? t('submitting') : t('submit')}
+        {isSubmitting ? 'Submitting...' : 'Make Reservation'}
       </button>
     </form>
   );
