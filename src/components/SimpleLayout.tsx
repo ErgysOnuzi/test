@@ -1,34 +1,23 @@
-import React, { useEffect } from 'react'
-import { Outlet, useParams } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { Helmet } from 'react-helmet-async'
+import React from 'react'
+import { Outlet, Link } from 'react-router-dom'
 
 export default function SimpleLayout() {
-  const { locale } = useParams<{ locale: string }>()
-  const { i18n } = useTranslation()
-
-  useEffect(() => {
-    if (locale && locale !== i18n.language) {
-      i18n.changeLanguage(locale)
-    }
-  }, [locale, i18n])
-
   return (
-    <>
-      <Helmet>
-        <html lang={locale || 'de'} />
-      </Helmet>
-      <div className="min-h-screen flex flex-col">
-        <header className="bg-gray-900 text-white p-4">
-          <h1 className="text-xl font-bold">La Cantina Berlin - Vite Migration</h1>
-        </header>
-        <main className="flex-1">
-          <Outlet />
-        </main>
-        <footer className="bg-gray-800 text-white p-4 text-center">
-          <p>Migration Test - Express + Vite + React</p>
-        </footer>
-      </div>
-    </>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <header style={{ background: '#1a1a1a', color: 'white', padding: '20px' }}>
+        <h1 style={{ margin: 0, fontSize: '24px' }}>La Cantina Berlin - Vite Migration</h1>
+        <nav style={{ marginTop: '10px' }}>
+          <Link to="/de" style={{ color: 'white', marginRight: '20px', textDecoration: 'none' }}>Home</Link>
+          <Link to="/de/menu" style={{ color: 'white', marginRight: '20px', textDecoration: 'none' }}>Menu</Link>
+          <Link to="/de/gallery" style={{ color: 'white', textDecoration: 'none' }}>Gallery</Link>
+        </nav>
+      </header>
+      <main style={{ flex: 1, padding: '20px' }}>
+        <Outlet />
+      </main>
+      <footer style={{ background: '#333', color: 'white', padding: '20px', textAlign: 'center' }}>
+        <p>Migration Test - Express + Vite + React</p>
+      </footer>
+    </div>
   )
 }

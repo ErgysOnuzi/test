@@ -1,14 +1,23 @@
 import React from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import SimpleLayout from '@/components/SimpleLayout'
+import TestPage from '@/pages/TestPage'
+import MenuPage from '@/pages/MenuPage'
+import GalleryPage from '@/pages/GalleryPage'
 
 function App() {
   return (
-    <div style={{ padding: '50px', backgroundColor: '#f0f0f0', minHeight: '100vh' }}>
-      <h1 style={{ color: 'red', fontSize: '24px' }}>DEBUG: React App is Working!</h1>
-      <p>🎉 Vite + React Migration Successful!</p>
-      <p>✅ Frontend: Vite + React (Port 5000)</p>
-      <p>✅ Backend: Express API (Port 3001)</p>
-      <p>✅ Database: PostgreSQL with Drizzle ORM</p>
-    </div>
+    <Routes>
+      {/* Default route redirects to German locale */}
+      <Route path="/" element={<Navigate to="/de" replace />} />
+      
+      {/* Locale-based routes */}
+      <Route path="/de" element={<SimpleLayout />}>
+        <Route index element={<TestPage />} />
+        <Route path="menu" element={<MenuPage />} />
+        <Route path="gallery" element={<GalleryPage />} />
+      </Route>
+    </Routes>
   )
 }
 

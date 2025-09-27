@@ -1,77 +1,107 @@
-import React from 'react'
-import { useTranslation } from 'react-i18next'
-import { useQuery } from '@tanstack/react-query'
-import { Helmet } from 'react-helmet-async'
-import MenuWithFilters from '@/components/MenuWithFilters'
+import React, { useState, useEffect } from 'react'
 
 interface MenuItem {
   id: number
   title: string
-  titleDe?: string
-  titleEn?: string
   description: string
-  descriptionDe?: string
-  descriptionEn?: string
   price: number
   category: string
-  categoryDe?: string
-  categoryEn?: string
   isAvailable: boolean
-  allergens?: string
-  imageUrl?: string | null
 }
 
 export default function MenuPage() {
-  const { t, i18n } = useTranslation()
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const { data: menuItems = [], isLoading, error } = useQuery({
-    queryKey: ['menu'],
-    queryFn: async (): Promise<MenuItem[]> => {
-      const response = await fetch('/api/menu')
-      if (!response.ok) throw new Error('Failed to fetch menu')
-      return response.json()
-    },
-  })
+  useEffect(() => {
+    const fetchMenu = async () => {
+      try {
+        const response = await fetch('/api/menu')
+        if (!response.ok) throw new Error('Failed to fetch menu')
+        const data = await response.json()
+        setMenuItems(data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchMenu()
+  }, [])
 
   if (isLoading) {
     return (
-      <>
-        <Helmet>
-          <title>{t('meta.menu.title')}</title>
-          <meta name="description" content={t('meta.menu.description')} />
-        </Helmet>
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-terracotta-600"></div>
-          </div>
-        </div>
-      </>
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <h1 style={{ fontSize: '32px', marginBottom: '20px' }}>Menu</h1>
+        <p>Loading menu items...</p>
+      </div>
     )
   }
 
   if (error) {
     return (
-      <>
-        <Helmet>
-          <title>{t('meta.menu.title')}</title>
-          <meta name="description" content={t('meta.menu.description')} />
-        </Helmet>
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-red-600">{t('menu.error')}</h1>
-          </div>
-        </div>
-      </>
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <h1 style={{ fontSize: '32px', marginBottom: '20px' }}>Menu</h1>
+        <p style={{ color: 'red' }}>Error: {error}</p>
+      </div>
     )
   }
 
+  const categories = Array.from(new Set(menuItems.map(item => item.category)))
+
   return (
-    <>
-      <Helmet>
-        <title>{t('meta.menu.title')}</title>
-        <meta name="description" content={t('meta.menu.description')} />
-      </Helmet>
-      <MenuWithFilters menuItems={menuItems} locale={i18n.language} />
-    </>
+    <div style={{ padding: '20px' }}>
+      <h1 style={{ fontSize: '32px', marginBottom: '20px', textAlign: 'center' }}>
+        La Cantina Berlin Menu
+      </h1>
+      <p style={{ textAlign: 'center', marginBottom: '30px', color: '#666' }}>
+        Authentic Italian cuisine in the heart of Berlin
+      </p>
+      
+      {categories.map(category => (
+        <div key={category} style={{ marginBottom: '40px' }}>
+          <h2 style={{ fontSize: '24px', marginBottom: '20px', color: '#333', borderBottom: '2px solid #d4a574' }}>
+            {category}
+          </h2>
+          <div style={{ display: 'grid', gap: '15px' }}>
+            {menuItems
+              .filter(item => item.category === category && item.isAvailable)
+              .map(item => (
+                <div key={item.id} style={{ 
+                  padding: '15px', 
+                  border: '1px solid #ddd', 
+                  borderRadius: '8px',
+                  backgroundColor: '#fafafa'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ margin: '0 0 5px 0', fontSize: '18px', color: '#333' }}>
+                        {item.title}
+                      </h3>
+                      <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>
+                        {item.description}
+                      </p>
+                    </div>
+                    <div style={{ 
+                      fontSize: '16px', 
+                      fontWeight: 'bold', 
+                      color: '#d4a574',
+                      marginLeft: '15px'
+                    }}>
+                      €{item.price.toFixed(2)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      ))}
+      
+      <div style={{ marginTop: '30px', textAlign: 'center', color: '#666' }}>
+        <p>Total menu items: {menuItems.filter(item => item.isAvailable).length}</p>
+        <p>Categories: {categories.length}</p>
+      </div>
+    </div>
   )
 }
