@@ -1,7 +1,3 @@
-import createNextIntlPlugin from 'next-intl/plugin';
-
-const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -14,7 +10,10 @@ const nextConfig = {
   },
   experimental: {
     esmExternals: 'loose'
-  }
+  },
+  // Use server-side rendering instead of static export
+  trailingSlash: true,
+  skipTrailingSlashRedirect: true
 };
 
-export default withNextIntl(nextConfig);
+export default nextConfig;

@@ -56,9 +56,9 @@ externalPort = 80
 
 # Deployment Configuration
 [deployment]
-deploymentTarget = "autoscale"
+deploymentTarget = "vm"
 build = ["npm", "run", "build"]
-run = ["python3", "-m", "http.server"]
+run = ["npm", "start"]
 
 
 [deployment.env]
