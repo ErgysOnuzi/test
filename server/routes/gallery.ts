@@ -9,6 +9,8 @@ router.get('/', async (req, res) => {
   try {
     const images = await db.select().from(schema.gallery)
     
+    console.log('Raw database response sample:', JSON.stringify(images[0], null, 2))
+    
     // Transform data to match expected format
     const transformedImages = images.map((image: any) => ({
       id: image.id,
@@ -18,13 +20,14 @@ router.get('/', async (req, res) => {
       description: image.description || '',
       descriptionDe: image.description_de || image.description || '',
       descriptionEn: image.description_en || image.description || '',
-      imageUrl: image.image_url || '',
+      imageUrl: image.imageUrl || image.image_url || '', // Try both imageUrl and image_url
       category: image.category || 'atmosphere',
-      altText: image.alt_text || '',
-      uploadedAt: image.uploaded_at,
-      isVisible: image.is_visible || true,
+      altText: image.alt || '', // Try alt
+      uploadedAt: image.createdAt, // Try createdAt  
+      isVisible: image.isActive || true, // Try isActive
     }))
 
+    console.log('Transformed image sample:', JSON.stringify(transformedImages[0], null, 2))
     console.log(`🖼️ Fetched ${transformedImages.length} gallery images`)
     res.json(transformedImages)
   } catch (error) {
@@ -52,11 +55,11 @@ router.get('/:id', async (req, res) => {
       description: image.description || '',
       descriptionDe: image.description_de || image.description || '',
       descriptionEn: image.description_en || image.description || '',
-      imageUrl: image.image_url || '',
+      imageUrl: image.imageUrl || '', // Fixed: use imageUrl from Drizzle schema
       category: image.category || 'atmosphere',
-      altText: image.alt_text || '',
-      uploadedAt: image.uploaded_at,
-      isVisible: image.is_visible || true,
+      altText: image.alt || '', // Fixed: use alt from schema
+      uploadedAt: image.createdAt, // Fixed: use createdAt from schema
+      isVisible: image.isActive || true, // Fixed: use isActive from schema
     }
 
     res.json(transformedImage)

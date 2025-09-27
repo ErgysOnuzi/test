@@ -98,8 +98,19 @@ export default function GalleryPage() {
         if (!response.ok) throw new Error('Failed to fetch gallery')
         const data = await response.json()
         
-        // Filter out images without URLs
-        const validImages = data.filter((img: GalleryImage) => img.imageUrl && img.imageUrl.trim() !== '')
+        console.log('Gallery API response:', data.length, 'images')
+        console.log('Sample image:', data[0])
+        
+        // Filter out images without URLs - be more lenient with the filtering
+        const validImages = data.filter((img: GalleryImage) => {
+          const hasUrl = img.imageUrl && img.imageUrl.trim() !== ''
+          if (!hasUrl) {
+            console.log('Filtered out image without URL:', img)
+          }
+          return hasUrl
+        })
+        
+        console.log('Valid images after filtering:', validImages.length)
         setImages(validImages)
         
         // Save to cache
