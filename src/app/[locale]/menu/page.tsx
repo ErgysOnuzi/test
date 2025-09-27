@@ -1,56 +1,48 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import MenuWithFilters from '@/components/MenuWithFilters';
 import { generateSEOMetadata, MenuSchema } from '@/components/StructuredData';
+import { useTranslations } from 'next-intl';
 
-// Enable static generation with ISR - revalidate every 5 minutes
-export const revalidate = 300;
-export const dynamic = 'force-static';
-
-export async function generateMetadata({
+export default function MenuPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
-  return generateSEOMetadata('menu', locale);
-}
+  const [locale, setLocale] = useState<string>('de');
+  
+  useEffect(() => {
+    const getLocale = async () => {
+      const resolvedParams = await params;
+      setLocale(resolvedParams.locale);
+    };
+    getLocale();
+  }, [params]);
+  const [menuItems, setMenuItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchMenuItems = async () => {
+      try {
+        console.log('Fetching menu items...');
+        const response = await fetch('/api/menu');
+        console.log('Response status:', response.status);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Menu data received:', data.length, 'items');
+          console.log('First item:', data[0]);
+          setMenuItems(data);
+        }
+      } catch (error) {
+        console.error('Error fetching menu items:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-async function getMenuItems() {
-  try {
-    // Get base URL for server-side fetching
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.NEXT_PUBLIC_BASE_URL || '';
-
-    const response = await fetch(`${baseUrl}/api/menu`, {
-      next: {
-        tags: ['menu'],
-        revalidate: 300, // Cache for 5 minutes
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch menu items');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching menu items:', error);
-    // Return empty array if API fails - no mock data
-    console.error(
-      'Menu API failed, returning empty array. Check database connection.'
-    );
-    return [];
-  }
-}
-
-export default async function MenuPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
-  const menuItems = await getMenuItems();
+    fetchMenuItems();
+  }, []);
 
   return (
     <>

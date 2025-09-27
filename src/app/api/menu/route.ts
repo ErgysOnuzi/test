@@ -4,14 +4,33 @@ import { asc } from 'drizzle-orm';
 
 // Cache for 5 minutes
 export const revalidate = 300;
-export const dynamic = 'force-static';
 
 export async function GET() {
   try {
-    const items = await db
+    const rawItems = await db
       .select()
       .from(schema.menuItems)
       .orderBy(asc(schema.menuItems.categoryDe), asc(schema.menuItems.titleDe));
+
+    // Map to camelCase format expected by frontend
+    const items = rawItems.map(item => ({
+      id: item.id,
+      title: item.title,
+      titleDe: item.titleDe,
+      titleEn: item.titleEn,
+      description: item.description,
+      descriptionDe: item.descriptionDe,
+      descriptionEn: item.descriptionEn,
+      price: item.price,
+      category: item.category,
+      categoryDe: item.categoryDe,
+      categoryEn: item.categoryEn,
+      isAvailable: item.isAvailable,
+      allergens: item.allergens,
+      imageUrl: item.imageUrl,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    }));
 
     return NextResponse.json(items, {
       headers: {
