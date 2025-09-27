@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Cantina Berlin - Italienisches Restaurant</title>
+    <meta name="description" content="Authentisches italienisches Restaurant in Berlin Charlottenburg. Traditionelle Küche, frische Zutaten und herzliche Gastfreundschaft.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, #fef7ed 0%, #fef3c7 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+        }
+        
+        .logo {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #9a3412;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .subtitle {
+            font-size: 2.5rem;
+            color: #c2410c;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+        
+        .tagline {
+            font-size: 1.3rem;
+            color: #c2410c;
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+        
+        .description {
+            font-size: 1.1rem;
+            color: #374151;
+            margin-bottom: 3rem;
+            line-height: 1.8;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .contact-section {
+            background: white;
+            padding: 4rem 2rem;
+            box-shadow: 0 -4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .contact-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #9a3412;
+            margin-bottom: 2rem;
+        }
+        
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .contact-item h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #c2410c;
+            margin-bottom: 1rem;
+        }
+        
+        .contact-item p {
+            color: #374151;
+            line-height: 1.7;
+        }
+        
+        .hours {
+            margin-top: 2rem;
+            padding: 2rem;
+            background: #fef7ed;
+            border-radius: 8px;
+            border: 2px solid #fed7aa;
+        }
+        
+        .reservation-note {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #ecfdf5;
+            border-radius: 8px;
+            border: 2px solid #86efac;
+            color: #166534;
+            font-weight: 500;
+        }
+        
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2.5rem;
+            }
+            
+            .subtitle {
+                font-size: 1.8rem;
+            }
+            
+            .tagline {
+                font-size: 1.1rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="logo">Ristorante La Cantina</h1>
+            <div class="subtitle">Bleibtreu</div>
+            <p class="tagline">Italienische Küche nahe Kurfürstendamm</p>
+            
+            <p class="description">
+                Es gibt viele Cantinas in Berlin – aber es gibt nur eine Ristorante La 
+                Cantina Bleibtreu. Seit März 2025 begann für das traditionsreiche 
+                Ristorante ein neues Kapitel mit frischer Energie, einem neuen Team 
+                und unserer Philosophie: bleiben, genießen, verweilen.
+            </p>
+        </div>
+    </section>
+
+    <section class="contact-section">
+        <div class="contact-content">
+            <h2 class="section-title">Besuchen Sie uns</h2>
+            
+            <div class="contact-grid">
+                <div class="contact-item">
+                    <h3>🏠 Adresse</h3>
+                    <p>
+                        Bleibtreustr. 17<br>
+                        10623 Berlin<br>
+                        Germany
+                    </p>
+                </div>
+                
+                <div class="contact-item">
+                    <h3>📞 Kontakt</h3>
+                    <p>
+                        Telefon: <strong>+49 30 883 21 56</strong><br>
+                        Email: <strong>info@lacantina-berlin.de</strong>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="hours">
+                <h3>🕒 Öffnungszeiten</h3>
+                <p>
+                    <strong>Montag - Sonntag: 17:00 - 23:00</strong><br>
+                    Küche bis 22:00
+                </p>
+            </div>
+            
+            <div class="reservation-note">
+                <p>
+                    🍽️ <strong>Reservierungen empfohlen</strong><br>
+                    Rufen Sie uns an oder besuchen Sie uns direkt im Restaurant!
+                </p>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

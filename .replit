@@ -1,5 +1,4 @@
-# La Cantina Berlin - Next.js Restaurant Website Configuration
-modules = ["nodejs-20", "web", "postgresql-16"]
+modules = ["nodejs-20", "web", "postgresql-16", "python-3.11"]
 
 [agent]
 expertMode = true
@@ -31,72 +30,35 @@ NEXT_TELEMETRY_DISABLED = "1"
 runButton = "Project"
 
 [[workflows.workflow]]
-name = "Server"
-mode = "parallel"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
-waitForPort = 5000
-
-[workflows.workflow.metadata]
-outputType = "webview"
-
-[[workflows.workflow]]
 name = "Project"
 mode = "parallel"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Development Server"
+args = "La Cantina Website"
 
 [[workflows.workflow]]
-name = "Development Server"
+name = "La Cantina Website"
 author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
-waitForPort = 5000
 
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python3 -m http.server 5000"
+waitForPort = 5000
 
 [[ports]]
 localPort = 5000
 externalPort = 80
 
-[[ports]]
-localPort = 35027
-externalPort = 4200
-
-[[ports]]
-localPort = 36951
-externalPort = 3002
-
-[[ports]]
-localPort = 37951
-externalPort = 3003
-
-[[ports]]
-localPort = 38131
-externalPort = 3000
-
-[[ports]]
-localPort = 38675
-externalPort = 3001
-
-[[ports]]
-localPort = 41493
-externalPort = 5000
-
 # Deployment Configuration
 [deployment]
 deploymentTarget = "autoscale"
 build = ["npm", "run", "build"]
-run = ["npm", "start"]
+run = ["python3", "-m", "http.server"]
 
 
 [deployment.env]
