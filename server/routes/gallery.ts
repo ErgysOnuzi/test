@@ -9,9 +9,7 @@ router.get('/', async (req, res) => {
   try {
     const images = await db.select().from(schema.gallery)
     
-    console.log('Raw database response sample:', JSON.stringify(images[0], null, 2))
-    
-    // Transform data to match expected format
+    // Transform data to match expected format - use proper field names from Drizzle schema
     const transformedImages = images.map((image: any) => ({
       id: image.id,
       title: image.title || '',
@@ -20,14 +18,12 @@ router.get('/', async (req, res) => {
       description: image.description || '',
       descriptionDe: image.description_de || image.description || '',
       descriptionEn: image.description_en || image.description || '',
-      imageUrl: image.imageUrl || image.image_url || '', // Try both imageUrl and image_url
+      imageUrl: image.imageUrl || '', // Use imageUrl from Drizzle schema
       category: image.category || 'atmosphere',
-      altText: image.alt || '', // Try alt
-      uploadedAt: image.createdAt, // Try createdAt  
-      isVisible: image.isActive || true, // Try isActive
+      altText: image.alt || '', // Use alt from schema
+      uploadedAt: image.createdAt, // Use createdAt from schema  
+      isVisible: image.isActive !== undefined ? image.isActive : true, // Use isActive from schema
     }))
-
-    console.log('Transformed image sample:', JSON.stringify(transformedImages[0], null, 2))
     console.log(`🖼️ Fetched ${transformedImages.length} gallery images`)
     res.json(transformedImages)
   } catch (error) {
