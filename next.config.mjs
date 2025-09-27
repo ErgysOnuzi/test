@@ -83,6 +83,40 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['react', 'react-dom', 'date-fns', 'lucide-react'],
   },
+
+  // Image configuration for external hosts
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24, // 24 hours
+    qualities: [50, 75, 85, 95, 100],
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.replit.app',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.repl.it',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.replit.dev',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**', // Allow all HTTPS images
+      },
+    ],
+  },
   
   // Disable error page prerendering for static export
   generateBuildId: async () => {
