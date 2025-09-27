@@ -2,8 +2,9 @@ import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Toaster } from '@/components/ui/toaster'
-import Layout from '@/components/Layout'
+import SimpleLayout from '@/components/SimpleLayout'
 import HomePage from '@/pages/HomePage'
+import TestPage from '@/pages/TestPage'
 import MenuPage from '@/pages/MenuPage'
 import GalleryPage from '@/pages/GalleryPage'
 import ReservationsPage from '@/pages/ReservationsPage'
@@ -27,8 +28,9 @@ function App() {
         <Route path="/" element={<Navigate to={`/${currentLocale}`} replace />} />
         
         {/* Locale-based routes */}
-        <Route path="/:locale" element={<Layout />}>
-          <Route index element={<HomePage />} />
+        <Route path="/:locale" element={<SimpleLayout />}>
+          <Route index element={<TestPage />} />
+          <Route path="home" element={<HomePage />} />
           <Route path="menu" element={<MenuPage />} />
           <Route path="gallery" element={<GalleryPage />} />
           <Route path="reservations" element={<ReservationsPage />} />
