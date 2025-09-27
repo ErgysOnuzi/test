@@ -88,15 +88,11 @@ externalPort = 3000
 localPort = 38675
 externalPort = 3001
 
-[[ports]]
-localPort = 42515
-externalPort = 5000
-
 # Deployment Configuration
 [deployment]
 deploymentTarget = "autoscale"
 build = ["npm", "run", "build"]
-run = ["bash", "-lc", "npm ci && npm run build && npm run start"]
+run = ["npm"]
 
 
 [deployment.env]

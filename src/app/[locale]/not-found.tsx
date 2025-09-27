@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import Link from 'next/link';
 import { Home, ArrowLeft, ChefHat, MapPin } from 'lucide-react';
 import { useParams } from 'next/navigation';

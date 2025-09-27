@@ -9,6 +9,9 @@ const withBundleAnalyzer = bundleAnalyzer({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Configure for Replit deployment
+  output: 'standalone',
+  
   // Production optimizations
   reactStrictMode: true,
   productionBrowserSourceMaps: false,

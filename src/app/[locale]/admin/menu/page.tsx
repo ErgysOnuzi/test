@@ -3,17 +3,9 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import AdminGate from '../AdminGate';
-import dynamic from 'next/dynamic';
 
-// Lazy load MenuCRUD for better performance
-const MenuCRUD = dynamic(() => import('./MenuCRUD'), {
-  loading: () => (
-    <div className='flex items-center justify-center py-8'>
-      <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary'></div>
-    </div>
-  ),
-  ssr: false,
-});
+// Import MenuCRUD directly for better build compatibility
+import MenuCRUD from './MenuCRUD';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 

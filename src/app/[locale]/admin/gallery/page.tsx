@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import AdminGate from '../AdminGate';
 
-export const dynamic = 'force-dynamic';
 
 interface GalleryImage {
   id: number;
