@@ -3,6 +3,10 @@ import { getTranslations } from 'next-intl/server';
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
 import ContactForm from '@/components/ContactForm';
 
+export function generateStaticParams() {
+  return [{ locale: 'de' }, { locale: 'en' }];
+}
+
 export default async function ContactPage() {
   const t = await getTranslations('contact');
 

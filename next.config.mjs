@@ -10,7 +10,11 @@ const withBundleAnalyzer = bundleAnalyzer({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Configure for Replit deployment
-  output: 'standalone',
+  output: 'export',
+  trailingSlash: true,
+  images: {
+    unoptimized: true,
+  },
   
   // Production optimizations
   reactStrictMode: true,
@@ -81,91 +85,9 @@ const nextConfig = {
   ].filter(Boolean),
 
   experimental: {
-    serverActions: {
-      allowedOrigins:
-        process.env.NODE_ENV === 'development'
-          ? ['*']
-          : ['lacantina-berlin.de', '*.lacantina-berlin.de', '*.replit.dev'],
-    },
     optimizePackageImports: ['react', 'react-dom', 'date-fns', 'lucide-react'],
   },
 
-  // Cross-origin headers handled in headers() function below
-
-  images: {
-    formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 60 * 60 * 24, // 24 hours
-    qualities: [50, 75, 85, 95, 100],
-    remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.replit.app',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.repl.it',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.replit.dev',
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '**', // Allow all HTTPS images
-      },
-    ],
-  },
-
-  // Redirect root to German locale for Replit preview
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/de',
-        permanent: false,
-      },
-    ];
-  },
-
-  // Allow all hosts for Replit environment
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Frame-Options',
-            value: 'SAMEORIGIN',
-          },
-          {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "frame-src 'self' https://www.instagram.com https://*.instagram.com https://*.cdninstagram.com",
-              "frame-ancestors 'self'",
-              "img-src 'self' data: https: https://*.cdninstagram.com",
-              process.env.NODE_ENV === 'development'
-                ? "script-src 'self' 'unsafe-eval' 'unsafe-inline'"
-                : "script-src 'self'",
-              process.env.NODE_ENV === 'development'
-                ? "style-src 'self' 'unsafe-inline'"
-                : "style-src 'self' 'unsafe-inline'", // Keep for CSS-in-JS in React
-              "connect-src 'self' https: wss:",
-            ].join('; '),
-          },
-        ],
-      },
-    ];
-  },
 };
 
 export default withBundleAnalyzer(withNextIntl(nextConfig));

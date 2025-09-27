@@ -16,6 +16,13 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+export function generateStaticParams() {
+  return [
+    { locale: 'de', id: '1' },
+    { locale: 'en', id: '1' },
+  ];
+}
+
 export const dynamic = 'force-dynamic';
 
 // Enhanced events data with all details

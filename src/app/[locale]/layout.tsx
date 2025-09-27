@@ -10,6 +10,10 @@ import {
   generateSEOMetadata,
 } from '@/components/StructuredData';
 
+export function generateStaticParams() {
+  return [{ locale: 'de' }, { locale: 'en' }];
+}
+
 export async function generateMetadata({
   params,
 }: {
