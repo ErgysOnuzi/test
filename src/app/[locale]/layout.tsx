@@ -35,6 +35,7 @@ export default async function LocaleLayout({
   const messages = await getMessages({ locale });
 
   if (process.env.NODE_ENV === 'development') {
+    // eslint-disable-next-line no-console
     console.log(
       `[layout] Using locale: ${locale} (from rawLocale: ${rawLocale})`
     );

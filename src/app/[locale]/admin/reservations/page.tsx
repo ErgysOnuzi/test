@@ -54,7 +54,7 @@ export default function AdminReservationsPage() {
     };
 
     fetchReservations();
-  }, []);
+  }, [t]);
 
   const handleStatusChange = async (
     id: number,

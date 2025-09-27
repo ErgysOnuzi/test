@@ -1,4 +1,23 @@
 import './globals.css';
+import { Inter, Playfair_Display, Dancing_Script } from 'next/font/google';
+
+const inter = Inter({ 
+  subsets: ['latin'], 
+  display: 'swap',
+  variable: '--font-inter' 
+});
+
+const playfair = Playfair_Display({ 
+  subsets: ['latin'], 
+  display: 'swap',
+  variable: '--font-playfair' 
+});
+
+const dancing = Dancing_Script({ 
+  subsets: ['latin'], 
+  display: 'swap',
+  variable: '--font-dancing' 
+});
 
 export const metadata = {
   title: 'La Cantina Berlin',
@@ -11,32 +30,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html data-scroll-behavior='smooth' suppressHydrationWarning>
-      <head>
-        {/* Preconnect to Google Fonts for faster font loading */}
-        <link rel='preconnect' href='https://fonts.googleapis.com' />
-        <link
-          rel='preconnect'
-          href='https://fonts.gstatic.com'
-          crossOrigin='anonymous'
-        />
-
-        {/* Preload critical fonts */}
-        <link
-          rel='preload'
-          href='https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&family=Dancing+Script:wght@400&display=swap'
-          as='style'
-        />
-        <link
-          href='https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&family=Dancing+Script:wght@400&display=swap'
-          rel='stylesheet'
-        />
-
-        {/* DNS prefetch for other domains */}
-        <link rel='dns-prefetch' href='//fonts.googleapis.com' />
-        <link rel='dns-prefetch' href='//fonts.gstatic.com' />
-      </head>
-      <body suppressHydrationWarning>{children}</body>
+    <html data-scroll-behavior='smooth' suppressHydrationWarning className={`${inter.variable} ${playfair.variable} ${dancing.variable}`}>
+      <body className={inter.className} suppressHydrationWarning>{children}</body>
     </html>
   );
 }

@@ -62,7 +62,7 @@ export default function AdminGalleryPage() {
     };
 
     fetchImages();
-  }, []);
+  }, [t]);
 
   const handleDelete = async (id: number) => {
     if (confirm(t('delete_image_confirm'))) {

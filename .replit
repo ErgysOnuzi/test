@@ -3,11 +3,23 @@ modules = ["nodejs-20", "web", "postgresql-16"]
 
 [agent]
 expertMode = true
-integrations = ["javascript_database:1.0.0", "replitmail:1.0.0", "javascript_object_storage:1.0.0"]
+integrations = [
+  "javascript_database:1.0.0",
+  "replitmail:1.0.0",
+  "javascript_object_storage:1.0.0",
+]
 
 [nix]
 channel = "stable-25_05"
-packages = ["python3", "gnumake", "gcc", "pkg-config", "sqlite", "openssl", "imagemagick"]
+packages = [
+  "python3",
+  "gnumake",
+  "gcc",
+  "pkg-config",
+  "sqlite",
+  "openssl",
+  "imagemagick",
+]
 
 # Environment Variables
 [env]
@@ -76,7 +88,8 @@ externalPort = 3001
 [deployment]
 deploymentTarget = "autoscale"
 build = ["npm", "run", "build"]
-run = ["npm", "run", "start:replit"]
+run = ["bash", "-lc", "npm ci && npm run build && npm run start"]
+
 
 [deployment.env]
 NODE_ENV = "production"

@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
@@ -31,7 +31,7 @@ export default function MenuCRUD() {
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   // Fetch menu items
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/admin/menu', {
@@ -48,11 +48,11 @@ export default function MenuCRUD() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     fetchItems();
-  }, []);
+  }, [fetchItems]);
 
   // Get unique categories
   const categories = ['all', ...new Set(items.map((item) => item.categoryDe))];

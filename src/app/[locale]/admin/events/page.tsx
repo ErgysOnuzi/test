@@ -67,7 +67,7 @@ export default function AdminEventsPage() {
     };
 
     fetchEvents();
-  }, []);
+  }, [t]);
 
   const handleDelete = async (id: number) => {
     if (confirm(t('delete_event_confirm'))) {
