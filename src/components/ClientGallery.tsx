@@ -31,15 +31,23 @@ export default function ClientGallery() {
   useEffect(() => {
     const fetchImages = async () => {
       try {
+        console.log('ClientGallery: Starting fetch...');
         const response = await fetch('/api/gallery');
+        console.log('ClientGallery: Response status:', response.status);
         if (response.ok) {
           const data = await response.json();
+          console.log('ClientGallery: Received data:', data);
+          console.log('ClientGallery: Images array length:', data.images?.length || 0);
           setImages(data.images || data); // Handle both new and old API response format
           setHasMore(data.pagination?.hasMore || false);
           setNextOffset(data.pagination?.nextOffset || null);
           setIsImagesFetched(true);
+        } else {
+          console.error('ClientGallery: Response not ok:', response.status);
+          setIsImagesFetched(true);
         }
       } catch (error) {
+        console.error('ClientGallery: Fetch error:', error);
         logError('Gallery Fetch Failed', error, { context: 'initial_load', endpoint: '/api/gallery' });
         setIsImagesFetched(true);
       }
