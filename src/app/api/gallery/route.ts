@@ -27,8 +27,6 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .offset(offset);
 
-    console.log('Gallery API: fetched', rawItems.length, 'raw items');
-
     // Map to camelCase format expected by frontend
     const galleryItems = rawItems.map(item => ({
       id: item.id,
@@ -37,8 +35,6 @@ export async function GET(request: NextRequest) {
       category: item.category,
       createdAt: item.createdAt,
     }));
-
-    console.log('Gallery API: mapped', galleryItems.length, 'items for frontend');
 
     // Get total count for pagination info
     const totalResults = await db

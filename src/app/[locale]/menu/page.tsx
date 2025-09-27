@@ -25,13 +25,9 @@ export default function MenuPage({
   useEffect(() => {
     const fetchMenuItems = async () => {
       try {
-        console.log('Fetching menu items...');
         const response = await fetch('/api/menu');
-        console.log('Response status:', response.status);
         if (response.ok) {
           const data = await response.json();
-          console.log('Menu data received:', data.length, 'items');
-          console.log('First item:', data[0]);
           setMenuItems(data);
         }
       } catch (error) {
