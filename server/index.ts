@@ -4,6 +4,8 @@ import { config } from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import db from '../src/lib/db'
+import { setupAuth, isAuthenticated } from './replitAuth'
+import { storage } from './storage'
 import menuRoutes from './routes/menu'
 import galleryRoutes from './routes/gallery'
 import reservationRoutes from './routes/reservations'
@@ -28,46 +30,66 @@ const __dirname = path.dirname(__filename)
 const distPath = path.join(__dirname, '../dist')
 app.use(express.static(distPath))
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+// Setup authentication and routes
+async function initializeServer() {
+  await setupAuth(app)
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Health check
+  app.get('/health', (req, res) => {
+    res.json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development'
+    })
   })
-})
 
-// API Routes
-app.use('/api/menu', menuRoutes)
-app.use('/api/gallery', galleryRoutes)
-app.use('/api/reservations', reservationRoutes)
-app.use('/api/events', eventRoutes)
-app.use('/api/contact', contactRoutes)
-app.use('/api/admin', adminRoutes)
+  // API Routes
+  app.use('/api/menu', menuRoutes)
+  app.use('/api/gallery', galleryRoutes)
+  app.use('/api/reservations', reservationRoutes)
+  app.use('/api/events', eventRoutes)
+  app.use('/api/contact', contactRoutes)
+  app.use('/api/admin', adminRoutes)
 
-// Serve React app for all non-API routes (SPA fallback)
-app.use((req, res, next) => {
-  // Skip API routes
-  if (req.path.startsWith('/api/') || req.path === '/health') {
-    return next()
-  }
-  // Serve React app for all other routes
-  res.sendFile(path.join(distPath, 'index.html'))
-})
-
-// Error handling middleware (must be last)
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Error:', err)
-  res.status(500).json({ 
-    error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+  // Serve React app for all non-API routes (SPA fallback)
+  app.use((req, res, next) => {
+    // Skip API routes
+    if (req.path.startsWith('/api/') || req.path === '/health') {
+      return next()
+    }
+    // Serve React app for all other routes
+    res.sendFile(path.join(distPath, 'index.html'))
   })
-})
 
-app.listen(PORT, () => {
-  console.log(`🚀 Express server running on port ${PORT}`)
-  console.log(`📊 Health check: http://localhost:${PORT}/health`)
-  console.log(`🌐 Frontend: Serving React app from ${distPath}`)
-})
+  // Error handling middleware (must be last)
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error('Error:', err)
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+    })
+  })
+
+  app.listen(PORT, () => {
+    console.log(`🚀 Express server running on port ${PORT}`)
+    console.log(`📊 Health check: http://localhost:${PORT}/health`)
+    console.log(`🌐 Frontend: Serving React app from ${distPath}`)
+  })
+}
+
+// Initialize server
+initializeServer().catch(console.error)
 
 export default app
