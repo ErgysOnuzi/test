@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0');
     const limit = parseInt(searchParams.get('limit') || '36');
 
-    // Get active uploaded gallery items with optimized fields and pagination
+    // Get active gallery items with optimized fields and pagination
     const galleryItems = await db
       .select({
         id: schema.gallery.id,
@@ -22,12 +22,7 @@ export async function GET(request: NextRequest) {
         createdAt: schema.gallery.createdAt,
       })
       .from(schema.gallery)
-      .where(
-        and(
-          eq(schema.gallery.isActive, true),
-          eq(schema.gallery.category, 'uploaded')
-        )
-      )
+      .where(eq(schema.gallery.isActive, true))
       .orderBy(asc(schema.gallery.sortOrder), asc(schema.gallery.createdAt))
       .limit(limit)
       .offset(offset);
@@ -36,12 +31,7 @@ export async function GET(request: NextRequest) {
     const totalResults = await db
       .select({ count: sql`COUNT(*)` })
       .from(schema.gallery)
-      .where(
-        and(
-          eq(schema.gallery.isActive, true),
-          eq(schema.gallery.category, 'uploaded')
-        )
-      );
+      .where(eq(schema.gallery.isActive, true));
 
     if (
       !totalResults ||
