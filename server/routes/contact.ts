@@ -33,7 +33,7 @@ router.post('/', async (req, res) => {
     })
   } catch (error) {
     console.error('Error submitting contact form:', error)
-    res.status(500).json({ error: 'Failed to submit contact form' })
+    return res.status(500).json({ error: 'Failed to submit contact form' })
   }
 })
 
@@ -46,7 +46,7 @@ router.get('/', async (req, res) => {
     res.json(submissions)
   } catch (error) {
     console.error('Error fetching contact submissions:', error)
-    res.status(500).json({ error: 'Failed to fetch contact submissions' })
+    return res.status(500).json({ error: 'Failed to fetch contact submissions' })
   }
 })
 
