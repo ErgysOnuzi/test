@@ -3,24 +3,48 @@ import db, { schema } from '../../src/lib/db'
 
 const router = express.Router()
 
-// Admin authentication placeholder
+// Admin credentials - in production, these should be environment variables
+const ADMIN_EMAIL = 'ergysonuzi12@gmail.com'
+const ADMIN_USERNAME = 'ergysonuzi'
+const ADMIN_PASSWORD = 'Xharie123'
+
+// Admin authentication middleware
 const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  // TODO: Implement actual authentication
-  next()
+  if (req.session && req.session.adminAuthenticated) {
+    next()
+  } else {
+    res.status(401).json({ error: 'Authentication required' })
+  }
 }
 
 // POST /api/admin/login - Admin login
 router.post('/login', async (req, res) => {
   try {
-    const { username, password } = req.body
+    const { identifier, password } = req.body
 
-    // TODO: Implement actual authentication
-    // For now, just return a placeholder response
-    if (username === 'admin' && password === 'admin') {
+    // Validate credentials - identifier can be email or username
+    const isValidCredentials = (
+      (identifier === ADMIN_EMAIL || identifier === ADMIN_USERNAME) && 
+      password === ADMIN_PASSWORD
+    )
+
+    if (isValidCredentials) {
+      // Set session
+      if (req.session) {
+        req.session.adminAuthenticated = true
+        req.session.adminUser = {
+          email: ADMIN_EMAIL,
+          username: ADMIN_USERNAME
+        }
+      }
+      
       res.json({ 
         success: true,
-        token: 'placeholder-token',
-        message: 'Login successful'
+        message: 'Login successful',
+        user: {
+          email: ADMIN_EMAIL,
+          username: ADMIN_USERNAME
+        }
       })
     } else {
       res.status(401).json({ error: 'Invalid credentials' })
@@ -34,6 +58,12 @@ router.post('/login', async (req, res) => {
 // POST /api/admin/logout - Admin logout
 router.post('/logout', async (req, res) => {
   try {
+    // Clear session
+    if (req.session) {
+      req.session.adminAuthenticated = false
+      req.session.adminUser = null
+    }
+    
     res.json({ 
       success: true,
       message: 'Logout successful'
@@ -47,10 +77,11 @@ router.post('/logout', async (req, res) => {
 // GET /api/admin/session - Check admin session
 router.get('/session', async (req, res) => {
   try {
-    // TODO: Implement actual session check
+    const isAuthenticated = req.session && req.session.adminAuthenticated === true
+    
     res.json({ 
-      authenticated: false,
-      user: null
+      authenticated: isAuthenticated,
+      user: isAuthenticated ? req.session.adminUser : null
     })
   } catch (error) {
     console.error('Error checking admin session:', error)

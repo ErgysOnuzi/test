@@ -2,13 +2,13 @@
 const AUTH_STORAGE_KEY = 'la_cantina_admin_auth';
 
 export const adminAuth = {
-  async login(password: string): Promise<boolean> {
-    // SECURITY: Send password to server for validation only - no client-side password checking
+  async login(identifier: string, password: string): Promise<boolean> {
+    // SECURITY: Send credentials to server for validation only - no client-side credential checking
     try {
       const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ identifier, password }),
       });
 
       if (response.ok) {

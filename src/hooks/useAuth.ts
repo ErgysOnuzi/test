@@ -1,15 +1,26 @@
-// From javascript_log_in_with_replit integration
 import { useQuery } from "@tanstack/react-query";
 
+interface AdminUser {
+  email: string;
+  username: string;
+}
+
+interface AdminAuthResponse {
+  authenticated: boolean;
+  user: AdminUser | null;
+}
+
 export function useAuth() {
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["/api/auth/user"],
+  const { data: authData, isLoading, refetch } = useQuery<AdminAuthResponse>({
+    queryKey: ["/api/admin/session"],
     retry: false,
+    refetchOnWindowFocus: false,
   });
 
   return {
-    user,
+    user: authData?.user || null,
     isLoading,
-    isAuthenticated: !!user,
+    isAuthenticated: authData?.authenticated || false,
+    refetch, // Allow manual refresh of auth status
   };
 }
