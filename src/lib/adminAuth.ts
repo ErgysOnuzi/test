@@ -1,48 +1,38 @@
-// SECURITY: Token-based authentication - all validation handled server-side
-const AUTH_STORAGE_KEY = 'la_cantina_admin_token';
+// SECURITY: Session cookie-based authentication - all validation handled server-side
 
 export const adminAuth = {
-  async login(identifier: string, password: string): Promise<boolean> {
+  async login(identifier: string, password: string): Promise<{ success: boolean; redirectTo?: string }> {
     // SECURITY: Send credentials to server for validation only - no client-side credential checking
     try {
       const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies in request
         body: JSON.stringify({ identifier, password }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        // Store authentication token in localStorage only after server confirms
-        if (typeof window !== 'undefined' && data.token) {
-          localStorage.setItem(AUTH_STORAGE_KEY, data.token);
-        }
-        return true;
+        // Session cookie is now set by server automatically
+        return { success: true, redirectTo: data.redirectTo };
       }
-      return false;
+      return { success: false };
     } catch {
-      return false; // SECURITY: No fallback to local auth
+      return { success: false }; // SECURITY: No fallback to local auth
     }
   },
 
   async checkAuth(): Promise<boolean> {
-    // SECURITY: Always verify with server using stored token
+    // SECURITY: Always verify with server using session cookies
     try {
-      const token = this.getToken();
-      if (!token) return false;
-
       const response = await fetch('/api/admin/session', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include' // Include cookies in request
       });
       
       if (response.ok) {
         const data = await response.json();
         return data.authenticated;
       } else {
-        // Clear invalid token
-        this.clearToken();
         return false;
       }
     } catch {
@@ -51,34 +41,29 @@ export const adminAuth = {
   },
 
   async logout(): Promise<void> {
-    const token = this.getToken();
-    
     try {
-      if (token) {
-        await fetch('/api/admin/logout', { 
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-      }
+      await fetch('/api/admin/logout', { 
+        method: 'POST',
+        credentials: 'include' // Include cookies in request
+      });
     } catch {
       // Silent fail
-    } finally {
-      this.clearToken();
     }
   },
 
-  getToken(): string | null {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(AUTH_STORAGE_KEY);
-    }
-    return null;
-  },
-
-  clearToken(): void {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(AUTH_STORAGE_KEY);
+  async getCSRFToken(): Promise<string | null> {
+    try {
+      const response = await fetch('/api/admin/csrf', {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.csrfToken;
+      }
+      return null;
+    } catch {
+      return null;
     }
   }
 };

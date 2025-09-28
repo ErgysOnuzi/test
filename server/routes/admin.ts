@@ -1,7 +1,11 @@
 import express from 'express'
-import { createHash } from 'crypto'
+import { createHash, randomBytes } from 'crypto'
+import jwt from 'jsonwebtoken'
 
 const router = express.Router()
+
+// Environment-based JWT secret - required for production
+const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-change-in-production'
 
 // Admin credentials - in production, these should be environment variables
 const ADMIN_EMAIL = 'ergysonuzi12@gmail.com'
@@ -16,22 +20,48 @@ const activeSessions = new Map<string, {
   loginTime: number 
 }>()
 
-// Generate simple session token
+// Generate secure JWT session token
 const generateSessionToken = (): string => {
-  return Math.random().toString(36).substring(2) + Date.now().toString(36)
+  return jwt.sign(
+    {
+      role: 'admin',
+      authenticated: true,
+      timestamp: Date.now(),
+    },
+    JWT_SECRET,
+    { expiresIn: '2h' }
+  )
 }
 
-// Admin authentication middleware
+// Generate CSRF token and secret
+const generateCSRFToken = (): { token: string; secret: string } => {
+  const secret = randomBytes(32).toString('hex')
+  const nonce = randomBytes(32).toString('hex')
+  const hmac = createHash('sha256').update(secret + nonce).digest('hex')
+  const token = `${nonce}.${hmac}`
+  return { token, secret }
+}
+
+// Admin authentication middleware - now uses session cookies instead of Bearer tokens
 const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction): void => {
-  const authHeader = req.headers.authorization
-  const token = authHeader?.replace('Bearer ', '')
-  
-  if (!token || !activeSessions.has(token)) {
-    res.status(401).json({ error: 'Authentication required' })
-    return
+  try {
+    const sessionCookie = req.cookies?.['la_cantina_admin_session']
+    
+    if (!sessionCookie) {
+      res.status(401).json({ error: 'Authentication required' })
+      return
+    }
+    
+    // Verify JWT token
+    const decoded = jwt.verify(sessionCookie, JWT_SECRET) as any
+    if (decoded.role === 'admin' && decoded.authenticated === true) {
+      next()
+    } else {
+      res.status(401).json({ error: 'Invalid session' })
+    }
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid session' })
   }
-  
-  next()
 }
 
 // POST /api/admin/login - Admin login
@@ -57,12 +87,40 @@ router.post('/login', async (req, res) => {
         loginTime: Date.now()
       })
       
+      // Generate CSRF token
+      const { token: csrfToken, secret: csrfSecret } = generateCSRFToken()
+      
       console.log(`🔐 Admin logged in: ${identifier}`)
+      
+      // Set secure session cookie
+      res.cookie('la_cantina_admin_session', sessionToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 2 * 60 * 60 * 1000, // 2 hours
+        signed: false // We use JWT signing instead
+      })
+      
+      // Set CSRF secret cookie
+      res.cookie('la_cantina_csrf_secret', csrfSecret, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 2 * 60 * 60 * 1000 // 2 hours
+      })
+      
+      // Redirect to admin dashboard with current locale from request
+      // Extract locale from referer URL or default to 'de'
+      const referer = req.headers.referer || ''
+      const localeMatch = referer.match(/\/([a-z]{2})\/admin\/login/)
+      const locale = localeMatch ? localeMatch[1] : 'de'
+      const dashboardUrl = `/${locale}/admin/dashboard`
       
       res.json({ 
         success: true,
         message: 'Login successful',
-        token: sessionToken,
+        redirectTo: dashboardUrl,
+        csrfToken: csrfToken,
         user: {
           email: ADMIN_EMAIL,
           username: ADMIN_USERNAME
@@ -79,13 +137,22 @@ router.post('/login', async (req, res) => {
 })
 
 // POST /api/admin/logout - Admin logout
-router.post('/logout', async (req, res) => {
+router.post('/logout', async (req, res): Promise<void> => {
   try {
-    const authHeader = req.headers.authorization
-    const token = authHeader?.replace('Bearer ', '')
+    const sessionCookie = req.cookies?.['la_cantina_admin_session']
     
-    if (token && activeSessions.has(token)) {
-      activeSessions.delete(token)
+    if (sessionCookie) {
+      // Clear session cookies
+      res.clearCookie('la_cantina_admin_session', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+      })
+      res.clearCookie('la_cantina_csrf_secret', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+      })
       console.log(`🔐 Admin logged out`)
     }
     
@@ -100,18 +167,26 @@ router.post('/logout', async (req, res) => {
 })
 
 // GET /api/admin/session - Check admin session
-router.get('/session', async (req, res) => {
+router.get('/session', async (req, res): Promise<void> => {
   try {
-    const authHeader = req.headers.authorization
-    const token = authHeader?.replace('Bearer ', '')
+    const sessionCookie = req.cookies?.['la_cantina_admin_session']
     
-    if (token && activeSessions.has(token)) {
-      const session = activeSessions.get(token)
+    if (!sessionCookie) {
+      res.json({ 
+        authenticated: false,
+        user: null
+      })
+      return
+    }
+    
+    // Verify JWT token
+    const decoded = jwt.verify(sessionCookie, JWT_SECRET) as any
+    if (decoded.role === 'admin' && decoded.authenticated === true) {
       res.json({ 
         authenticated: true,
         user: {
-          email: session?.email,
-          username: session?.username
+          email: ADMIN_EMAIL,
+          username: ADMIN_USERNAME
         }
       })
     } else {
@@ -122,7 +197,30 @@ router.get('/session', async (req, res) => {
     }
   } catch (error) {
     console.error('Error checking admin session:', error)
-    res.status(500).json({ error: 'Session check failed' })
+    res.json({ 
+      authenticated: false,
+      user: null
+    })
+  }
+})
+
+// GET /api/admin/csrf - Get CSRF token
+router.get('/csrf', async (req, res): Promise<void> => {
+  try {
+    const { token: csrfToken, secret: csrfSecret } = generateCSRFToken()
+    
+    // Set CSRF secret cookie
+    res.cookie('la_cantina_csrf_secret', csrfSecret, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 2 * 60 * 60 * 1000 // 2 hours
+    })
+    
+    res.json({ csrfToken })
+  } catch (error) {
+    console.error('Error generating CSRF token:', error)
+    res.status(500).json({ error: 'Failed to generate CSRF token' })
   }
 })
 

@@ -15,11 +15,11 @@ export default function AdminLoginPage() {
     setError('')
 
     try {
-      const success = await adminAuth.login(formData.identifier, formData.password)
-      if (success) {
-        // Redirect to admin panel with current locale
-        const currentLocale = window.location.pathname.split('/')[1] || 'de'
-        window.location.href = `/${currentLocale}/admin`
+      const result = await adminAuth.login(formData.identifier, formData.password)
+      if (result.success) {
+        // Use server-provided redirect URL or fallback to current locale
+        const redirectTo = result.redirectTo || `/${window.location.pathname.split('/')[1] || 'de'}/admin/dashboard`
+        window.location.href = redirectTo
       } else {
         setError('Invalid credentials. Please check your email/username and password.')
       }

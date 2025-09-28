@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import cookieParser from 'cookie-parser'
 import { config } from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -21,6 +22,7 @@ const PORT = process.env.PORT || (process.env.NODE_ENV === 'production' ? 5000 :
 
 // Middleware
 app.use(cors())
+app.use(cookieParser()) // Add cookie parser middleware
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
