@@ -19,6 +19,7 @@ export default function SimpleLayout() {
     { name: isGerman ? 'Feedback' : 'Feedback', href: 'feedback', key: 'feedback' },
     { name: isGerman ? 'Rechtliches' : 'Legal', href: 'legal', key: 'legal' },
     { name: 'Blog', href: 'blog', key: 'blog' },
+    { name: 'Instagram', href: 'instagram', key: 'instagram' },
   ]
 
   const pathWithoutLocale = location.pathname.replace(`/${currentLocale}`, '') || ''
@@ -168,8 +169,8 @@ export default function SimpleLayout() {
             </div>
             <div>
               <h4 className="font-semibold mb-4">{isGerman ? 'Öffnungszeiten' : 'Opening Hours'}</h4>
-              <p className="text-muted-foreground mb-2">{isGerman ? 'Montag - Sonntag' : 'Monday - Sunday'}</p>
-              <p className="text-muted-foreground">17:00 - 23:00</p>
+              <p className="text-muted-foreground mb-2">{isGerman ? 'Montag - Samstag: 15:00 - 23:00' : 'Monday - Saturday: 15:00 - 23:00'}</p>
+              <p className="text-muted-foreground">{isGerman ? 'Sonntag: Geschlossen' : 'Sunday: Closed'}</p>
             </div>
           </div>
           <div className="border-t mt-8 pt-8 text-center text-muted-foreground">

@@ -12,6 +12,7 @@ import ContactPage from '@/pages/ContactPage'
 import FeedbackPage from '@/pages/FeedbackPage'
 import LegalPage from '@/pages/LegalPage'
 import BlogPage from '@/pages/BlogPage'
+import InstagramPage from '@/pages/InstagramPage'
 import AdminPage from '@/pages/AdminPage'
 import AdminLoginPage from '@/pages/AdminLoginPage'
 import NotFoundPage from '@/pages/NotFoundPage'
@@ -39,6 +40,7 @@ function App() {
         <Route path="feedback" element={<FeedbackPage />} />
         <Route path="legal" element={<LegalPage />} />
         <Route path="blog" element={<BlogPage />} />
+        <Route path="instagram" element={<InstagramPage />} />
         <Route path="admin/login" element={<AdminLoginPage />} />
         <Route path="admin/*" element={<AdminPage />} />
       </Route>
