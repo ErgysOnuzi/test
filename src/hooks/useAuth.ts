@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { adminAuth } from "@/lib/adminAuth";
 
 interface AdminUser {
   email: string;
@@ -13,6 +14,25 @@ interface AdminAuthResponse {
 export function useAuth() {
   const { data: authData, isLoading, refetch } = useQuery<AdminAuthResponse>({
     queryKey: ["/api/admin/session"],
+    queryFn: async () => {
+      const token = adminAuth.getToken();
+      if (!token) {
+        return { authenticated: false, user: null };
+      }
+
+      const response = await fetch('/api/admin/session', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        adminAuth.clearToken();
+        return { authenticated: false, user: null };
+      }
+      
+      return response.json();
+    },
     retry: false,
     refetchOnWindowFocus: false,
   });

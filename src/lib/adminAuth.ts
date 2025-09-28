@@ -1,5 +1,5 @@
-// SECURITY: NO hardcoded credentials - all authentication handled server-side
-const AUTH_STORAGE_KEY = 'la_cantina_admin_auth';
+// SECURITY: Token-based authentication - all validation handled server-side
+const AUTH_STORAGE_KEY = 'la_cantina_admin_token';
 
 export const adminAuth = {
   async login(identifier: string, password: string): Promise<boolean> {
@@ -12,9 +12,10 @@ export const adminAuth = {
       });
 
       if (response.ok) {
-        // Store authentication status in localStorage only after server confirms
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(AUTH_STORAGE_KEY, 'authenticated');
+        const data = await response.json();
+        // Store authentication token in localStorage only after server confirms
+        if (typeof window !== 'undefined' && data.token) {
+          localStorage.setItem(AUTH_STORAGE_KEY, data.token);
         }
         return true;
       }
@@ -25,20 +26,23 @@ export const adminAuth = {
   },
 
   async checkAuth(): Promise<boolean> {
-    // SECURITY: Always verify with server - no client-side auth fallbacks
+    // SECURITY: Always verify with server using stored token
     try {
-      const response = await fetch('/api/admin/session');
+      const token = this.getToken();
+      if (!token) return false;
+
+      const response = await fetch('/api/admin/session', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
       if (response.ok) {
-        // Only update localStorage if server confirms authentication
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(AUTH_STORAGE_KEY, 'authenticated');
-        }
-        return true;
+        const data = await response.json();
+        return data.authenticated;
       } else {
-        // Clear localStorage if server says we're not authenticated
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem(AUTH_STORAGE_KEY);
-        }
+        // Clear invalid token
+        this.clearToken();
         return false;
       }
     } catch {
@@ -47,14 +51,34 @@ export const adminAuth = {
   },
 
   async logout(): Promise<void> {
+    const token = this.getToken();
+    
+    try {
+      if (token) {
+        await fetch('/api/admin/logout', { 
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      }
+    } catch {
+      // Silent fail
+    } finally {
+      this.clearToken();
+    }
+  },
+
+  getToken(): string | null {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(AUTH_STORAGE_KEY);
+    }
+    return null;
+  },
+
+  clearToken(): void {
     if (typeof window !== 'undefined') {
       localStorage.removeItem(AUTH_STORAGE_KEY);
     }
-
-    try {
-      await fetch('/api/admin/logout', { method: 'POST' });
-    } catch {
-      // Silent fail
-    }
-  },
+  }
 };
