@@ -1,11 +1,13 @@
 import express from 'express'
+import { createHash } from 'crypto'
 
 const router = express.Router()
 
 // Admin credentials - in production, these should be environment variables
 const ADMIN_EMAIL = 'ergysonuzi12@gmail.com'
 const ADMIN_USERNAME = 'ergysonuzi'
-const ADMIN_PASSWORD = 'Xharie123'
+// Hash the password for better security
+const ADMIN_PASSWORD_HASH = createHash('sha256').update('Xharie123').digest('hex')
 
 // In-memory session storage (since database is not working)
 const activeSessions = new Map<string, { 
@@ -37,10 +39,11 @@ router.post('/login', async (req, res) => {
   try {
     const { identifier, password } = req.body
 
-    // Validate credentials - identifier can be email or username
+    // Hash the provided password and validate credentials
+    const passwordHash = createHash('sha256').update(password).digest('hex')
     const isValidCredentials = (
       (identifier === ADMIN_EMAIL || identifier === ADMIN_USERNAME) && 
-      password === ADMIN_PASSWORD
+      passwordHash === ADMIN_PASSWORD_HASH
     )
 
     if (isValidCredentials) {
