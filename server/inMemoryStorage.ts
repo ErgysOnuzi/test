@@ -96,66 +96,58 @@ class InMemoryStorage {
 
   private loadGalleryData() {
     try {
-      // Load gallery images from generated_images folder
-      const galleryImages = [
-        {
-          filename: 'Restaurant_hero_interior_a46aa195.png',
-          title: 'Restaurant Interior',
-          description: 'Elegant dining atmosphere at La Cantina Berlin',
-          category: 'interior'
-        },
-        {
-          filename: 'Antipasti_starter_dish_6afa13e1.png',
-          title: 'Antipasti Selection',
-          description: 'Fresh antipasti platter with Italian delicacies',
-          category: 'food'
-        },
-        {
-          filename: 'Spaghetti_Carbonara_pasta_dish_9272a0e3.png',
-          title: 'Spaghetti Carbonara',
-          description: 'Classic Roman pasta dish with guanciale and pecorino',
-          category: 'food'
-        },
-        {
-          filename: 'Pizza_Truffle_with_truffles_1b442861.png',
-          title: 'Pizza with Truffles',
-          description: 'Gourmet pizza topped with fresh truffles',
-          category: 'food'
-        },
-        {
-          filename: 'Vitello_Tonnato_veal_appetizer_21975a33.png',
-          title: 'Vitello Tonnato',
-          description: 'Traditional Piemontese dish with tuna sauce',
-          category: 'food'
-        },
-        {
-          filename: 'Signature_pasta_dish_04ccdf2e.png',
-          title: 'Signature Pasta',
-          description: 'Our chef\'s special pasta creation',
-          category: 'food'
-        },
-        {
-          filename: 'Italian_chef_portrait_a1834a03.png',
-          title: 'Our Head Chef',
-          description: 'Master of authentic Italian cuisine',
-          category: 'team'
-        }
-      ]
+      import('fs').then(({ readdirSync }) => {
+        const galleryPath = resolve(process.cwd(), 'public/uploads/gallery')
+        const imageFiles = readdirSync(galleryPath).filter(file => 
+          /\.(jpg|jpeg|png|gif|webp)$/i.test(file)
+        )
+        
+        this.galleryItems = imageFiles.map((filename, index) => ({
+          id: index + 1,
+          title: `Gallery Image ${index + 1}`,
+          description: `Restaurant photo from La Cantina Berlin`,
+          imageUrl: `/uploads/gallery/${filename}`,
+          category: 'restaurant',
+          altText: `La Cantina Berlin - Gallery Image ${index + 1}`,
+          uploadedAt: new Date().toISOString(),
+          isVisible: true,
+          sortOrder: index
+        }))
+        
+        this.nextGalleryId = this.galleryItems.length + 1
+        console.log(`✅ Loaded ${this.galleryItems.length} gallery images from uploads folder`)
+      }).catch(() => {
+        // Fallback to synchronous loading
+        this.loadGalleryDataSync()
+      })
+    } catch (error) {
+      console.log('⚠️ Could not load gallery data, trying sync method')
+      this.loadGalleryDataSync()
+    }
+  }
+
+  private loadGalleryDataSync() {
+    try {
+      const { readdirSync } = require('fs')
+      const galleryPath = resolve(process.cwd(), 'public/uploads/gallery')
+      const imageFiles = readdirSync(galleryPath).filter((file: string) => 
+        /\.(jpg|jpeg|png|gif|webp)$/i.test(file)
+      )
       
-      this.galleryItems = galleryImages.map((img, index) => ({
+      this.galleryItems = imageFiles.map((filename: string, index: number) => ({
         id: index + 1,
-        title: img.title,
-        description: img.description,
-        imageUrl: `/attached_assets/generated_images/${img.filename}`,
-        category: img.category,
-        altText: `${img.title} - La Cantina Berlin`,
+        title: `Gallery Image ${index + 1}`,
+        description: `Restaurant photo from La Cantina Berlin`,
+        imageUrl: `/uploads/gallery/${filename}`,
+        category: 'restaurant',
+        altText: `La Cantina Berlin - Gallery Image ${index + 1}`,
         uploadedAt: new Date().toISOString(),
         isVisible: true,
         sortOrder: index
       }))
       
       this.nextGalleryId = this.galleryItems.length + 1
-      console.log(`✅ Loaded ${this.galleryItems.length} gallery images`)
+      console.log(`✅ Loaded ${this.galleryItems.length} gallery images from uploads folder`)
     } catch (error) {
       console.log('⚠️ Could not load gallery data, using empty gallery:', error)
       this.galleryItems = []
@@ -184,7 +176,7 @@ class InMemoryStorage {
     const index = this.menuItems.findIndex(item => item.id === id)
     if (index === -1) return null
     
-    this.menuItems[index] = { ...this.menuItems[index], ...data }
+    this.menuItems[index] = { ...this.menuItems[index], ...data, id }
     return this.menuItems[index]
   }
 
@@ -218,7 +210,7 @@ class InMemoryStorage {
     const index = this.galleryItems.findIndex(item => item.id === id)
     if (index === -1) return null
     
-    this.galleryItems[index] = { ...this.galleryItems[index], ...data }
+    this.galleryItems[index] = { ...this.galleryItems[index], ...data, id }
     return this.galleryItems[index]
   }
 
@@ -252,7 +244,7 @@ class InMemoryStorage {
     const index = this.events.findIndex(event => event.id === id)
     if (index === -1) return null
     
-    this.events[index] = { ...this.events[index], ...data }
+    this.events[index] = { ...this.events[index], ...data, id }
     return this.events[index]
   }
 
