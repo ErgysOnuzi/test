@@ -1,0 +1,331 @@
+Use this script. Execute in order. No skips. Confirm acceptance after each section.
+
+0) Baseline: build + env sanity
+
+Remove any custom NODE_ENV. Set to production or unset.
+
+npm ci && npm run build && npm run start must succeed with no <Html> import errors, no custom-font warnings in App Router.
+
+Acceptance:
+
+Build clean.
+
+/de renders, bogus path renders not-found.tsx.
+
+Browser console clean (no red errors).
+
+1) Admin authentication flow is broken (login refreshes back to /de/admin/login)
+
+Goals
+
+On correct credentials → redirect to /{locale}/admin/dashboard.
+
+Session persists; protected routes block unauthenticated users; logout clears session.
+
+Actions
+
+Session cookie
+
+Use signed, HTTPOnly, SameSite=Lax, Secure cookies.
+
+Set cookie in POST /app/api/admin/session on success; delete on logout.
+
+Ensure domain/path correct for deployed host.
+
+CSRF
+
+Issue CSRF token (/app/api/admin/csrf) and verify on all mutating admin requests.
+
+Redirect
+
+After successful login, return NextResponse.redirect(new URL(\/${locale}/admin/dashboard`, req.url))`.
+
+If query next= exists, respect it but only allow internal paths.
+
+Guards
+
+Middleware or layout guard: if no valid session → redirect to /[locale]/admin/login.
+
+After logout, block back-button access by invalidating cookie.
+
+Error messaging
+
+Wrong creds → inline error, no redirect loop.
+
+Acceptance
+
+Wrong creds stay on /login with error.
+
+Correct creds land on /{locale}/admin/dashboard.
+
+Refresh on dashboard keeps session.
+
+Logout returns to /login; hitting dashboard redirects back to /login.
+
+2) Restore full admin dashboard modules
+
+Goal
+
+Dashboard shows all management sections that exist in the normal site: Menu, Gallery, Events, Reservations, Feedback/Reviews, Pages/Content (if applicable).
+
+Actions
+
+Reinstate admin nav with all modules; do not hide behind feature flags.
+
+For each module, implement CRUD:
+
+Create/Update/Delete with confirmation dialogs on destructive actions.
+
+Form validation (zod + react-hook-form); server-side validation mirrors schema.
+
+Success/error toasts.
+
+Make list views fast: pagination + server filters.
+
+Acceptance
+
+Every entity visible on the public site can be created, edited, deleted in admin; changes reflect on public pages after revalidate.
+
+3) Events: individual pages + reservations prefilled
+
+Goals
+
+Each event has a page: /{locale}/events/[id] with full details.
+
+“Reserve a spot” from an event opens the Reservations page with event data prefilled.
+
+Actions
+
+Dynamic route
+
+src/app/[locale]/events/[id]/page.tsx fetches event by id (params).
+
+Metadata uses event title/OG image.
+
+Reserve flow
+
+Button on event page → link to /{locale}/reservations?eventId={id}.
+
+Reservations page reads eventId, auto-fills: event name, date/time, location, seats if needed.
+
+Only ask user for: name, surname, phone, email.
+
+Server validation
+
+Resolve eventId on server; reject unknown/closed events.
+
+Persist reservation; send confirmation if SMTP configured.
+
+Acceptance
+
+Load an event page → details render.
+
+Click “Reserve” → reservations form shows event data, only personal fields required.
+
+Submit succeeds; invalid eventId yields friendly error.
+
+4) Navbar: links sometimes change URL but page doesn’t swap / long stalls
+
+Likely causes
+
+Client-side navigation blocked by pending data fetch or thrown promise, or hydration mismatch.
+
+Incorrect href/Link usage; nested interactive elements with preventDefault.
+
+Actions
+
+Replace any onClick manual router pushes with <Link href="..."> unless necessary.
+
+Remove event.preventDefault() on nav links.
+
+Audit Suspense/data fetching:
+
+Avoid heavy synchronous work in Client Components.
+
+Move data fetching to Server Components or route handlers.
+
+Guard optional APIs; don’t throw during render.
+
+Check hydration warnings; fix key/className mismatches between server/client.
+
+Acceptance
+
+Clicking any top-nav link swaps page in <300ms on warm instance; no URL-stuck states.
+
+No hydration warnings in console.
+
+5) Google Reviews: use real Google data; buttons must work
+
+Goals
+
+Feedback page uses Google Places Reviews for the provided Place ID.
+
+“Review on Google” and “Share experience” buttons open the Google review entry UI.
+
+Actions
+
+Data source
+
+Use Places API: Place Details → reviews[] (requires Places API key + billing).
+
+Cache on server (revalidate e.g. 6–12h).
+
+Rendering
+
+Show rating, total count, last n reviews (respect TOS, don’t display unpublished).
+
+Buttons
+
+“Review on Google”: link to https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID.
+
+“Share experience”: same or site-native form if both are desired; label accordingly.
+
+Fallback
+
+If API key missing or quota exceeded, show a clear fallback, not stale/fake data.
+
+Acceptance
+
+Reviews list matches live Google data for our Place ID.
+
+Buttons open Google’s write-review flow.
+
+No hardcoded/incorrect reviews remain.
+
+6) Instagram data: must be correct or removed
+
+Goal
+
+If Graph API access isn’t configured, remove incorrect Instagram sections.
+
+Actions
+
+If using IG Basic Display or Graph:
+
+Store access token securely; fetch latest posts server-side; cache.
+
+Render username, captions, timestamps that match Instagram.
+
+If we cannot guarantee correctness, remove IG widgets and dead links.
+
+Acceptance
+
+Displayed posts exactly match the Instagram account; otherwise the section is gone.
+
+7) Performance regressions (LCP ~6.06s, 500/502 on assets, sluggish route changes)
+
+Goals
+
+LCP ≤ 2.5s on home under “No throttling” dev test; stable under 4x CPU/Slow 4G simulated.
+
+Eliminate 500/502 on /favicon.ico and other assets.
+
+Actions
+
+Favicon 502/500
+
+Add /public/favicon.ico and link via <link rel="icon" href="/favicon.ico">.
+
+Ensure static assets served from /public (no dynamic proxy).
+
+Hero/LCP
+
+Optimize hero image: AVIF/WebP, responsive sizes, priority with Next/Image, fetchPriority="high".
+
+Inline critical above-the-fold CSS minimal; defer non-critical components (maps, carousels).
+
+Third-party
+
+Remove/async/defer non-critical scripts (analytics, widgets).
+
+Images
+
+Use next/image; proper sizes attribute; lazy-load offscreen.
+
+Code
+
+Kill console logs in hot paths.
+
+Avoid large client bundles on the landing route; split heavy modules behind dynamic import.
+
+Caching
+
+Route handlers: add cache headers for static JSON; ISR/revalidate where appropriate.
+
+Acceptance
+
+Lighthouse Performance ≥ 90 on /de with default desktop.
+
+Network panel: no 500/502; favicon 200 OK.
+
+First route load < 2.5s LCP on warm run; route changes < 300ms.
+
+8) Responsiveness audit (navbar + all pages)
+
+Goals
+
+Fully responsive across 320px, 375px, 768px, 1024px, 1440px.
+
+Navbar collapses to hamburger; toggle works; no horizontal scroll.
+
+Actions
+
+Test breakpoints; fix any overflow with proper flex/grid and overflow-hidden where needed.
+
+Ensure tap targets ≥ 44px height; focus-visible styles present.
+
+Image grids (gallery) wrap cleanly; text doesn’t overlap images.
+
+Acceptance
+
+No horizontal scroll on any page at any tested breakpoint.
+
+Nav toggle works reliably; pages look correct across sizes.
+
+9) Public/homepage not visible after publish (blank/500)
+
+Goals
+
+Deployed domain serves production build with correct env vars.
+
+Actions
+
+Ensure run command uses next start on built assets; no dev server in production.
+
+Verify all required envs (DB URL, JWT, SMTP, GOOGLE_API_KEY/PLACE_ID) exist in Replit secrets.
+
+Check logs for 500s; fix failing route handlers (null checks, try/catch with friendly responses).
+
+Acceptance
+
+Domain root loads content; no 500s in Network/Console logs.
+
+10) Clean up warnings (keeps build stable)
+
+useEffect deps: include t or disable on that line; wrap fetchItems in useCallback and add to deps.
+
+no-console: remove or guard logs (NEXT_PUBLIC_DEBUG==='1').
+
+alt text: add alt to all <img>/<Image>.
+
+Acceptance
+
+npm run build shows no critical warnings; only benign info.
+
+11) Final verification
+
+Manual: login flow, dashboard CRUD for Menu, Gallery, Events, Reservations, Feedback/Reviews, Pages/Content if present.
+
+Events → Reserve flow prefilled.
+
+Google Reviews live + buttons work.
+
+Instagram correct or removed.
+
+Nav links swap instantly; no stuck URL.
+
+LCP ≤ 2.5s (desktop no throttling), favicon 200, no 500s, console clean.
+
+Responsive across listed breakpoints, no overflow.
+
+Post evidence (screenshots: admin login→dashboard, CRUD modals, event→reservation prefill, reviews pulled from Google, Lighthouse report).
