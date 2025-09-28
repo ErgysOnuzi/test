@@ -4,7 +4,7 @@ import { config } from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import db from '../src/lib/db'
-import { setupAuth, isAuthenticated } from './replitAuth'
+// import { setupAuth, isAuthenticated } from './replitAuth' // Disabled - using token auth instead
 import { storage } from './storage'
 import menuRoutes from './routes/menu'
 import galleryRoutes from './routes/gallery'
@@ -30,21 +30,22 @@ const __dirname = path.dirname(__filename)
 const distPath = path.join(__dirname, '../dist')
 app.use(express.static(distPath))
 
-// Setup authentication and routes
-async function initializeServer() {
-  await setupAuth(app)
+// Setup routes without database-dependent authentication
+function initializeServer() {
+  // Disabled old auth system - using token-based auth instead
+  // await setupAuth(app)
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  // Auth routes - disabled, using token auth in admin routes instead
+  // app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  //   try {
+  //     const userId = req.user.claims.sub;
+  //     const user = await storage.getUser(userId);
+  //     res.json(user);
+  //   } catch (error) {
+  //     console.error("Error fetching user:", error);
+  //     res.status(500).json({ message: "Failed to fetch user" });
+  //   }
+  // });
 
   // Health check
   app.get('/health', (req, res) => {
@@ -90,6 +91,6 @@ async function initializeServer() {
 }
 
 // Initialize server
-initializeServer().catch(console.error)
+initializeServer()
 
 export default app
