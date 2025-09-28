@@ -24,7 +24,7 @@ function App() {
       
       {/* Direct admin routes */}
       <Route path="/admin/login" element={<AdminLoginPage />} />
-      <Route path="/admin" element={<AdminPage />} />
+      <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
       
       {/* Locale-based routes */}
       <Route path="/:locale" element={<SimpleLayout />}>
