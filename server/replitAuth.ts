@@ -1,4 +1,5 @@
 import * as client from "openid-client";
+// @ts-ignore - openid-client passport types issue
 import { Strategy, type VerifyFunction } from "openid-client/passport";
 
 import passport from "passport";
@@ -84,17 +85,23 @@ export async function setupAuth(app: Express) {
     verified(null, user);
   };
 
-  // Add localhost for development
-  const domains = process.env.REPLIT_DOMAINS ? 
-    process.env.REPLIT_DOMAINS.split(",").concat(["localhost:5000", "127.0.0.1:5000"]) : 
-    ["localhost:5000", "127.0.0.1:5000"];
+  // Get domains - include both production and localhost for development
+  const replitDomains = process.env.REPLIT_DOMAINS ? 
+    process.env.REPLIT_DOMAINS.split(",") : [];
+  
+  // Always include localhost for development
+  const allDomains = [...replitDomains, "localhost:5000"];
     
-  for (const domain of domains) {
+  for (const domain of allDomains) {
     const isLocalhost = domain.includes("localhost") || domain.includes("127.0.0.1");
     const protocol = isLocalhost ? "http" : "https";
+    
+    // Extract hostname for strategy naming (remove port)
+    const hostname = domain.split(':')[0];
+    
     const strategy = new Strategy(
       {
-        name: `replitauth:${domain}`,
+        name: `replitauth:${hostname}`,
         config,
         scope: "openid email profile offline_access",
         callbackURL: `${protocol}://${domain}/api/callback`,
@@ -108,9 +115,8 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
-    // Use the registered strategy name that matches what we created
-    const domain = req.hostname.includes("localhost") ? `${req.hostname}:5000` : req.hostname;
-    const strategyName = `replitauth:${domain}`;
+    // Use the hostname from the request
+    const strategyName = `replitauth:${req.hostname}`;
     passport.authenticate(strategyName, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
@@ -118,9 +124,8 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/callback", (req, res, next) => {
-    // Use the registered strategy name that matches what we created
-    const domain = req.hostname.includes("localhost") ? `${req.hostname}:5000` : req.hostname;
-    const strategyName = `replitauth:${domain}`;
+    // Use the hostname from the request
+    const strategyName = `replitauth:${req.hostname}`;
     passport.authenticate(strategyName, {
       successReturnToOrRedirect: "/admin",
       failureRedirect: "/api/login",
