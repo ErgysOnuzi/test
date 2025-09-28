@@ -28,7 +28,12 @@ app.use(express.urlencoded({ extended: true }))
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const distPath = path.join(__dirname, '../dist')
-app.use(express.static(distPath))
+
+// Serve static files with proper headers
+app.use(express.static(distPath, {
+  maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0,
+  etag: false
+}))
 
 // Setup routes without database-dependent authentication
 function initializeServer() {
@@ -66,12 +71,23 @@ function initializeServer() {
 
   // Serve React app for all non-API routes (SPA fallback)
   app.use((req, res, next) => {
-    // Skip API routes
+    // Skip API routes and static files
     if (req.path.startsWith('/api/') || req.path === '/health') {
       return next()
     }
+    
+    // If it's a static file request that wasn't found, 404
+    if (req.path.includes('.')) {
+      return res.status(404).send('Not found')
+    }
+    
     // Serve React app for all other routes
-    res.sendFile(path.join(distPath, 'index.html'))
+    res.sendFile(path.join(distPath, 'index.html'), (err) => {
+      if (err) {
+        console.error('Error serving index.html:', err)
+        res.status(500).send('Server error')
+      }
+    })
   })
 
   // Error handling middleware (must be last)
