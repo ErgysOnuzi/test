@@ -1,0 +1,136 @@
+Replit Agent Work Order — Fix Link Previews for both domains
+
+Objective
+— Ensure rich previews render on Discord/WhatsApp/Telegram/Slack/X/FB for:
+	1.	https://la-cantina.replit.app (Next.js)
+	2.	https://servepos.online (Vite/SPA or static)
+
+Global Requirements
+— First response to GET / must be 200 OK HTML with OG/Twitter tags rendered server-side (no JS injection).
+— Absolute HTTPS og:image, 1200×630, <5 MB, correct MIME type.
+— No auth/cookies required to view landing page or og:image.
+— No meta refresh or JS redirects. If redirecting / → /de or /en, / itself must also include full OG/Twitter tags.
+— Correct headers: pages text/html; images image/jpeg or image/png.
+— No robots blocking on landing pages (noindex/noimageindex).
+
+Domain 1: la-cantina.replit.app (Next.js App Router)
+	1.	Add hero image
+— Place a 1200×630 JPEG at: /public/og.jpg
+— Confirm file exists in repo and in built output.
+	2.	Set server metadata
+— Edit /app/layout.tsx (root layout). Add:
+
+// app/layout.tsx
+export const metadata = {
+  metadataBase: new URL('https://la-cantina.replit.app'),
+  title: 'La Cantina Berlin',
+  description: 'Italian restaurant near Ku’damm. Reservations, menu, events.',
+  openGraph: {
+    type: 'website',
+    url: 'https://la-cantina.replit.app/',
+    siteName: 'La Cantina Berlin',
+    title: 'La Cantina Berlin',
+    description: 'Authentic Italian near Ku’damm. Book a table.',
+    images: [{ url: 'https://la-cantina.replit.app/og.jpg', width: 1200, height: 630, alt: 'La Cantina interior' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'La Cantina Berlin',
+    description: 'Authentic Italian near Ku’damm. Book a table.',
+    images: ['https://la-cantina.replit.app/og.jpg'],
+  },
+  alternates: {
+    canonical: 'https://la-cantina.replit.app/',
+    languages: {
+      'de-DE': 'https://la-cantina.replit.app/de',
+      'en-US': 'https://la-cantina.replit.app/en',
+    },
+  },
+};
+
+— If /app/[locale]/layout.tsx exists, do not remove root OG; per-locale is optional.
+	3.	Middleware/redirect sanity
+— If using i18n middleware to force / → /de or /en, keep OG in /app/page.tsx as well, and ensure / responds once (single 308/301 at most).
+— Remove any client-side redirect on / that depends on JS.
+	4.	Replit build/run
+— Use production start, not dev:
+
+	•	Build: npm run build
+	•	Start: npm run start (Next.js production)
+— Ensure Replit “Run” uses the above, not next dev.
+
+	5.	Verification (execute from shell)
+
+curl -I https://la-cantina.replit.app/
+curl -sL https://la-cantina.replit.app/ | grep -iE 'og:|twitter:|canonical' | sed -n '1,80p'
+curl -I https://la-cantina.replit.app/og.jpg
+
+— Expect 200 text/html for /.
+— Expect og: and twitter: tags in HTML.
+— Expect og.jpg 200 with image/jpeg and size < 5 MB.
+
+Domain 2: servepos.online (Vite/SPA or static)
+	1.	Add hero image
+— Place /public/og.jpg (1200×630 JPEG). Ensure deployed path resolves at https://servepos.online/og.jpg
+	2.	Hardcode meta in index.html (bots ignore React Helmet)
+— Edit /index.html:
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ServePOS — Smart Restaurant POS</title>
+    <meta name="description" content="Cloud POS for restaurants. Orders, KDS, reports, online integration." />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://servepos.online/" />
+    <meta property="og:site_name" content="ServePOS" />
+    <meta property="og:title" content="ServePOS — Smart Restaurant POS" />
+    <meta property="og:description" content="Cloud POS for restaurants. Orders, KDS, reports, online integration." />
+    <meta property="og:image" content="https://servepos.online/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ServePOS — Smart Restaurant POS" />
+    <meta name="twitter:description" content="Cloud POS for restaurants. Orders, KDS, reports, online integration." />
+    <meta name="twitter:image" content="https://servepos.online/og.jpg" />
+
+    <link rel="canonical" href="https://servepos.online/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
+	3.	Deploy correctness
+— For Vite, run a production build and serve static dist with a proper static server (or your Node/Express) that returns index.html on / with the tags above.
+— Ensure no reverse proxy or DNS sends text/plain for HTML or text/html for og.jpg.
+	4.	Verification
+
+curl -I https://servepos.online/
+curl -sL https://servepos.online/ | grep -iE 'og:|twitter:|canonical' | sed -n '1,80p'
+curl -I https://servepos.online/og.jpg
+
+— Expect 200 text/html for /.
+— Expect OG/Twitter tags present.
+— Expect og.jpg 200 with image/jpeg and size < 5 MB.
+
+Headers and Caching (both domains)
+— Pages: Content-Type: text/html; charset=utf-8
+— Images: Content-Type: image/jpeg
+— og.jpg caching: Cache-Control: public, max-age=31536000, immutable
+— Do not emit X-Robots-Tag: noindex or meta name=“robots” content=“noindex” on landing pages.
+
+Redirect Policy
+— Maximum one redirect from apex path.
+— Avoid 302 chains. Prefer 308/301 single hop if necessary.
+— If / → /de or /en, keep OG tags on / too.
+
+Final Acceptance
+— Meta/Facebook Sharing Debugger shows fetched OG tags and renders the image for both URLs.
+— Twitter Card Validator shows Summary Large Image for both URLs.
+— Discord unfurl shows title, description, and image for both URLs.
+— curl checks above pass as specified.
