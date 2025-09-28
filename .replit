@@ -64,12 +64,12 @@ localPort = 5000
 externalPort = 5000
 
 [[ports]]
-localPort = 36761
-externalPort = 3000
-
-[[ports]]
 localPort = 38195
 externalPort = 80
+
+[[ports]]
+localPort = 46749
+externalPort = 3002
 
 # Deployment Configuration
 [deployment]
