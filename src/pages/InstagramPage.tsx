@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Instagram, Grid, ExternalLink, Heart, MessageCircle, Bookmark } from 'lucide-react'
-// import InstagramEmbed from '../components/InstagramEmbed' // Temporarily disabled for testing
+import InstagramEmbed from '../components/InstagramEmbed'
 
 const IG_URLS = [
   'https://www.instagram.com/p/DAvXTRFidcu/',
@@ -153,12 +153,8 @@ export default function InstagramPage() {
                   </div>
 
                   {/* Instagram Embed */}
-                  <div className="aspect-square max-w-full bg-gradient-to-br from-pink-100 to-purple-100 rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <Instagram className="w-16 h-16 text-pink-500 mx-auto mb-4" />
-                      <p className="text-gray-600 font-medium">Instagram Post</p>
-                      <p className="text-sm text-gray-500 mt-2">{postData.caption.substring(0, 100)}...</p>
-                    </div>
+                  <div className="aspect-square max-w-full">
+                    <InstagramEmbed url={url} />
                   </div>
 
                   {/* Post Footer */}
@@ -190,11 +186,8 @@ export default function InstagramPage() {
               return (
                 <div key={url} className="group">
                   <div className="bg-card rounded-xl overflow-hidden shadow-sm border border-border hover:shadow-lg transition-shadow duration-300">
-                    <div className="aspect-square bg-gradient-to-br from-pink-100 to-purple-100 rounded-lg flex items-center justify-center">
-                      <div className="text-center p-4">
-                        <Instagram className="w-12 h-12 text-pink-500 mx-auto mb-2" />
-                        <p className="text-sm font-medium text-gray-600">Instagram Post</p>
-                      </div>
+                    <div className="aspect-square">
+                      <InstagramEmbed url={url} />
                     </div>
                     <div className="p-4">
                       <p className="text-sm text-muted-foreground line-clamp-2 mb-2">

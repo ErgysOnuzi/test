@@ -23,8 +23,9 @@ function App() {
       {/* Default route redirects to German locale */}
       <Route path="/" element={<Navigate to="/de" replace />} />
       
-      {/* Direct admin routes */}
+      {/* Direct admin routes - outside locale routing */}
       <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route path="/admin/*" element={<AdminPage />} />
       <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
       
       {/* Locale-based routes */}
@@ -41,8 +42,6 @@ function App() {
         <Route path="legal" element={<LegalPage />} />
         <Route path="blog" element={<BlogPage />} />
         <Route path="instagram" element={<InstagramPage />} />
-        <Route path="admin/login" element={<AdminLoginPage />} />
-        <Route path="admin/*" element={<AdminPage />} />
       </Route>
       
       {/* 404 route */}

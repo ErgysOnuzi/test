@@ -1,13 +1,9 @@
 'use client';
 import React from 'react';
-import Link from 'next/link';
-import { useTranslations, useLocale } from 'next-intl';
+import { Link as RouterLink } from 'react-router-dom';
 import { Instagram, Facebook, Mail, Phone } from 'lucide-react';
 
 export default function Footer() {
-  const t = useTranslations('nav');
-  const footerT = useTranslations('footer');
-  const locale = useLocale();
 
   return (
     <footer className='bg-card border-t border-border'>
@@ -19,34 +15,34 @@ export default function Footer() {
                 Ristorante La Cantina Bleibtreu
               </h3>
               <p className='text-muted-foreground leading-relaxed'>
-                {footerT('description')}
+                Authentic Italian cuisine in the heart of Berlin. Experience traditional flavors with fresh energy and our philosophy: stay, enjoy, linger.
               </p>
             </div>
 
             <div className='md:text-center'>
               <h4 className='font-semibold mb-4 text-foreground'>
-                {footerT('opening_hours')}
+                Opening Hours
               </h4>
               <div className='space-y-2 text-muted-foreground'>
-                <p>{footerT('monday_saturday')}</p>
-                <p>{footerT('sunday')}</p>
+                <p>Monday - Saturday: 15:00 - 23:00</p>
+                <p>Sunday: Closed</p>
               </div>
             </div>
 
             <div className='md:text-right'>
               <h4 className='font-semibold mb-4 text-foreground'>
-                {footerT('contact')}
+                Contact
               </h4>
               <div className='space-y-2 text-muted-foreground'>
-                <p>{footerT('address_street')}</p>
-                <p>{footerT('address_city')}</p>
-                <p>{footerT('phone')}</p>
+                <p>Bleibtreustraße 47</p>
+                <p>10623 Berlin, Germany</p>
+                <p>+49 30 88 32 15 60</p>
                 <p className='text-primary hover:underline'>
                   <a
                     href='mailto:info@ristorante-la-cantina.de'
                     data-testid='link-email'
                   >
-                    {footerT('email')}
+                    info@ristorante-la-cantina.de
                   </a>
                 </p>
               </div>
@@ -105,23 +101,23 @@ export default function Footer() {
           {/* Footer Links */}
           <div className='flex flex-col md:flex-row justify-center md:justify-between items-center text-center'>
             <p className='text-muted-foreground text-sm'>
-              {footerT('copyright')}
+              © 2025 La Cantina Berlin. All rights reserved.
             </p>
             <div className='flex gap-4 mt-2 md:mt-0'>
-              <Link
-                href={`/${locale}/feedback`}
+              <RouterLink
+                to='/de/feedback'
                 className='text-muted-foreground hover:text-primary hover:underline text-sm transition-colors font-medium'
                 data-testid='link-feedback'
               >
-                {footerT('feedback')}
-              </Link>
-              <Link
-                href={`/${locale}/legal`}
+                Feedback
+              </RouterLink>
+              <RouterLink
+                to='/de/legal'
                 className='text-muted-foreground hover:text-primary hover:underline text-sm transition-colors font-medium'
                 data-testid='link-legal'
               >
-                {t('legal')}
-              </Link>
+                Legal
+              </RouterLink>
             </div>
           </div>
         </div>
