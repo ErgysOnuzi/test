@@ -94,6 +94,63 @@ class InMemoryStorage {
     }
   }
 
+  private generateIntelligentMetadata(filename: string, index: number) {
+    const lower = filename.toLowerCase()
+    
+    // Analyze filename patterns for intelligent categorization
+    let category = 'restaurant'
+    let title = ''
+    let description = ''
+    let altText = ''
+    
+    // Determine image type based on context clues
+    if (lower.includes('food') || lower.includes('dish') || lower.includes('pizza') || lower.includes('pasta')) {
+      category = 'food'
+      title = `Authentic Italian Cuisine`
+      description = `Fresh, handcrafted Italian dishes prepared with traditional recipes at La Cantina Berlin`
+      altText = `Delicious Italian food served at La Cantina Berlin restaurant`
+    } else if (lower.includes('interior') || lower.includes('dining') || lower.includes('table')) {
+      category = 'interior'
+      title = `Warm Italian Atmosphere`
+      description = `Cozy dining area with authentic Italian ambiance and traditional decor`
+      altText = `Interior view of La Cantina Berlin dining room with warm atmosphere`
+    } else if (lower.includes('bar') || lower.includes('wine') || lower.includes('drink')) {
+      category = 'bar'
+      title = `Italian Wine & Bar`
+      description = `Extensive selection of Italian wines and traditional aperitivos`
+      altText = `Bar area at La Cantina Berlin with Italian wines and drinks`
+    } else if (lower.includes('kitchen') || lower.includes('chef')) {
+      category = 'kitchen'
+      title = `Authentic Italian Kitchen`
+      description = `Traditional Italian cooking methods and fresh ingredients`
+      altText = `Kitchen at La Cantina Berlin where authentic Italian dishes are prepared`
+    } else if (lower.includes('exterior') || lower.includes('outside') || lower.includes('front')) {
+      category = 'exterior'
+      title = `La Cantina Berlin Entrance`
+      description = `Welcoming exterior of our authentic Italian restaurant in Berlin`
+      altText = `Exterior view of La Cantina Berlin restaurant`
+    } else {
+      // Default restaurant atmosphere based on sequence
+      const atmosphereTypes = [
+        { title: 'Cozy Italian Dining', desc: 'Intimate dining space with warm lighting and traditional Italian charm', alt: 'Cozy dining atmosphere at La Cantina Berlin' },
+        { title: 'Authentic Restaurant Interior', desc: 'Traditional Italian restaurant design with rustic elements and warm colors', alt: 'Authentic interior design at La Cantina Berlin' },
+        { title: 'Italian Culinary Experience', desc: 'Experience the taste of Italy in the heart of Berlin', alt: 'Italian dining experience at La Cantina Berlin' },
+        { title: 'Traditional Italian Ambiance', desc: 'Classic Italian restaurant atmosphere with attention to authentic details', alt: 'Traditional Italian restaurant ambiance in Berlin' },
+        { title: 'Warm Restaurant Setting', desc: 'Inviting space where families and friends gather for authentic Italian meals', alt: 'Warm and inviting atmosphere at La Cantina Berlin' }
+      ]
+      
+      const typeIndex = index % atmosphereTypes.length
+      const type = atmosphereTypes[typeIndex]
+      
+      title = type?.title || `Restaurant Photo ${index + 1}`
+      description = type?.desc || `Authentic Italian restaurant atmosphere at La Cantina Berlin`
+      altText = type?.alt || `La Cantina Berlin restaurant photo ${index + 1}`
+      category = 'atmosphere'
+    }
+    
+    return { title, description, altText, category }
+  }
+
   private loadGalleryData() {
     try {
       import('fs').then(({ readdirSync }) => {
@@ -102,17 +159,20 @@ class InMemoryStorage {
           /\.(jpg|jpeg|png|gif|webp)$/i.test(file)
         )
         
-        this.galleryItems = imageFiles.map((filename, index) => ({
-          id: index + 1,
-          title: `Gallery Image ${index + 1}`,
-          description: `Restaurant photo from La Cantina Berlin`,
-          imageUrl: `/uploads/gallery/${filename}`,
-          category: 'restaurant',
-          altText: `La Cantina Berlin - Gallery Image ${index + 1}`,
-          uploadedAt: new Date().toISOString(),
-          isVisible: true,
-          sortOrder: index
-        }))
+        this.galleryItems = imageFiles.map((filename, index) => {
+          const metadata = this.generateIntelligentMetadata(filename, index)
+          return {
+            id: index + 1,
+            title: metadata.title,
+            description: metadata.description,
+            imageUrl: `/uploads/gallery/${filename}`,
+            category: metadata.category,
+            altText: metadata.altText,
+            uploadedAt: new Date().toISOString(),
+            isVisible: true,
+            sortOrder: index
+          }
+        })
         
         this.nextGalleryId = this.galleryItems.length + 1
         console.log(`✅ Loaded ${this.galleryItems.length} gallery images from uploads folder`)
@@ -134,20 +194,23 @@ class InMemoryStorage {
         /\.(jpg|jpeg|png|gif|webp)$/i.test(file)
       )
       
-      this.galleryItems = imageFiles.map((filename: string, index: number) => ({
-        id: index + 1,
-        title: `Gallery Image ${index + 1}`,
-        description: `Restaurant photo from La Cantina Berlin`,
-        imageUrl: `/uploads/gallery/${filename}`,
-        category: 'restaurant',
-        altText: `La Cantina Berlin - Gallery Image ${index + 1}`,
-        uploadedAt: new Date().toISOString(),
-        isVisible: true,
-        sortOrder: index
-      }))
+      this.galleryItems = imageFiles.map((filename: string, index: number) => {
+        const metadata = this.generateIntelligentMetadata(filename, index)
+        return {
+          id: index + 1,
+          title: metadata.title,
+          description: metadata.description,
+          imageUrl: `/uploads/gallery/${filename}`,
+          category: metadata.category,
+          altText: metadata.altText,
+          uploadedAt: new Date().toISOString(),
+          isVisible: true,
+          sortOrder: index
+        }
+      })
       
       this.nextGalleryId = this.galleryItems.length + 1
-      console.log(`✅ Loaded ${this.galleryItems.length} gallery images from uploads folder`)
+      console.log(`✅ Loaded ${this.galleryItems.length} gallery images with intelligent metadata`)
     } catch (error) {
       console.log('⚠️ Could not load gallery data, using empty gallery:', error)
       this.galleryItems = []

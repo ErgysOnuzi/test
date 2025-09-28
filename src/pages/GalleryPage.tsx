@@ -5,6 +5,8 @@ interface GalleryImage {
   imageUrl: string
   title: string
   description?: string
+  altText?: string
+  category?: string
 }
 
 interface CachedImage extends GalleryImage {
@@ -19,6 +21,7 @@ export default function GalleryPage() {
   const [images, setImages] = useState<GalleryImage[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [cachedImages, setCachedImages] = useState<Map<number, string>>(new Map())
+  const [showAll, setShowAll] = useState(false)
 
   // Check if cache is valid
   const isCacheValid = useCallback((cachedAt: number) => {
@@ -152,17 +155,20 @@ export default function GalleryPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {images.slice(0, 12).map((image) => (
-            <div key={image.id} className="bg-card rounded-lg border overflow-hidden hover:shadow-lg transition-shadow duration-300">
-              <img 
-                src={cachedImages.get(image.id) || image.imageUrl} 
-                alt={image.title}
-                className="w-full h-64 object-cover"
-                loading="lazy"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
+          {images.slice(0, showAll ? images.length : 30).map((image) => (
+            <div key={image.id} className="bg-card rounded-lg border overflow-hidden hover:shadow-lg transition-shadow duration-300 group">
+              <div className="relative overflow-hidden">
+                <img 
+                  src={cachedImages.get(image.id) || image.imageUrl} 
+                  alt={image.altText || image.title}
+                  className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </div>
               <div className="p-6">
                 <h3 className="text-lg font-serif font-medium text-card-foreground mb-2">{image.title}</h3>
                 {image.description && <p className="text-sm text-muted-foreground leading-relaxed">{image.description}</p>}
@@ -172,10 +178,34 @@ export default function GalleryPage() {
         </div>
       )}
       
-      <div className="mt-16 text-center bg-card rounded-lg p-6 border">
-        <p className="text-muted-foreground">
-          Showing {Math.min(images.length, 12)} of {images.length} images
-        </p>
+      <div className="mt-16 text-center">
+        <div className="bg-card rounded-lg p-6 border mb-6">
+          <p className="text-muted-foreground mb-4">
+            Showing {Math.min(images.length, showAll ? images.length : 30)} of {images.length} images
+          </p>
+          {!showAll && images.length > 30 && (
+            <button
+              onClick={() => setShowAll(true)}
+              className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg font-medium transition-colors duration-200 shadow-sm hover:shadow-md"
+            >
+              Show All {images.length} Photos
+              <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          )}
+          {showAll && (
+            <button
+              onClick={() => setShowAll(false)}
+              className="inline-flex items-center px-6 py-3 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-lg font-medium transition-colors duration-200 shadow-sm hover:shadow-md"
+            >
+              Show Less
+              <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )
