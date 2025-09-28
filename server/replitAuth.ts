@@ -85,26 +85,29 @@ export async function setupAuth(app: Express) {
     verified(null, user);
   };
 
-  // Get domains - include both production and localhost for development
-  const replitDomains = process.env.REPLIT_DOMAINS ? 
-    process.env.REPLIT_DOMAINS.split(",") : [];
+  // Get the correct domain for callbacks
+  const replitDomain = process.env.REPLIT_DEV_DOMAIN || process.env.REPLIT_DOMAINS?.split(",")[0];
   
-  // Always include localhost for development
-  const allDomains = [...replitDomains, "localhost:5000"];
-    
-  for (const domain of allDomains) {
-    const isLocalhost = domain.includes("localhost") || domain.includes("127.0.0.1");
-    const protocol = isLocalhost ? "http" : "https";
-    
-    // Extract hostname for strategy naming (remove port)
-    const hostname = domain.split(':')[0];
-    
+  if (replitDomain) {
+    // Production: Use Replit domain
     const strategy = new Strategy(
       {
-        name: `replitauth:${hostname}`,
+        name: `replitauth:${replitDomain.split(':')[0]}`,
         config,
         scope: "openid email profile offline_access",
-        callbackURL: `${protocol}://${domain}/api/callback`,
+        callbackURL: `https://${replitDomain}/api/callback`,
+      },
+      verify,
+    );
+    passport.use(strategy);
+  } else {
+    // Local development fallback
+    const strategy = new Strategy(
+      {
+        name: `replitauth:localhost`,
+        config,
+        scope: "openid email profile offline_access",
+        callbackURL: `http://localhost:5000/api/callback`,
       },
       verify,
     );
@@ -115,8 +118,12 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
-    // Use the hostname from the request
-    const strategyName = `replitauth:${req.hostname}`;
+    // Use the correct strategy name based on environment
+    const replitDomain = process.env.REPLIT_DEV_DOMAIN || process.env.REPLIT_DOMAINS?.split(",")[0];
+    const strategyName = replitDomain ? 
+      `replitauth:${replitDomain.split(':')[0]}` : 
+      `replitauth:localhost`;
+    
     passport.authenticate(strategyName, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
@@ -124,8 +131,12 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/callback", (req, res, next) => {
-    // Use the hostname from the request
-    const strategyName = `replitauth:${req.hostname}`;
+    // Use the correct strategy name based on environment
+    const replitDomain = process.env.REPLIT_DEV_DOMAIN || process.env.REPLIT_DOMAINS?.split(",")[0];
+    const strategyName = replitDomain ? 
+      `replitauth:${replitDomain.split(':')[0]}` : 
+      `replitauth:localhost`;
+    
     passport.authenticate(strategyName, {
       successReturnToOrRedirect: "/admin",
       failureRedirect: "/api/login",
