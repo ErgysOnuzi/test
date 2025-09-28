@@ -22,7 +22,8 @@ function App() {
       {/* Default route redirects to German locale */}
       <Route path="/" element={<Navigate to="/de" replace />} />
       
-      {/* Direct admin route */}
+      {/* Direct admin routes */}
+      <Route path="/admin/login" element={<AdminLoginPage />} />
       <Route path="/admin" element={<AdminPage />} />
       
       {/* Locale-based routes */}
