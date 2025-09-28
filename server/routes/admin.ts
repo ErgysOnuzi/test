@@ -20,12 +20,13 @@ const generateSessionToken = (): string => {
 }
 
 // Admin authentication middleware
-const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction): void => {
   const authHeader = req.headers.authorization
   const token = authHeader?.replace('Bearer ', '')
   
   if (!token || !activeSessions.has(token)) {
-    return res.status(401).json({ error: 'Authentication required' })
+    res.status(401).json({ error: 'Authentication required' })
+    return
   }
   
   next()
