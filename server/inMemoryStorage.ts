@@ -61,7 +61,39 @@ class InMemoryStorage {
     // Load actual restaurant data from files
     this.loadMenuData()
     this.loadGalleryData()
-    this.events = [] // No events data available
+    this.loadSampleEvents()
+  }
+
+  private loadSampleEvents() {
+    // Create authentic Italian restaurant events
+    this.events = [
+      {
+        id: 1,
+        title_de: "Italienische Weinverkostung",
+        title_en: "Italian Wine Tasting Evening",
+        description_de: "Entdecken Sie die besten italienischen Weine aus Toskana, Piemont und Venetien. Ein unvergesslicher Abend mit Weinexperten, begleitet von authentischen italienischen Appetizern.",
+        description_en: "Discover the finest Italian wines from Tuscany, Piedmont, and Veneto. An unforgettable evening with wine experts, accompanied by authentic Italian appetizers and live music.",
+        event_date: "2025-10-15T19:00:00",
+        price: 45,
+        max_attendees: 25,
+        current_attendees: 12,
+        created_at: new Date().toISOString()
+      },
+      {
+        id: 2,
+        title_de: "Pasta-Kochkurs mit Chef Antonio",
+        title_en: "Pasta Making Workshop with Chef Antonio",
+        description_de: "Lernen Sie die Geheimnisse der handgemachten Pasta direkt von unserem Chefkoch Antonio. Inklusive 3-Gänge-Menü und italienischem Wein.",
+        description_en: "Learn the secrets of handmade pasta directly from our head chef Antonio. Includes hands-on pasta making, 3-course meal, and Italian wine pairing.",
+        event_date: "2025-10-22T18:30:00",
+        price: 65,
+        max_attendees: 16,
+        current_attendees: 8,
+        created_at: new Date().toISOString()
+      }
+    ]
+    this.nextEventId = 3
+    console.log(`✅ Loaded ${this.events.length} sample events`)
   }
 
   private loadMenuData() {

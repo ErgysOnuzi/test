@@ -126,18 +126,9 @@ export default function ReservationForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px', fontFamily: 'Arial, sans-serif' }}>
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label
-          htmlFor='name'
-          style={{
-            display: 'block',
-            fontSize: '14px',
-            fontWeight: '500',
-            color: '#111827',
-            marginBottom: '8px'
-          }}
-        >
+        <label htmlFor='name' className="block text-sm font-medium text-foreground mb-2">
           Name *
         </label>
         <input
@@ -147,49 +138,25 @@ export default function ReservationForm() {
           required
           value={formData.name}
           onChange={handleChange}
-          style={{
-            width: '100%',
-            padding: '12px 16px',
-            border: `1px solid ${errors.name ? '#dc2626' : '#d1d5db'}`,
-            borderRadius: '6px',
-            fontSize: '16px',
-            backgroundColor: '#ffffff',
-            color: '#111827',
-            outline: 'none',
-            transition: 'border-color 0.2s'
-          }}
-          onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = '#2563eb'}
-          onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = errors.name ? '#dc2626' : '#d1d5db'}
+          className={`w-full px-4 py-3 rounded-lg border transition-colors duration-200 ${
+            errors.name 
+              ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+              : 'border-input focus:border-primary focus:ring-primary'
+          } focus:outline-none focus:ring-1`}
+          placeholder="Your full name"
           aria-invalid={errors.name ? 'true' : 'false'}
           aria-describedby={errors.name ? 'name-error' : undefined}
           data-testid='input-reservation-name'
         />
         {errors.name && (
-          <p
-            id='name-error'
-            style={{
-              color: '#dc2626',
-              fontSize: '14px',
-              marginTop: '4px'
-            }}
-            role='alert'
-          >
+          <p id='name-error' className="mt-1 text-sm text-red-600" role='alert'>
             {errors.name}
           </p>
         )}
       </div>
 
       <div>
-        <label
-          htmlFor='phone'
-          style={{
-            display: 'block',
-            fontSize: '14px',
-            fontWeight: '500',
-            color: '#111827',
-            marginBottom: '8px'
-          }}
-        >
+        <label htmlFor='phone' className="block text-sm font-medium text-foreground mb-2">
           Phone *
         </label>
         <input
@@ -199,49 +166,25 @@ export default function ReservationForm() {
           required
           value={formData.phone}
           onChange={handleChange}
-          style={{
-            width: '100%',
-            padding: '12px 16px',
-            border: `1px solid ${errors.phone ? '#dc2626' : '#d1d5db'}`,
-            borderRadius: '6px',
-            fontSize: '16px',
-            backgroundColor: '#ffffff',
-            color: '#111827',
-            outline: 'none',
-            transition: 'border-color 0.2s'
-          }}
-          onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = '#2563eb'}
-          onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = errors.phone ? '#dc2626' : '#d1d5db'}
+          className={`w-full px-4 py-3 rounded-lg border transition-colors duration-200 ${
+            errors.phone 
+              ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+              : 'border-input focus:border-primary focus:ring-primary'
+          } focus:outline-none focus:ring-1`}
+          placeholder="+49 30 123 456 78"
           aria-invalid={errors.phone ? 'true' : 'false'}
           aria-describedby={errors.phone ? 'phone-error' : undefined}
           data-testid='input-reservation-phone'
         />
         {errors.phone && (
-          <p
-            id='phone-error'
-            style={{
-              color: '#dc2626',
-              fontSize: '14px',
-              marginTop: '4px'
-            }}
-            role='alert'
-          >
+          <p id='phone-error' className="mt-1 text-sm text-red-600" role='alert'>
             {errors.phone}
           </p>
         )}
       </div>
 
       <div>
-        <label
-          htmlFor='email'
-          style={{
-            display: 'block',
-            fontSize: '14px',
-            fontWeight: '500',
-            color: '#111827',
-            marginBottom: '8px'
-          }}
-        >
+        <label htmlFor='email' className="block text-sm font-medium text-foreground mb-2">
           Email *
         </label>
         <input
@@ -251,54 +194,26 @@ export default function ReservationForm() {
           required
           value={formData.email}
           onChange={handleChange}
-          style={{
-            width: '100%',
-            padding: '12px 16px',
-            border: `1px solid ${errors.email ? '#dc2626' : '#d1d5db'}`,
-            borderRadius: '6px',
-            fontSize: '16px',
-            backgroundColor: '#ffffff',
-            color: '#111827',
-            outline: 'none',
-            transition: 'border-color 0.2s'
-          }}
-          onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = '#2563eb'}
-          onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = errors.email ? '#dc2626' : '#d1d5db'}
+          className={`w-full px-4 py-3 rounded-lg border transition-colors duration-200 ${
+            errors.email 
+              ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+              : 'border-input focus:border-primary focus:ring-primary'
+          } focus:outline-none focus:ring-1`}
+          placeholder="your@email.com"
           aria-invalid={errors.email ? 'true' : 'false'}
           aria-describedby={errors.email ? 'email-error' : undefined}
           data-testid='input-reservation-email'
         />
         {errors.email && (
-          <p
-            id='email-error'
-            style={{
-              color: '#dc2626',
-              fontSize: '14px',
-              marginTop: '4px'
-            }}
-            role='alert'
-          >
+          <p id='email-error' className="mt-1 text-sm text-red-600" role='alert'>
             {errors.email}
           </p>
         )}
       </div>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '16px'
-      }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label
-            htmlFor='date'
-            style={{
-              display: 'block',
-              fontSize: '14px',
-              fontWeight: '500',
-              color: '#111827',
-              marginBottom: '8px'
-            }}
-          >
+          <label htmlFor='date' className="block text-sm font-medium text-foreground mb-2">
             Date *
           </label>
           <input
@@ -309,49 +224,24 @@ export default function ReservationForm() {
             value={formData.date}
             onChange={handleChange}
             min={new Date().toISOString().split('T')[0]}
-            style={{
-              width: '100%',
-              padding: '12px 16px',
-              border: `1px solid ${errors.date ? '#dc2626' : '#d1d5db'}`,
-              borderRadius: '6px',
-              fontSize: '16px',
-              backgroundColor: '#ffffff',
-              color: '#111827',
-              outline: 'none',
-              transition: 'border-color 0.2s'
-            }}
-            onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = '#2563eb'}
-            onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = errors.date ? '#dc2626' : '#d1d5db'}
+            className={`w-full px-4 py-3 rounded-lg border transition-colors duration-200 ${
+              errors.date 
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                : 'border-input focus:border-primary focus:ring-primary'
+            } focus:outline-none focus:ring-1`}
             aria-invalid={errors.date ? 'true' : 'false'}
             aria-describedby={errors.date ? 'date-error' : undefined}
             data-testid='input-reservation-date'
           />
           {errors.date && (
-            <p
-              id='date-error'
-              style={{
-                color: '#dc2626',
-                fontSize: '14px',
-                marginTop: '4px'
-              }}
-              role='alert'
-            >
+            <p id='date-error' className="mt-1 text-sm text-red-600" role='alert'>
               {errors.date}
             </p>
           )}
         </div>
 
         <div>
-          <label
-            htmlFor='time'
-            style={{
-              display: 'block',
-              fontSize: '14px',
-              fontWeight: '500',
-              color: '#111827',
-              marginBottom: '8px'
-            }}
-          >
+          <label htmlFor='time' className="block text-sm font-medium text-foreground mb-2">
             Time *
           </label>
           <select
@@ -360,61 +250,36 @@ export default function ReservationForm() {
             required
             value={formData.time}
             onChange={handleChange}
-            style={{
-              width: '100%',
-              padding: '12px 16px',
-              border: `1px solid ${errors.time ? '#dc2626' : '#d1d5db'}`,
-              borderRadius: '6px',
-              fontSize: '16px',
-              backgroundColor: '#ffffff',
-              color: '#111827',
-              outline: 'none',
-              transition: 'border-color 0.2s'
-            }}
-            onFocus={(e) => (e.target as HTMLSelectElement).style.borderColor = '#2563eb'}
-            onBlur={(e) => (e.target as HTMLSelectElement).style.borderColor = errors.time ? '#dc2626' : '#d1d5db'}
+            className={`w-full px-4 py-3 rounded-lg border transition-colors duration-200 ${
+              errors.time 
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                : 'border-input focus:border-primary focus:ring-primary'
+            } focus:outline-none focus:ring-1 bg-background`}
             aria-invalid={errors.time ? 'true' : 'false'}
             aria-describedby={errors.time ? 'time-error' : undefined}
             data-testid='select-reservation-time'
           >
             <option value=''>Select a time</option>
-            <option value='17:00'>17:00</option>
-            <option value='17:30'>17:30</option>
-            <option value='18:00'>18:00</option>
-            <option value='18:30'>18:30</option>
-            <option value='19:00'>19:00</option>
-            <option value='19:30'>19:30</option>
-            <option value='20:00'>20:00</option>
-            <option value='20:30'>20:30</option>
-            <option value='21:00'>21:00</option>
-            <option value='21:30'>21:30</option>
+            <option value='17:00'>17:00 (5:00 PM)</option>
+            <option value='17:30'>17:30 (5:30 PM)</option>
+            <option value='18:00'>18:00 (6:00 PM)</option>
+            <option value='18:30'>18:30 (6:30 PM)</option>
+            <option value='19:00'>19:00 (7:00 PM)</option>
+            <option value='19:30'>19:30 (7:30 PM)</option>
+            <option value='20:00'>20:00 (8:00 PM)</option>
+            <option value='20:30'>20:30 (8:30 PM)</option>
+            <option value='21:00'>21:00 (9:00 PM)</option>
+            <option value='21:30'>21:30 (9:30 PM)</option>
           </select>
           {errors.time && (
-            <p
-              id='time-error'
-              style={{
-                color: '#dc2626',
-                fontSize: '14px',
-                marginTop: '4px'
-              }}
-              role='alert'
-            >
+            <p id='time-error' className="mt-1 text-sm text-red-600" role='alert'>
               {errors.time}
             </p>
           )}
         </div>
 
         <div>
-          <label
-            htmlFor='guests'
-            style={{
-              display: 'block',
-              fontSize: '14px',
-              fontWeight: '500',
-              color: '#111827',
-              marginBottom: '8px'
-            }}
-          >
+          <label htmlFor='guests' className="block text-sm font-medium text-foreground mb-2">
             Guests *
           </label>
           <select
@@ -423,39 +288,24 @@ export default function ReservationForm() {
             required
             value={formData.guests}
             onChange={handleChange}
-            style={{
-              width: '100%',
-              padding: '12px 16px',
-              border: `1px solid ${errors.guests ? '#dc2626' : '#d1d5db'}`,
-              borderRadius: '6px',
-              fontSize: '16px',
-              backgroundColor: '#ffffff',
-              color: '#111827',
-              outline: 'none',
-              transition: 'border-color 0.2s'
-            }}
-            onFocus={(e) => (e.target as HTMLSelectElement).style.borderColor = '#2563eb'}
-            onBlur={(e) => (e.target as HTMLSelectElement).style.borderColor = errors.guests ? '#dc2626' : '#d1d5db'}
+            className={`w-full px-4 py-3 rounded-lg border transition-colors duration-200 ${
+              errors.guests 
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                : 'border-input focus:border-primary focus:ring-primary'
+            } focus:outline-none focus:ring-1 bg-background`}
             aria-invalid={errors.guests ? 'true' : 'false'}
             aria-describedby={errors.guests ? 'guests-error' : undefined}
             data-testid='select-reservation-guests'
           >
-            {Array.from({ length: 100 }, (_, i) => i + 1).map((num) => (
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((num) => (
               <option key={num} value={num}>
                 {num} {num === 1 ? 'person' : 'people'}
               </option>
             ))}
+            <option value={15}>15+ people (Large Group)</option>
           </select>
           {errors.guests && (
-            <p
-              id='guests-error'
-              style={{
-                color: '#dc2626',
-                fontSize: '14px',
-                marginTop: '4px'
-              }}
-              role='alert'
-            >
+            <p id='guests-error' className="mt-1 text-sm text-red-600" role='alert'>
               {errors.guests}
             </p>
           )}
@@ -463,44 +313,58 @@ export default function ReservationForm() {
       </div>
 
       {message && (
-        <div
-          style={{
-            padding: '16px',
-            borderRadius: '6px',
-            backgroundColor: isSuccess ? '#dcfce7' : '#fef2f2',
-            color: isSuccess ? '#166534' : '#dc2626',
-            border: `1px solid ${isSuccess ? '#bbf7d0' : '#fecaca'}`
-          }}
-        >
-          {message}
+        <div className={`p-4 rounded-lg border ${isSuccess 
+          ? 'bg-green-50 border-green-200 text-green-800' 
+          : 'bg-red-50 border-red-200 text-red-800'
+        }`}>
+          <div className="flex items-start gap-2">
+            {isSuccess ? (
+              <svg className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )}
+            <span className="text-sm font-medium">{message}</span>
+          </div>
         </div>
       )}
 
+      {/* Special Requests Field */}
+      <div>
+        <label htmlFor='specialRequests' className="block text-sm font-medium text-foreground mb-2">
+          Special Requests <span className="text-muted-foreground">(Optional)</span>
+        </label>
+        <textarea
+          id='specialRequests'
+          name='specialRequests'
+          rows={3}
+          className="w-full px-4 py-3 rounded-lg border border-input focus:border-primary focus:ring-primary focus:outline-none focus:ring-1 transition-colors duration-200 resize-none"
+          placeholder="Dietary restrictions, birthday celebration, specific table preferences..."
+        />
+      </div>
+      
       <button
         type='submit'
         disabled={isSubmitting}
-        style={{
-          width: '100%',
-          backgroundColor: isSubmitting ? '#6b7280' : '#2563eb',
-          color: '#ffffff',
-          padding: '16px 32px',
-          borderRadius: '6px',
-          border: 'none',
-          fontSize: '18px',
-          fontWeight: '600',
-          cursor: isSubmitting ? 'not-allowed' : 'pointer',
-          transition: 'background-color 0.2s',
-          opacity: isSubmitting ? 0.6 : 1
-        }}
-        onMouseOver={(e) => {
-          if (!isSubmitting) (e.target as HTMLButtonElement).style.backgroundColor = '#1d4ed8';
-        }}
-        onMouseOut={(e) => {
-          if (!isSubmitting) (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
-        }}
+        className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all duration-200 ${
+          isSubmitting
+            ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+            : 'bg-primary text-primary-foreground hover:bg-primary/90 focus:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 shadow-sm hover:shadow-md'
+        }`}
         data-testid='button-submit-reservation'
       >
-        {isSubmitting ? 'Submitting...' : 'Make Reservation'}
+        <div className="flex items-center justify-center gap-2">
+          {isSubmitting && (
+            <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          )}
+          {isSubmitting ? 'Submitting Reservation...' : 'Reserve Your Table'}
+        </div>
       </button>
     </form>
   );
