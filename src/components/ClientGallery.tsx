@@ -1,10 +1,7 @@
-'use client';
-
 import React, { useState, useEffect, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslation } from 'react-i18next';
 import { logError } from '@/lib/errorHandling';
 import { Image, Camera } from 'lucide-react';
-import NextImage from 'next/image';
 import GalleryLoadingAnimation from './GalleryLoadingAnimation';
 
 interface GalleryImage {
@@ -16,7 +13,7 @@ interface GalleryImage {
 }
 
 export default function ClientGallery() {
-  const t = useTranslations('gallery');
+  const { t } = useTranslation();
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadedImagesCount, setLoadedImagesCount] = useState(0);
