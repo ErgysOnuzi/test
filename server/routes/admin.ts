@@ -7,11 +7,18 @@ const router = express.Router()
 // Environment-based JWT secret - required for production
 const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-change-in-production'
 
-// Admin credentials - in production, these should be environment variables
-const ADMIN_EMAIL = 'ergysonuzi12@gmail.com'
-const ADMIN_USERNAME = 'ergysonuzi'
-// Hash the password for better security
-const ADMIN_PASSWORD_HASH = createHash('sha256').update('Xharie123').digest('hex')
+// Admin credentials from environment variables - secure for production
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'ergysonuzi12@gmail.com'
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'ergysonuzi'
+// Hash the password from environment variable for security
+const ADMIN_PASSWORD_HASH = createHash('sha256').update(process.env.ADMIN_PASSWORD || 'Xharie123').digest('hex')
+
+// Debug output to verify environment values
+console.log('🔐 Admin credentials loaded:')
+console.log(`  Email: ${ADMIN_EMAIL}`)
+console.log(`  Username: ${ADMIN_USERNAME}`)
+console.log(`  Password source: ${process.env.ADMIN_PASSWORD ? 'ENV_VAR' : 'DEFAULT'}`)
+console.log(`  Expected hash: ${ADMIN_PASSWORD_HASH}`)
 
 // In-memory session storage (since database is not working)
 const activeSessions = new Map<string, { 
@@ -128,6 +135,9 @@ router.post('/login', async (req, res) => {
       })
     } else {
       console.log(`🚫 Failed login attempt: ${identifier}`)
+      console.log(`Provided password hash: ${passwordHash}`)
+      console.log(`Expected password hash: ${ADMIN_PASSWORD_HASH}`)
+      console.log(`Password hash matches: ${passwordHash === ADMIN_PASSWORD_HASH}`)
       res.status(401).json({ error: 'Invalid credentials' })
     }
   } catch (error) {
