@@ -91,8 +91,7 @@ export default function SimpleLayout() {
                     pathWithoutLocale === `/${item.href}` || (item.href === '' && pathWithoutLocale === '')
                       ? 'text-primary font-medium bg-primary/10'
                       : 'hover:bg-primary/5'
-                  } ${isPending ? 'opacity-50' : ''}`}
-                  onClick={() => startTransition(() => {})}
+                  }`}
                 >
                   {item.name}
                 </Link>
