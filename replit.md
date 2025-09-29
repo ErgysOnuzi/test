@@ -8,7 +8,7 @@
 - ✅ TypeScript compilation clean (zero LSP errors)
 - ✅ Database operations fully functional (123 menu items, 109 gallery images, 2 events)
 - ✅ All API endpoints returning proper 200 responses
-- ✅ Admin panel secured with authentication (ergysonuzi12@gmail.com/ergysonuzi/Xharie123)
+- ✅ Admin panel secured with authentication (configured via environment variables)
 - ✅ Contact forms, reservations, gallery, and events systems operational
 
 **Recent Critical Fixes (September 29):**
