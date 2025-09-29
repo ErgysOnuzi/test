@@ -74,8 +74,8 @@ app.use((req, res, next) => {
   next()
 })
 
-// Production security middleware
-if (process.env.NODE_ENV === 'production') {
+// Production security middleware + Replit environment handling
+if (process.env.NODE_ENV === 'production' || process.env.REPLIT_DB_URL) {
   app.set('trust proxy', 1)
   
   // Force HTTPS redirect in production only when actually deployed
