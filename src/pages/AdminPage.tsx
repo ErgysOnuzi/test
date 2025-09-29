@@ -356,7 +356,7 @@ export default function AdminPage() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {menuItems.slice(0, 12).map((item) => (
+              {menuItems.map((item) => (
                 <div key={item.id} className="bg-card rounded-lg border p-6 hover:shadow-lg transition-shadow">
                   <div className="flex justify-between items-start mb-4">
                     <h3 className="font-serif font-semibold text-lg text-card-foreground">{item.title}</h3>
@@ -406,7 +406,7 @@ export default function AdminPage() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {galleryImages.slice(0, 12).map((image) => (
+              {galleryImages.map((image) => (
                 <div key={image.id} className="bg-card rounded-lg border overflow-hidden hover:shadow-lg transition-shadow">
                   <img 
                     src={image.imageUrl} 
@@ -452,7 +452,7 @@ export default function AdminPage() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {events.slice(0, 12).map((event) => (
+              {events.map((event) => (
                 <div key={event.id} className="bg-card rounded-lg border p-6 hover:shadow-lg transition-shadow">
                   <div className="flex justify-between items-start mb-4">
                     <h3 className="font-serif font-semibold text-lg text-card-foreground">{event.title_en}</h3>
@@ -686,7 +686,7 @@ export default function AdminPage() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {feedbackList.slice(0, 12).map((feedback) => (
+              {feedbackList.map((feedback) => (
                 <div key={feedback.id} className="bg-card rounded-lg border p-6 hover:shadow-lg transition-shadow">
                   <div className="flex justify-between items-start mb-4">
                     <div>
@@ -738,7 +738,7 @@ export default function AdminPage() {
             </div>
             
             <div className="space-y-4">
-              {contactMessages.slice(0, 10).map((message) => (
+              {contactMessages.map((message) => (
                 <div key={message.id} className="bg-card rounded-lg border p-6 hover:shadow-lg transition-shadow">
                   <div className="flex justify-between items-start mb-4">
                     <div>

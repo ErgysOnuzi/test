@@ -1,5 +1,6 @@
 import React, { useState, useTransition, useEffect } from 'react'
 import { Outlet, Link, useParams, useLocation } from 'react-router-dom'
+import { Menu, X } from 'lucide-react'
 
 export default function SimpleLayout() {
   const { locale } = useParams<{ locale: string }>()
@@ -10,13 +11,18 @@ export default function SimpleLayout() {
 
   const isGerman = currentLocale === 'de'
 
-  const navigation = [
+  // Main navigation items (always visible)
+  const mainNavigation = [
     { name: isGerman ? 'Startseite' : 'Home', href: '', key: 'home' },
     { name: isGerman ? 'Speisekarte' : 'Menu', href: 'menu', key: 'menu' },
-    { name: isGerman ? 'Galerie' : 'Gallery', href: 'gallery', key: 'gallery' },
     { name: isGerman ? 'Reservierungen' : 'Reservations', href: 'reservations', key: 'reservations' },
-    { name: isGerman ? 'Veranstaltungen' : 'Events', href: 'events', key: 'events' },
     { name: isGerman ? 'Kontakt' : 'Contact', href: 'contact', key: 'contact' },
+  ]
+
+  // Secondary navigation items (in burger menu)
+  const secondaryNavigation = [
+    { name: isGerman ? 'Galerie' : 'Gallery', href: 'gallery', key: 'gallery' },
+    { name: isGerman ? 'Veranstaltungen' : 'Events', href: 'events', key: 'events' },
     { name: isGerman ? 'Feedback' : 'Feedback', href: 'feedback', key: 'feedback' },
     { name: isGerman ? 'Rechtliches' : 'Legal', href: 'legal', key: 'legal' },
     { name: 'Blog', href: 'blog', key: 'blog' },
@@ -49,8 +55,8 @@ export default function SimpleLayout() {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className='hidden lg:flex xl:space-x-8 lg:space-x-6 flex-wrap' role="navigation" aria-label="Main navigation">
-              {navigation.map((item) => (
+            <nav className='hidden lg:flex xl:space-x-8 lg:space-x-6 items-center' role="navigation" aria-label="Main navigation">
+              {mainNavigation.map((item) => (
                 <Link
                   key={item.name}
                   to={`/${currentLocale}/${item.href}`}
@@ -64,11 +70,52 @@ export default function SimpleLayout() {
                   {item.name}
                 </Link>
               ))}
+              
+              {/* Burger Menu for Secondary Items */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="p-2 text-foreground hover:text-primary transition-colors duration-200"
+                  aria-expanded={isMenuOpen}
+                  aria-controls="desktop-menu"
+                  aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+                >
+                  {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                </button>
+                
+                {/* Dropdown Menu */}
+                {isMenuOpen && (
+                  <div 
+                    id="desktop-menu"
+                    className="absolute right-0 top-full mt-2 w-48 bg-background border border-border rounded-md shadow-lg z-50"
+                  >
+                    <div className="py-2">
+                      {secondaryNavigation.map((item) => (
+                        <Link
+                          key={item.name}
+                          to={`/${currentLocale}/${item.href}`}
+                          className={`block px-4 py-2 text-sm text-foreground hover:bg-muted hover:text-primary transition-colors duration-200 ${
+                            pathWithoutLocale === `/${item.href}` || (item.href === '' && pathWithoutLocale === '')
+                              ? 'text-primary font-medium bg-muted'
+                              : ''
+                          }`}
+                          onClick={() => {
+                            setIsMenuOpen(false)
+                            startTransition(() => {})
+                          }}
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </nav>
 
-            {/* Tablet Navigation - Simplified */}
-            <nav className='hidden md:flex lg:hidden space-x-4 text-sm' role="navigation" aria-label="Main navigation">
-              {navigation.slice(0, 5).map((item) => (
+            {/* Tablet Navigation - Main Items Only */}
+            <nav className='hidden md:flex lg:hidden space-x-4 text-sm items-center' role="navigation" aria-label="Main navigation">
+              {mainNavigation.slice(0, 3).map((item) => (
                 <Link
                   key={item.name}
                   to={`/${currentLocale}/${item.href}`}
@@ -82,6 +129,47 @@ export default function SimpleLayout() {
                   {item.name}
                 </Link>
               ))}
+              
+              {/* Tablet Burger Menu */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="p-1 text-foreground hover:text-primary transition-colors duration-200"
+                  aria-expanded={isMenuOpen}
+                  aria-controls="tablet-menu"
+                  aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+                >
+                  {isMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+                </button>
+                
+                {/* Tablet Dropdown Menu */}
+                {isMenuOpen && (
+                  <div 
+                    id="tablet-menu"
+                    className="absolute right-0 top-full mt-1 w-44 bg-background border border-border rounded-md shadow-lg z-50"
+                  >
+                    <div className="py-1">
+                      {[...mainNavigation.slice(3), ...secondaryNavigation].map((item) => (
+                        <Link
+                          key={item.name}
+                          to={`/${currentLocale}/${item.href}`}
+                          className={`block px-3 py-2 text-xs text-foreground hover:bg-muted hover:text-primary transition-colors duration-200 ${
+                            pathWithoutLocale === `/${item.href}` || (item.href === '' && pathWithoutLocale === '')
+                              ? 'text-primary font-medium bg-muted'
+                              : ''
+                          }`}
+                          onClick={() => {
+                            setIsMenuOpen(false)
+                            startTransition(() => {})
+                          }}
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </nav>
 
             {/* Desktop CTA & Language Toggle */}
@@ -194,7 +282,7 @@ export default function SimpleLayout() {
             )}
             <div className='relative z-50 bg-background border-t shadow-lg'>
               <div className='px-4 pt-4 pb-6 space-y-2'>
-                {navigation.map((item, index) => (
+                {[...mainNavigation, ...secondaryNavigation].map((item, index) => (
                   <Link
                     key={item.name}
                     to={`/${currentLocale}/${item.href}`}
