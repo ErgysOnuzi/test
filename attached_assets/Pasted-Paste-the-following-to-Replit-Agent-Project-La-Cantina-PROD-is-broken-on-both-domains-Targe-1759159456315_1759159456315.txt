@@ -1,0 +1,150 @@
+Paste the following to Replit Agent.
+
+⸻
+
+Project: La Cantina — PROD is broken on both domains
+
+Targets: https://la-cantina.replit.app and https://servepos.online
+
+0) Environment + boot guard
+	•	Remove any secrets from repo history. Rotate all exposed keys.
+	•	Required env at Replit “Secrets”:
+	•	DATABASE_URL (Neon postgres URL), PGHOST, PGPORT, PGUSER, PGPASSWORD, PGDATABASE
+	•	JWT_SECRET, ADMIN_PASSWORD
+	•	GOOGLE_API_KEY
+	•	STORAGE_ENDPOINT, STORAGE_ACCESS_KEY, STORAGE_SECRET_KEY, STORAGE_BUCKET (S3-compatible)
+	•	Add a boot validator: on server start, if any of the above is missing → exit with code 1.
+
+1) Health, readiness, version
+
+Create routes (Next.js: /app/api//route.ts or Express: /api/):
+	•	GET /api/health → {status:"ok"}
+	•	GET /api/ready → attempt SELECT 1 on DB and HEAD / on storage; return 200 if both ok, otherwise 500 with {db, storage} flags
+	•	GET /api/version → {git:"<sha>", builtAt:"<iso>"} (bake SHA at build)
+
+2) SSR for landing + menu
+
+Current deployments serve nothing to headless clients → SEO/previews broken.
+	•	If Next.js: convert home, menu, gallery, events, contact pages to server components with data loaders. Use export const revalidate = 300 for semi-static pages.
+	•	If Vite/Node: implement server-side render for the same routes; return full HTML with meta/OG tags.
+	•	Accept criterion: curl -I <host> returns content-type: text/html and rendered title in body.
+
+3) Admin auth
+	•	Admin at /admin must require JWT cookie.
+	•	Add endpoints: POST /api/auth/login → returns JWT (1h) httpOnly+secure; POST /api/auth/refresh; POST /api/auth/logout.
+	•	Middleware: block all CRUD below if JWT missing or invalid.
+
+4) CRUD APIs (exact, id = UUID)
+
+Menu
+	•	POST /api/menu (multipart): {name, desc, price, category, image} → store image to S3, save public URL
+	•	PUT /api/menu/:id (multipart optional)
+	•	DELETE /api/menu/:id → delete DB row + delete image object if present
+Gallery
+	•	POST /api/gallery (multipart image, alt)
+	•	DELETE /api/gallery/:id
+Events
+	•	POST /api/events → {title, date, desc, cover?} (multipart for cover)
+	•	PUT /api/events/:id
+	•	DELETE /api/events/:id
+Reservations
+	•	GET /api/reservations (filter by date/status)
+	•	PUT /api/reservations/:id (confirm/cancel/note)
+	•	DELETE /api/reservations/:id
+Feedback
+	•	GET /api/feedback (paginated)
+	•	DELETE /api/feedback/:id
+Contact
+	•	GET /api/contacts
+	•	DELETE /api/contacts/:id
+
+Implementation notes:
+	•	Use Drizzle ORM; add FK constraints and ON DELETE SET NULL for image refs.
+	•	Validate payloads with Zod; return 400 on fail.
+	•	All responses JSON; log errors with trace id.
+
+5) Image pipeline
+	•	Accept only jpeg/png/webp; 2MB max; resize server-side to max width 1920; convert to WebP; keep aspect.
+	•	Filenames: ${table}/${id}-${hash}.webp
+	•	Store and return public URL; deletion removes object.
+
+6) i18n correctness
+	•	Move all strings to /i18n/{de,en}.json. No hardcoded DE/EN in components.
+	•	Middleware reads /[locale]/* and loads proper namespace before render.
+	•	Accept criterion: switch between /de/ and /en/ produces zero leftover texts.
+
+7) SEO + previews
+	•	Add /robots.txt and /sitemap.xml (auto-generated from routes).
+	•	Add default <meta> + OpenGraph + Twitter tags on the server for each main page.
+	•	Provide favicon.ico and manifest.webmanifest.
+
+8) Caching + performance
+	•	Static assets: Cache-Control: public, max-age=31536000, immutable
+	•	API GETs: public, max-age=300, stale-while-revalidate=60
+	•	Enable Brotli/gzip.
+	•	Code-split noncritical sections (gallery, map); tree-shake icon packs.
+
+9) Security
+	•	Add Helmet/CSP:
+	•	default-src 'self'
+	•	img-src 'self' data: https:
+	•	script-src 'self' 'unsafe-inline' (remove inline when feasible)
+	•	HSTS enabled; rate-limit auth + form endpoints; CSRF token on dashboard POSTs; SameSite=Lax cookies.
+
+10) Domain, redirects, CORS
+	•	Pick primary domain (use la-cantina.replit.app or servepos.online) and 301 redirect the other.
+	•	Canonical tag on all pages pointing to primary.
+	•	If cross-domain admin/API calls exist, set strict Access-Control-Allow-Origin to the exact origins only.
+
+11) Build/run on Replit
+	•	Ensure Node 20+.
+	•	For Next.js:
+	•	.replit run: npm run build && npm run start
+	•	PORT from env, HOST=0.0.0.0
+	•	For Vite/Node SSR: expose server.listen(process.env.PORT || 3000, '0.0.0.0')
+
+12) Drizzle migrations
+	•	Run pending migrations at boot or via script.
+	•	Add /api/ready check: run SELECT 1 and fail if error.
+
+13) Google reviews + Instagram
+	•	Google Places: server route GET /api/reviews using place_id and GOOGLE_API_KEY; cache 6h.
+	•	Instagram: for now, accept an array of post URLs in config, fetch oEmbed server-side, cache 24h; render SSR.
+
+14) Logging/observability
+	•	JSON logs with level, msg, traceId, reqId.
+	•	Error boundary surfaces traceId in 5xx responses.
+
+⸻
+
+Acceptance checklist (must pass)
+	•	curl -s https://la-cantina.replit.app/api/health → {"status":"ok"}
+	•	curl -s https://la-cantina.replit.app/api/ready → 200 with {db:"ok",storage:"ok"}
+	•	curl -I https://la-cantina.replit.app → content-type: text/html
+	•	curl -s https://la-cantina.replit.app/robots.txt contains Sitemap: https://la-cantina.replit.app/sitemap.xml
+	•	Admin flows:
+	•	Create menu item with image → edit → delete. DB row changes and image object removed from storage.
+	•	Create event → create booking → delete booking. No orphan rows.
+	•	Locale switch /de ↔ /en shows zero mixed-language strings.
+	•	Lighthouse desktop: Performance ≥ 85, SEO ≥ 90.
+	•	One canonical domain; the other 301s to it.
+
+⸻
+
+Quick test script to run
+
+set -e
+primary="https://la-cantina.replit.app"
+secondary="https://servepos.online"
+
+for host in "$primary" "$secondary"; do
+  echo "== $host =="
+  curl -sS -o /dev/null -w "Status:%{http_code} Type:%{content_type} Time:%{time_total}\n" "$host"
+  curl -sS "$host/api/health" || true
+  curl -sS "$host/api/ready" || true
+  curl -sS "$host/api/version" || true
+  curl -sS "$host/robots.txt" | head -n 5 || true
+  curl -sS "$host/sitemap.xml" | head -n 5 || true
+done
+
+Implement in the order listed.

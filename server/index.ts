@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser'
 import { config } from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { validateEnvironment } from './boot-guard'
 import { db } from './db'
 // import { setupAuth, isAuthenticated } from './replitAuth' // Disabled - using token auth instead
 import { storage } from './storage'
@@ -18,6 +19,9 @@ import googleReviewsRoutes from './routes/google-reviews'
 
 // Load environment variables
 config()
+
+// Validate all required environment variables - exit with code 1 if any are missing
+validateEnvironment()
 
 const app = express()
 const PORT = parseInt(process.env.PORT || '5000')
