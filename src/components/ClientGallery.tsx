@@ -190,19 +190,15 @@ export default function ClientGallery() {
               }}
             >
               <div className='overflow-hidden relative'>
-                <NextImage
+                <img
                   src={image.imageUrl}
                   alt={
                     image.description
                       ? `${image.description} - Ristorante La Cantina Bleibtreu`
                       : 'Authentic Italian dining experience at Ristorante La Cantina Bleibtreu'
                   }
-                  width={800}
-                  height={600}
                   className='w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500'
-                  sizes='(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'
-                  quality={75}
-                  priority={index < 3} // First 3 images get priority loading
+                  loading={index < 3 ? 'eager' : 'lazy'} // First 3 images load immediately
                   onLoad={handleImageLoad}
                   onError={handleImageError}
                 />

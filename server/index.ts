@@ -19,7 +19,7 @@ import adminRoutes from './routes/admin'
 config()
 
 const app = express()
-const PORT = process.env.PORT || (process.env.NODE_ENV === 'production' ? 5000 : 3001)
+const PORT = parseInt(process.env.PORT || (process.env.NODE_ENV === 'production' ? '5000' : '3001'))
 
 // Advanced logging middleware for production monitoring
 app.use((req, res, next) => {
