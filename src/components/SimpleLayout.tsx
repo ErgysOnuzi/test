@@ -44,7 +44,7 @@ export default function SimpleLayout() {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className='hidden md:flex space-x-8'>
+            <nav className='hidden md:flex space-x-8' role="navigation" aria-label="Main navigation">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
