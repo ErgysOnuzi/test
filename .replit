@@ -68,9 +68,9 @@ externalPort = 3000
 
 # Deployment Configuration
 [deployment]
-deploymentTarget = "vm"
+deploymentTarget = "autoscale"
 build = ["npm", "run", "build"]
-run = ["bash", "-c", "npm run start:server & npm run preview"]
+run = ["npm", "run", "start:server"]
 
 [deployment.env]
 NODE_ENV = "production"
