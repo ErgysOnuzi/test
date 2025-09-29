@@ -5,6 +5,7 @@ export default function ContactForm() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    subject: '',
     message: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,6 +27,13 @@ export default function ContactForm() {
       newErrors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
+    }
+
+    // Subject validation
+    if (!formData.subject.trim()) {
+      newErrors.subject = 'Subject is required';
+    } else if (formData.subject.trim().length < 3) {
+      newErrors.subject = 'Subject must be at least 3 characters long';
     }
 
     // Message validation
@@ -64,6 +72,7 @@ export default function ContactForm() {
         setFormData({
           name: '',
           email: '',
+          subject: '',
           message: '',
         });
       } else {
@@ -197,6 +206,58 @@ export default function ContactForm() {
             role='alert'
           >
             {errors.email}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <label
+          htmlFor='subject'
+          style={{
+            display: 'block',
+            fontSize: '14px',
+            fontWeight: '500',
+            color: '#111827',
+            marginBottom: '8px'
+          }}
+        >
+          Subject *
+        </label>
+        <input
+          type='text'
+          id='subject'
+          name='subject'
+          required
+          value={formData.subject}
+          onChange={handleChange}
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            border: `1px solid ${errors.subject ? '#dc2626' : '#d1d5db'}`,
+            borderRadius: '6px',
+            fontSize: '16px',
+            backgroundColor: '#ffffff',
+            color: '#111827',
+            outline: 'none',
+            transition: 'border-color 0.2s'
+          }}
+          onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = '#2563eb'}
+          onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = errors.subject ? '#dc2626' : '#d1d5db'}
+          aria-invalid={errors.subject ? 'true' : 'false'}
+          aria-describedby={errors.subject ? 'subject-error' : undefined}
+          data-testid='input-contact-subject'
+        />
+        {errors.subject && (
+          <p
+            id='subject-error'
+            style={{
+              color: '#dc2626',
+              fontSize: '14px',
+              marginTop: '4px'
+            }}
+            role='alert'
+          >
+            {errors.subject}
           </p>
         )}
       </div>
