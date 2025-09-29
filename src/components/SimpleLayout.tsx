@@ -1,4 +1,4 @@
-import React, { useState, useTransition } from 'react'
+import React, { useState, useTransition, useEffect } from 'react'
 import { Outlet, Link, useParams, useLocation } from 'react-router-dom'
 
 export default function SimpleLayout() {
@@ -25,6 +25,11 @@ export default function SimpleLayout() {
 
   const pathWithoutLocale = location.pathname.replace(`/${currentLocale}`, '') || ''
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMenuOpen(false)
+  }, [location.pathname])
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className='bg-background/90 backdrop-blur-sm border-b sticky top-0 z-50'>
@@ -44,7 +49,7 @@ export default function SimpleLayout() {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className='hidden md:flex space-x-8' role="navigation" aria-label="Main navigation">
+            <nav className='hidden lg:flex xl:space-x-8 lg:space-x-6 flex-wrap' role="navigation" aria-label="Main navigation">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
@@ -61,8 +66,26 @@ export default function SimpleLayout() {
               ))}
             </nav>
 
+            {/* Tablet Navigation - Simplified */}
+            <nav className='hidden md:flex lg:hidden space-x-4 text-sm' role="navigation" aria-label="Main navigation">
+              {navigation.slice(0, 5).map((item) => (
+                <Link
+                  key={item.name}
+                  to={`/${currentLocale}/${item.href}`}
+                  className={`text-foreground hover:text-primary transition-colors duration-200 ${
+                    pathWithoutLocale === `/${item.href}` || (item.href === '' && pathWithoutLocale === '')
+                      ? 'text-primary font-medium'
+                      : ''
+                  } ${isPending ? 'opacity-50' : ''}`}
+                  onClick={() => startTransition(() => {})}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </nav>
+
             {/* Desktop CTA & Language Toggle */}
-            <div className='hidden md:flex items-center gap-4'>
+            <div className='hidden lg:flex items-center gap-4'>
               <div className="flex items-center gap-2">
                 <Link 
                   to="/de" 
@@ -80,6 +103,30 @@ export default function SimpleLayout() {
               </div>
               <Link to={`/${currentLocale}/reservations`}>
                 <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md font-medium transition-colors">
+                  {isGerman ? 'Reservieren' : 'Reserve'}
+                </button>
+              </Link>
+            </div>
+
+            {/* Tablet CTA & Language Toggle */}
+            <div className='hidden md:flex lg:hidden items-center gap-2'>
+              <div className="flex items-center gap-1">
+                <Link 
+                  to="/de" 
+                  className={`px-1 py-1 text-xs transition-colors ${currentLocale === 'de' ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
+                >
+                  DE
+                </Link>
+                <span className="text-muted-foreground text-xs">|</span>
+                <Link 
+                  to="/en" 
+                  className={`px-1 py-1 text-xs transition-colors ${currentLocale === 'en' ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
+                >
+                  EN
+                </Link>
+              </div>
+              <Link to={`/${currentLocale}/reservations`}>
+                <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-1 rounded text-sm font-medium transition-colors">
                   {isGerman ? 'Reservieren' : 'Reserve'}
                 </button>
               </Link>
@@ -104,50 +151,79 @@ export default function SimpleLayout() {
               </div>
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-2 text-foreground hover:text-primary transition-colors"
+                className="p-3 text-foreground hover:text-primary transition-all duration-200 rounded-md hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/20"
                 aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={isMenuOpen}
+                aria-controls="mobile-menu"
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape' && isMenuOpen) {
+                    setIsMenuOpen(false)
+                  }
+                }}
               >
-                {isMenuOpen ? (
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                ) : (
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                )}
+                <div className="relative w-6 h-6 flex flex-col justify-center items-center">
+                  <span 
+                    className={`block h-0.5 w-6 bg-current transform transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-1.5' : 'translate-y-0'}`}
+                  />
+                  <span 
+                    className={`block h-0.5 w-6 bg-current transform transition-all duration-300 ${isMenuOpen ? 'opacity-0' : 'opacity-100 translate-y-1'}`}
+                  />
+                  <span 
+                    className={`block h-0.5 w-6 bg-current transform transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-1.5' : 'translate-y-2'}`}
+                  />
+                </div>
               </button>
             </div>
           </div>
 
           {/* Mobile Navigation */}
-          {isMenuOpen && (
-            <div className='md:hidden'>
-              <div className='px-2 pt-2 pb-3 space-y-1 border-t'>
-                {navigation.map((item) => (
+          <div 
+            id="mobile-menu"
+            className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+              isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            }`}
+            aria-hidden={!isMenuOpen}
+          >
+            {/* Overlay */}
+            {isMenuOpen && (
+              <div 
+                className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden" 
+                onClick={() => setIsMenuOpen(false)}
+                aria-hidden="true"
+              />
+            )}
+            <div className='relative z-50 bg-background border-t shadow-lg'>
+              <div className='px-4 pt-4 pb-6 space-y-2'>
+                {navigation.map((item, index) => (
                   <Link
                     key={item.name}
                     to={`/${currentLocale}/${item.href}`}
-                    className={`block px-3 py-2 text-base font-medium transition-colors duration-200 ${
+                    className={`block px-4 py-3 text-lg font-medium transition-all duration-200 rounded-lg touch-manipulation ${
                       pathWithoutLocale === `/${item.href}` || (item.href === '' && pathWithoutLocale === '')
-                        ? 'text-primary'
-                        : 'text-foreground hover:text-primary'
+                        ? 'text-primary bg-primary/10'
+                        : 'text-foreground hover:text-primary hover:bg-primary/5 active:bg-primary/10'
                     }`}
                     onClick={() => setIsMenuOpen(false)}
+                    style={{ animationDelay: `${index * 50}ms` }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') {
+                        setIsMenuOpen(false)
+                      }
+                    }}
                   >
                     {item.name}
                   </Link>
                 ))}
-                <div className="px-3 py-2">
+                <div className="px-4 py-4 border-t border-border/50 mt-4">
                   <Link to={`/${currentLocale}/reservations`}>
-                    <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md font-medium transition-colors">
+                    <button className="w-full bg-primary hover:bg-primary/90 active:bg-primary/95 text-primary-foreground px-6 py-4 rounded-lg font-medium text-lg transition-all duration-200 touch-manipulation shadow-sm hover:shadow-md">
                       {isGerman ? 'Reservieren' : 'Reserve'}
                     </button>
                   </Link>
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </header>
 

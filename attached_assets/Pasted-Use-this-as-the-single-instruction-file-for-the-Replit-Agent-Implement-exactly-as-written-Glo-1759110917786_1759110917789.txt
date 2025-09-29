@@ -1,0 +1,398 @@
+Use this as the single instruction file for the Replit Agent. Implement exactly as written.
+
+# Global Admin Requirements
+
+* Auth
+
+  * Protect all `/api/admin/**` routes.
+  * JWT (cookie: `session`, httpOnly, Secure in prod).
+  * CSRF required for mutating requests (`X-CSRF-Token` header). Token from `GET /api/admin/csrf`.
+  * On successful login, redirect to `/{locale}/admin/dashboard`.
+* Validation
+
+  * Zod on all request bodies. Reject 4xx with field-level errors.
+* Query features (on all “list” endpoints)
+
+  * `?q=`, `?category=`, `?status=`, `?page=`, `?limit=`, `?sort=field`, `?order=asc|desc`.
+  * Default `limit=20`, `page=1`.
+* Responses
+
+  * Always JSON. For lists: `{ data: [...], page, limit, total }`.
+* Images
+
+  * Endpoint: `POST /api/admin/upload-image` (multipart). Fields: `file` (required), `folder` (e.g. `menu`, `gallery`, optional), `alt` (optional).
+  * Store to `public/uploads/{folder}/{yyyy-mm}/{random}.ext`.
+  * Return `{ url, width, height, size, alt }`.
+  * Accept: jpg/jpeg/png/webp, max 5MB. Reject others.
+* Rate limit
+
+  * 60 req/min per IP on admin APIs.
+* Error format
+
+  * `{ error: { code, message, details? } }`.
+
+# Data Models (server)
+
+Use these shapes (match your current `server/inMemoryStorage.ts` types; DB later can mirror):
+
+## MenuItem
+
+```
+id: number
+title: string
+titleDe: string
+titleEn: string
+description: string
+descriptionDe: string
+descriptionEn: string
+price: number
+category: string
+categoryDe: string
+categoryEn: string
+isAvailable: boolean
+allergens: string
+imageUrl: string | null
+```
+
+## GalleryItem
+
+```
+id: number
+title: string
+description: string
+imageUrl: string
+category: string
+altText: string
+uploadedAt: string (ISO)
+isVisible: boolean
+sortOrder: number
+```
+
+## Event
+
+```
+id: number
+title_de: string
+title_en: string
+description_de: string
+description_en: string
+event_date: string (ISO)
+price: number
+max_attendees: number
+current_attendees: number
+created_at: string (ISO)
+```
+
+## EventBooking
+
+```
+id: number
+eventId: number
+name: string
+email: string
+phone: string
+guests: number
+specialRequests: string
+totalAmount: number
+status: 'confirmed'|'cancelled'|'pending'
+created_at: string (ISO)
+```
+
+## Reservation (table reservations; separate from EventBooking)
+
+```
+id: number
+name: string
+email: string
+phone: string
+date: string (ISO date)
+time: string (HH:mm)
+guests: number
+notes: string
+status: 'new'|'confirmed'|'cancelled'|'no_show'
+created_at: string (ISO)
+```
+
+## Feedback
+
+```
+id: number
+name: string
+email: string
+rating: number (1..5)
+experience: string
+suggestions: string
+approved: boolean
+created_at: string (ISO)
+```
+
+## ContactMessage
+
+```
+id: number
+name: string
+email: string
+phone?: string
+subject: string
+message: string
+status: 'new'|'read'|'archived'
+received_at: string (ISO)
+```
+
+# Admin UI Pages (features to implement)
+
+## 1) Menu Management
+
+* Grid with search, category filter, availability toggle, pagination.
+* Create/Edit form:
+
+  * All translatable fields (DE/EN), price (number, ≥0), category (DE/EN), allergens (string), isAvailable (bool).
+  * Image picker with preview; calls `POST /api/admin/upload-image` then sets `imageUrl`.
+* Actions: Create, Edit, Duplicate, Delete (confirm modal), Toggle Availability (inline).
+* Bulk: select rows → bulk delete, bulk toggle availability, bulk category change.
+* Validation: title required (both locales), price required, category required.
+
+## 2) Gallery Management
+
+* Masonry/grid view with drag-to-reorder (updates `sortOrder`).
+* Create/Edit:
+
+  * Title, description, category, altText, isVisible, image upload.
+* Actions: Create, Edit, Hide/Show, Delete, Reorder.
+
+## 3) Events Management
+
+* List upcoming/past, search, date range filter.
+* Create/Edit:
+
+  * `title_de/title_en`, `description_de/_en`, `event_date` (datetime), `price`, `max_attendees`.
+* Actions: Create, Edit, Cancel (sets status across linked bookings to cancelled), Delete (only if no confirmed bookings; otherwise reject 409).
+* Detail page: shows booking stats.
+
+## 4) Event Bookings
+
+* Filter by event, status; export CSV.
+* Create (admin-side booking), Edit (status, guests, contact), Delete.
+* Auto-calc `totalAmount = guests * event.price` unless overridden.
+
+## 5) Reservations
+
+* Calendar view (day/week) + table view.
+* Create/Edit/Confirm/Cancel/No-Show.
+* Capacity guard: optional env `MAX_TABLE_CAPACITY_PER_SLOT` to warn when exceeded.
+
+## 6) Feedback & Reviews
+
+* List user feedback. Approve/Unapprove toggles.
+* Edit (only `approved` and optional moderation trims).
+* Delete spam.
+* “Sync Google Reviews” button: if real integration not configured, hide; otherwise fetch and map.
+
+## 7) Contact Messages
+
+* Inbox style: mark read/archived.
+* View, Reply link (`mailto:`), Archive, Delete.
+
+# API: Endpoints + Request/Response
+
+## Auth / Session
+
+* `POST /api/admin/session` — login
+  Body: `{ email, password }`
+  Set cookie `session`. Return `{ user: { email }, csrfToken }`.
+* `POST /api/admin/logout` — logout
+  Clears cookie.
+* `GET /api/admin/csrf` — returns `{ csrfToken }`.
+
+## Uploads
+
+* `POST /api/admin/upload-image` (multipart)
+
+  * Fields: `file`, optional `folder`, optional `alt`
+  * Return: `{ url, width, height, size, alt }`
+
+---
+
+## Menu
+
+* `GET /api/admin/menu?q=&category=&page=&limit=&sort=&order=`
+  → `{ data: MenuItem[], page, limit, total }`
+* `POST /api/admin/menu`
+  Body (JSON): `Omit<MenuItem,'id'>`
+  → `MenuItem`
+* `GET /api/admin/menu/:id` → `MenuItem`
+* `PUT /api/admin/menu/:id`
+  Body: `Omit<MenuItem,'id'>` → `MenuItem`
+* `PATCH /api/admin/menu/:id`
+  Body: `Partial<Omit<MenuItem,'id'>>` → `MenuItem`
+* `DELETE /api/admin/menu/:id` → `{ ok: true }`
+
+**cURL examples**
+
+```bash
+# List
+curl -sS -H "Cookie: session=..." "/api/admin/menu?page=1&limit=20"
+
+# Create
+curl -sS -X POST -H "Content-Type: application/json" -H "X-CSRF-Token: $CSRF" -d '{
+  "title":"Spaghetti Aglio e Olio",
+  "titleDe":"Spaghetti Aglio e Olio",
+  "titleEn":"Spaghetti Aglio e Olio",
+  "description":"Knoblauch, Olivenöl, Peperoncini",
+  "descriptionDe":"Knoblauch, Olivenöl, Peperoncini",
+  "descriptionEn":"Garlic, olive oil, chili",
+  "price": 8.5,
+  "category":"Pasta","categoryDe":"Pasta","categoryEn":"Pasta",
+  "isAvailable": true,
+  "allergens":"A, C",
+  "imageUrl": null
+}' "/api/admin/menu"
+
+# Upload image then patch menu item
+curl -sS -X POST -H "X-CSRF-Token: $CSRF" -F "file=@/path/dish.jpg" -F "folder=menu" "/api/admin/upload-image"
+# => {"url":"/uploads/menu/2025-09/abc.webp",...}
+curl -sS -X PATCH -H "Content-Type: application/json" -H "X-CSRF-Token: $CSRF" -d '{"imageUrl":"/uploads/menu/2025-09/abc.webp"}' "/api/admin/menu/123"
+```
+
+---
+
+## Gallery
+
+* `GET /api/admin/gallery?q=&category=&visible=&page=&limit=&sort=&order=`
+  → `{ data: GalleryItem[], page, limit, total }`
+* `POST /api/admin/gallery`
+  Body: `Omit<GalleryItem,'id'>` → `GalleryItem`
+* `GET /api/admin/gallery/:id` → `GalleryItem`
+* `PUT /api/admin/gallery/:id` Body: `Omit<GalleryItem,'id'>` → `GalleryItem`
+* `PATCH /api/admin/gallery/:id` Body: `Partial<Omit<GalleryItem,'id'>>` → `GalleryItem`
+* `DELETE /api/admin/gallery/:id` → `{ ok: true }`
+* `POST /api/admin/gallery/reorder` Body: `{ idsInOrder: number[] }` → `{ ok: true }`
+
+**cURL**
+
+```bash
+# Create with image
+UP=$(curl -sS -X POST -H "X-CSRF-Token: $CSRF" -F "file=@/path/photo.jpg" -F "folder=gallery" "/api/admin/upload-image")
+URL=$(echo "$UP" | jq -r .url)
+curl -sS -X POST -H "Content-Type: application/json" -H "X-CSRF-Token: $CSRF" -d "{
+  \"title\":\"Warm Italian Atmosphere\",
+  \"description\":\"Cozy dining area\",
+  \"imageUrl\":\"$URL\",
+  \"category\":\"interior\",
+  \"altText\":\"Dining room\",
+  \"uploadedAt\":\"$(date -Iseconds)\",
+  \"isVisible\": true,
+  \"sortOrder\": 0
+}" "/api/admin/gallery"
+```
+
+---
+
+## Events
+
+* `GET /api/admin/events?q=&from=&to=&page=&limit=&sort=&order=`
+* `POST /api/admin/events` Body: `Omit<Event,'id'|'created_at'|'current_attendees'>` → `Event` (server sets `created_at`, `current_attendees=0`)
+* `GET /api/admin/events/:id`
+* `PUT /api/admin/events/:id` Body: `Omit<Event,'id'|'created_at'|'current_attendees'>`
+* `PATCH /api/admin/events/:id` Body: `Partial<Event>`
+* `DELETE /api/admin/events/:id`
+
+  * If any `EventBooking.status === 'confirmed'`: 409 `{ error: "has_confirmed_bookings" }`, else `{ ok: true }`
+* `GET /api/admin/events/:id/stats` → `{ totalBookings, totalGuests, totalRevenue, confirmedBookings }`
+
+---
+
+## Event Bookings
+
+* `GET /api/admin/event-bookings?eventId=&status=&page=&limit=`
+* `POST /api/admin/event-bookings`
+  Body: `Omit<EventBooking,'id'|'created_at'|'totalAmount'|'status'> & { status?: EventBooking['status'] }`
+
+  * Server default `status='pending'`, `created_at=now`, `totalAmount=guests*event.price` if not provided.
+* `GET /api/admin/event-bookings/:id`
+* `PATCH /api/admin/event-bookings/:id` Body: `Partial<EventBooking>`
+* `DELETE /api/admin/event-bookings/:id`
+
+---
+
+## Reservations
+
+* `GET /api/admin/reservations?q=&date=&status=&page=&limit=`
+* `POST /api/admin/reservations` Body: `Omit<Reservation,'id'|'created_at'|'status'> & { status?: Reservation['status'] }` (default `new`)
+* `GET /api/admin/reservations/:id`
+* `PATCH /api/admin/reservations/:id` Body: `Partial<Reservation>`
+* `DELETE /api/admin/reservations/:id`
+
+---
+
+## Feedback
+
+* `GET /api/admin/feedback?q=&approved=&page=&limit=`
+* `POST /api/admin/feedback` Body: `Omit<Feedback,'id'|'created_at'|'approved'>` (admin-created testimonial; default `approved=false`)
+* `GET /api/admin/feedback/:id`
+* `PATCH /api/admin/feedback/:id` Body: `Partial<Feedback>` (notably `approved`)
+* `DELETE /api/admin/feedback/:id`
+
+---
+
+## Contact Messages
+
+* `GET /api/admin/messages?q=&status=&page=&limit=`
+* `GET /api/admin/messages/:id`
+* `PATCH /api/admin/messages/:id` Body: `{ status?: 'new'|'read'|'archived' }`
+* `DELETE /api/admin/messages/:id`
+
+# Admin UI Acceptance Criteria (per page)
+
+* Table/grid shows server data with pagination, search, sort, filters; URL reflects state via query params.
+* Create/Edit forms: client validation, server validation; toasts on success/failure; form resets; optimistic updates enabled via React Query.
+* Delete: confirmation modal, 204 or `{ok:true}` expected; UI removes row.
+* Image upload: drag & drop, progress, preview; uses `/api/admin/upload-image`; sets field to returned `url`.
+* Events: booking stats visible, guard delete with confirmed bookings.
+* Reservations: calendar view responsive; status pills; CSV export for current view.
+* Feedback: toggle approved; unapproved not rendered on public site.
+* Contact: unread badge count on sidebar; archive action persists across reloads.
+* Auth: login redirects to `/{locale}/admin/dashboard`; logout clears cookie and redirects to `/{locale}/admin/login`.
+
+# Security/Hardening To Implement
+
+* All admin routes check cookie session; 401 on missing/invalid.
+* CSRF check on POST/PUT/PATCH/DELETE.
+* Validate `imageUrl` paths to only `/uploads/...`.
+* Limit file size/type in upload; randomize filenames; never trust client `alt` without sanitization.
+* Input sanitation for strings (strip HTML or escape).
+
+# Minimal Test Plan (agent must run)
+
+1. Auth: login returns cookie + csrf; redirect works.
+2. Menu CRUD + upload:
+
+   * Create item (no image) → 200; attach image via upload + patch; toggle availability; delete; list reflects changes with filters.
+3. Gallery CRUD + reorder:
+
+   * Upload image; create; hide/show; reorder; delete.
+4. Events + bookings:
+
+   * Create event; create booking; verify totals; attempt delete event → 409, cancel event then delete.
+5. Reservations:
+
+   * Create, confirm, cancel; list by date; CSV exports.
+6. Feedback:
+
+   * Create, approve, unapprove; delete.
+7. Contact:
+
+   * Seed 1–2 messages; mark read; archive; delete.
+
+# Notes for Agent (implementation pointers)
+
+* Use Next.js App Router route handlers in `src/app/api/admin/**/route.ts` and `[id]/route.ts`.
+* Reuse your existing in-memory storage functions; ensure `update*` methods filter undefined keys and return the strict type.
+* Client pages under `src/app/[locale]/admin/**`:
+
+  * React Query for data fetching/mutations.
+  * Zod + React Hook Form for forms.
+  * File inputs → call upload endpoint then set form value.
+  * Keep current UI kit and icons.
+
+Deliver all of the above.
