@@ -1,5 +1,7 @@
 import express from 'express'
-import { inMemoryStorage } from '../inMemoryStorage'
+import { db } from '../db'
+import { feedbacks } from '../../shared/schema'
+import { eq, desc } from 'drizzle-orm'
 import { validateFeedback, handleValidationErrors } from '../middleware/validation'
 
 const router = express.Router()
@@ -10,7 +12,7 @@ import { requireAuth, requireAuthWithCSRF } from './admin'
 // GET /api/feedback - Get all feedback submissions (admin)
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const feedback = inMemoryStorage.getAllFeedback()
+    const feedback = await db.select().from(feedbacks).orderBy(desc(feedbacks.createdAt))
     console.log(`⭐ Fetched ${feedback.length} feedback submissions`)
     res.json(feedback)
   } catch (error) {
@@ -23,7 +25,7 @@ router.get('/', requireAuth, async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const feedback = inMemoryStorage.getFeedbackById(parseInt(id))
+    const [feedback] = await db.select().from(feedbacks).where(eq(feedbacks.id, parseInt(id)))
     
     if (!feedback) {
       return res.status(404).json({ error: 'Feedback not found' })
@@ -51,15 +53,14 @@ router.post('/', validateFeedback, handleValidationErrors, async (req, res) => {
       return res.status(400).json({ error: 'Name, email, rating, and experience are required' })
     }
 
-    const newFeedback = inMemoryStorage.createFeedback({
+    const [newFeedback] = await db.insert(feedbacks).values({
       name,
       email,
       rating: parseInt(rating),
-      experience,
-      suggestions,
-      created_at: new Date().toISOString(),
-      approved: false
-    })
+      comment: experience,
+      status: 'pending',
+      isPublic: false
+    }).returning()
 
     console.log(`⭐ New feedback submitted: ${newFeedback.name} (${newFeedback.rating} stars)`)
     res.status(201).json({ 
@@ -79,7 +80,10 @@ router.put('/:id', requireAuthWithCSRF, async (req, res) => {
     const { id } = req.params
     const updateData = req.body
 
-    const updatedFeedback = inMemoryStorage.updateFeedback(parseInt(id), updateData)
+    const [updatedFeedback] = await db.update(feedbacks)
+      .set(updateData)
+      .where(eq(feedbacks.id, parseInt(id)))
+      .returning()
     
     if (!updatedFeedback) {
       return res.status(404).json({ error: 'Feedback not found' })
@@ -97,9 +101,11 @@ router.put('/:id', requireAuthWithCSRF, async (req, res) => {
 router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
     const { id } = req.params
-    const success = inMemoryStorage.deleteFeedback(parseInt(id))
+    const [deletedFeedback] = await db.delete(feedbacks)
+      .where(eq(feedbacks.id, parseInt(id)))
+      .returning()
     
-    if (!success) {
+    if (!deletedFeedback) {
       return res.status(404).json({ error: 'Feedback not found' })
     }
 
@@ -117,7 +123,13 @@ router.patch('/:id/approve', requireAuthWithCSRF, async (req, res) => {
     const { id } = req.params
     const { approved } = req.body
 
-    const updatedFeedback = inMemoryStorage.updateFeedback(parseInt(id), { approved: !!approved })
+    const [updatedFeedback] = await db.update(feedbacks)
+      .set({ 
+        status: approved ? 'approved' : 'rejected',
+        isPublic: !!approved
+      })
+      .where(eq(feedbacks.id, parseInt(id)))
+      .returning()
     
     if (!updatedFeedback) {
       return res.status(404).json({ error: 'Feedback not found' })

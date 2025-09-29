@@ -1,7 +1,8 @@
 import express from 'express'
 import { renderPage } from '../ssr'
-import { inMemoryStorage } from '../inMemoryStorage'
 import { GoogleReviewsService } from '../services/googleReviews'
+import { db } from '../db'
+import { menuItems } from '../../shared/schema'
 
 const router = express.Router()
 
@@ -60,20 +61,20 @@ router.get(['/', '/de', '/en'], async (req, res) => {
 router.get(['/de/menu', '/en/menu'], async (req, res) => {
   try {
     const locale = req.path.startsWith('/en') ? 'en' : 'de'
-    const menuItems = inMemoryStorage.getAllMenuItems()
+    const menuItemsData = await db.select().from(menuItems)
     
     const seoTitle = locale === 'de'
       ? 'Speisekarte - La Cantina Berlin | Italienische Küche'
       : 'Menu - La Cantina Berlin | Italian Cuisine'
     
     const seoDescription = locale === 'de'
-      ? `Entdecken Sie unsere authentische italienische Speisekarte mit ${menuItems.length} köstlichen Gerichten. Hausgemachte Pasta, frischer Fisch und traditionelle Rezepte.`
-      : `Discover our authentic Italian menu with ${menuItems.length} delicious dishes. Homemade pasta, fresh fish and traditional recipes.`
+      ? `Entdecken Sie unsere authentische italienische Speisekarte mit ${menuItemsData.length} köstlichen Gerichten. Hausgemachte Pasta, frischer Fisch und traditionelle Rezepte.`
+      : `Discover our authentic Italian menu with ${menuItemsData.length} delicious dishes. Homemade pasta, fresh fish and traditional recipes.`
 
     const html = renderPage({
       url: req.path,
       locale,
-      menuItems,
+      menuItems: menuItemsData,
       seoTitle,
       seoDescription,
       ogImage: '/og.jpg'
