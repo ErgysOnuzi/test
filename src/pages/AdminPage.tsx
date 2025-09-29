@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
 import { adminAuth } from '@/lib/adminAuth'
 
 interface MenuItem {
@@ -18,10 +19,166 @@ interface GalleryImage {
 }
 
 export default function AdminPage() {
+  const { locale } = useParams<{ locale: string }>()
+  const currentLocale = locale || 'de'
+  const isGerman = currentLocale === 'de'
+  
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'menu' | 'gallery' | 'events' | 'bookings' | 'reservations' | 'feedback' | 'contact'>('menu')
+  
+  // Translations
+  const t = {
+    // Header
+    adminTitle: isGerman ? 'La Cantina Admin' : 'La Cantina Admin',
+    welcome: isGerman ? 'Willkommen' : 'Welcome',
+    logout: isGerman ? 'Abmelden' : 'Log Out',
+    loading: isGerman ? 'Lädt...' : 'Loading...',
+    accessRequired: isGerman ? 'Zugang erforderlich' : 'Access Required',
+    pleaseLogin: isGerman ? 'Bitte melden Sie sich an, um auf das Admin-Panel zuzugreifen.' : 'Please log in to access the admin panel.',
+    login: isGerman ? 'Anmelden' : 'Log In',
+    
+    // Navigation tabs
+    tabs: {
+      menu: isGerman ? 'Speisekarten-Verwaltung' : 'Menu Management',
+      gallery: isGerman ? 'Galerie-Verwaltung' : 'Gallery Management', 
+      events: isGerman ? 'Veranstaltungs-Verwaltung' : 'Events Management',
+      bookings: isGerman ? 'Veranstaltungsanmeldungen' : 'Event Bookings',
+      reservations: isGerman ? 'Reservierungen' : 'Reservations',
+      feedback: isGerman ? 'Bewertungen & Feedback' : 'Feedback & Reviews',
+      contact: isGerman ? 'Kontaktnachrichten' : 'Contact Messages'
+    },
+    
+    // Common actions
+    actions: {
+      edit: isGerman ? 'Bearbeiten' : 'Edit',
+      delete: isGerman ? 'Löschen' : 'Delete',
+      create: isGerman ? 'Erstellen' : 'Create',
+      update: isGerman ? 'Aktualisieren' : 'Update',
+      cancel: isGerman ? 'Abbrechen' : 'Cancel',
+      confirm: isGerman ? 'Bestätigen' : 'Confirm',
+      approve: isGerman ? 'Genehmigen' : 'Approve',
+      reply: isGerman ? 'Antworten' : 'Reply',
+      save: isGerman ? 'Speichern' : 'Save'
+    },
+    
+    // Menu management
+    menu: {
+      title: isGerman ? 'Speisekarten-Artikel' : 'Menu Items',
+      addNew: isGerman ? 'Neuen Artikel hinzufügen' : 'Add New Item',
+      editItem: isGerman ? 'Artikel bearbeiten' : 'Edit Menu Item',
+      addItem: isGerman ? 'Neuen Artikel hinzufügen' : 'Add New Menu Item',
+      itemTitle: isGerman ? 'Artikel-Titel' : 'Item Title',
+      description: isGerman ? 'Beschreibung' : 'Description',
+      price: isGerman ? 'Preis' : 'Price',
+      category: isGerman ? 'Kategorie' : 'Category',
+      selectCategory: isGerman ? 'Kategorie auswählen' : 'Select Category',
+      available: isGerman ? 'Verfügbar' : 'Available',
+      unavailable: isGerman ? 'Nicht verfügbar' : 'Unavailable'
+    },
+    
+    // Gallery management
+    gallery: {
+      title: isGerman ? 'Galerie-Bilder' : 'Gallery Images',
+      uploadImage: isGerman ? 'Bild hochladen' : 'Upload Image',
+      editImage: isGerman ? 'Bild bearbeiten' : 'Edit Gallery Image',
+      uploadNew: isGerman ? 'Neues Bild hochladen' : 'Upload New Image',
+      imageTitle: isGerman ? 'Bild-Titel' : 'Image Title',
+      imageUrl: isGerman ? 'Bild-URL' : 'Image URL',
+      descriptionOptional: isGerman ? 'Beschreibung (optional)' : 'Description (optional)',
+      upload: isGerman ? 'Hochladen' : 'Upload'
+    },
+    
+    // Events management
+    events: {
+      title: isGerman ? 'Veranstaltungs-Verwaltung' : 'Events Management',
+      createNew: isGerman ? 'Neue Veranstaltung erstellen' : 'Create New Event',
+      editEvent: isGerman ? 'Veranstaltung bearbeiten' : 'Edit Event',
+      createNewEvent: isGerman ? 'Neue Veranstaltung erstellen' : 'Create New Event',
+      titleEnglish: isGerman ? 'Veranstaltungstitel (Englisch)' : 'Event Title (English)',
+      titleGerman: isGerman ? 'Veranstaltungstitel (Deutsch)' : 'Event Title (German)',
+      descriptionEnglish: isGerman ? 'Beschreibung (Englisch)' : 'Description (English)',
+      descriptionGerman: isGerman ? 'Beschreibung (Deutsch)' : 'Description (German)',
+      pricePerPerson: isGerman ? 'Preis pro Person' : 'Price per person',
+      maxAttendees: isGerman ? 'Max. Teilnehmer' : 'Max attendees',
+      attendees: isGerman ? 'Teilnehmer' : 'attendees'
+    },
+    
+    // Bookings management
+    bookings: {
+      title: isGerman ? 'Veranstaltungsanmeldungen-Verwaltung' : 'Event Bookings Management',
+      totalBookings: isGerman ? 'Anmeldungen gesamt' : 'Total Bookings',
+      noBookings: isGerman ? 'Noch keine Veranstaltungsanmeldungen' : 'No Event Bookings Yet',
+      noBookingsDesc: isGerman ? 'Veranstaltungsanmeldungen erscheinen hier, sobald Kunden sich für Veranstaltungen registrieren.' : 'Event bookings will appear here once customers start registering for events.',
+      booking: isGerman ? 'Anmeldung' : 'Booking',
+      customerDetails: isGerman ? 'Kundendaten' : 'Customer Details',
+      bookingDetails: isGerman ? 'Anmeldungsdetails' : 'Booking Details',
+      guests: isGerman ? 'Gäste' : 'Guests',
+      event: isGerman ? 'Veranstaltung' : 'Event',
+      perPerson: isGerman ? 'Pro Person' : 'Per person',
+      specialRequests: isGerman ? 'Besondere Wünsche' : 'Special Requests',
+      none: isGerman ? 'Keine' : 'None',
+      confirmBooking: isGerman ? 'Anmeldung bestätigen' : 'Confirm Booking',
+      cancelBooking: isGerman ? 'Anmeldung stornieren' : 'Cancel Booking',
+      deleteBooking: isGerman ? 'Anmeldung löschen' : 'Delete Booking',
+      confirmed: isGerman ? 'Bestätigt' : 'Confirmed',
+      pending: isGerman ? 'Ausstehend' : 'Pending',
+      cancelled: isGerman ? 'Storniert' : 'Cancelled'
+    },
+    
+    // Reservations management
+    reservations: {
+      title: isGerman ? 'Reservierungen-Verwaltung' : 'Reservations Management',
+      allStatus: isGerman ? 'Alle Status' : 'All Status',
+      guest: isGerman ? 'Gast' : 'Guest',
+      dateTime: isGerman ? 'Datum & Zeit' : 'Date & Time',
+      guests: isGerman ? 'Gäste' : 'Guests',
+      status: isGerman ? 'Status' : 'Status',
+      actions: isGerman ? 'Aktionen' : 'Actions'
+    },
+    
+    // Feedback management
+    feedback: {
+      title: isGerman ? 'Bewertungen & Feedback' : 'Feedback & Reviews',
+      allRatings: isGerman ? 'Alle Bewertungen' : 'All Ratings',
+      stars: isGerman ? 'Sterne' : 'Stars',
+      suggestions: isGerman ? 'Vorschläge' : 'Suggestions'
+    },
+    
+    // Contact management
+    contact: {
+      title: isGerman ? 'Kontaktnachrichten' : 'Contact Messages',
+      allMessages: isGerman ? 'Alle Nachrichten' : 'All Messages',
+      unread: isGerman ? 'Ungelesen' : 'Unread',
+      replied: isGerman ? 'Beantwortet' : 'Replied',
+      new: isGerman ? 'Neu' : 'New',
+      markReplied: isGerman ? 'Als beantwortet markieren' : 'Mark Replied',
+      subject: isGerman ? 'Betreff' : 'Subject',
+      message: isGerman ? 'Nachricht' : 'Message'
+    },
+    
+    // Success/Error messages
+    messages: {
+      deleteConfirm: isGerman ? 'Sind Sie sicher, dass Sie dies löschen möchten?' : 'Are you sure you want to delete this?',
+      deleteEventConfirm: isGerman ? 'Sind Sie sicher, dass Sie diese Veranstaltung löschen möchten? Alle zugehörigen Anmeldungen werden ebenfalls gelöscht.' : 'Are you sure you want to delete this event? All associated bookings will also be deleted.',
+      deleteBookingConfirm: isGerman ? 'Sind Sie sicher, dass Sie diese Anmeldung löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.' : 'Are you sure you want to delete this booking? This action cannot be undone.',
+      itemCreated: isGerman ? 'Artikel erfolgreich erstellt!' : 'Menu item created successfully!',
+      itemUpdated: isGerman ? 'Artikel erfolgreich aktualisiert!' : 'Menu item updated successfully!',
+      imageUploaded: isGerman ? 'Bild erfolgreich hochgeladen!' : 'Gallery image uploaded successfully!',
+      imageUpdated: isGerman ? 'Bild erfolgreich aktualisiert!' : 'Gallery image updated successfully!',
+      eventCreated: isGerman ? 'Veranstaltung erfolgreich erstellt!' : 'Event created successfully!',
+      eventUpdated: isGerman ? 'Veranstaltung erfolgreich aktualisiert!' : 'Event updated successfully!',
+      reservationDeleted: isGerman ? 'Reservierung erfolgreich gelöscht!' : 'Reservation deleted successfully!',
+      reservationStatusUpdated: isGerman ? 'Reservierungsstatus erfolgreich aktualisiert!' : 'Reservation status updated successfully!',
+      feedbackDeleted: isGerman ? 'Feedback erfolgreich gelöscht!' : 'Feedback deleted successfully!',
+      feedbackApproved: isGerman ? 'Feedback erfolgreich genehmigt!' : 'Feedback approved successfully!',
+      messageDeleted: isGerman ? 'Nachricht erfolgreich gelöscht!' : 'Message deleted successfully!',
+      messageMarkedReplied: isGerman ? 'Nachricht als beantwortet markiert!' : 'Message marked as replied!',
+      error: isGerman ? 'Fehler' : 'Error',
+      unknownError: isGerman ? 'Unbekannter Fehler' : 'Unknown error'
+    }
+  }
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([])
   const [events, setEvents] = useState<any[]>([])
@@ -32,6 +189,7 @@ export default function AdminPage() {
   const [showMenuModal, setShowMenuModal] = useState(false)
   const [showGalleryModal, setShowGalleryModal] = useState(false)
   const [showEventModal, setShowEventModal] = useState(false)
+  const [showReservationModal, setShowReservationModal] = useState(false)
   const [editingItem, setEditingItem] = useState<any>(null)
   const [formData, setFormData] = useState<any>({})
 
@@ -260,12 +418,110 @@ export default function AdminPage() {
     }
   }
 
+  // Reservation CRUD functions
+  const deleteReservation = async (reservationId: number) => {
+    if (!confirm('Are you sure you want to delete this reservation?')) return
+    try {
+      const response = await fetch(`/api/admin/reservations/${reservationId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+      if (!response.ok) throw new Error('Failed to delete reservation')
+      await fetchReservations()
+      alert('Reservation deleted successfully!')
+    } catch (error) {
+      console.error('Error deleting reservation:', error)
+      alert(`Failed to delete reservation: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  const updateReservationStatus = async (reservationId: number, status: 'confirmed' | 'cancelled' | 'pending') => {
+    try {
+      const response = await fetch(`/api/admin/reservations/${reservationId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status })
+      })
+      if (!response.ok) throw new Error('Failed to update reservation status')
+      await fetchReservations()
+      alert(`Reservation status updated to ${status}!`)
+    } catch (error) {
+      console.error('Error updating reservation status:', error)
+      alert(`Failed to update reservation: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  // Feedback CRUD functions
+  const deleteFeedback = async (feedbackId: number) => {
+    if (!confirm('Are you sure you want to delete this feedback?')) return
+    try {
+      const response = await fetch(`/api/admin/feedback/${feedbackId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+      if (!response.ok) throw new Error('Failed to delete feedback')
+      await fetchFeedback()
+      alert('Feedback deleted successfully!')
+    } catch (error) {
+      console.error('Error deleting feedback:', error)
+      alert(`Failed to delete feedback: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  const approveFeedback = async (feedbackId: number) => {
+    try {
+      const response = await fetch(`/api/admin/feedback/${feedbackId}/approve`, {
+        method: 'PATCH',
+        credentials: 'include'
+      })
+      if (!response.ok) throw new Error('Failed to approve feedback')
+      await fetchFeedback()
+      alert('Feedback approved successfully!')
+    } catch (error) {
+      console.error('Error approving feedback:', error)
+      alert(`Failed to approve feedback: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  // Contact CRUD functions
+  const deleteContactMessage = async (messageId: number) => {
+    if (!confirm('Are you sure you want to delete this message?')) return
+    try {
+      const response = await fetch(`/api/admin/contact/${messageId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+      if (!response.ok) throw new Error('Failed to delete message')
+      await fetchContactMessages()
+      alert('Message deleted successfully!')
+    } catch (error) {
+      console.error('Error deleting message:', error)
+      alert(`Failed to delete message: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  const markMessageAsReplied = async (messageId: number) => {
+    try {
+      const response = await fetch(`/api/admin/contact/${messageId}/reply`, {
+        method: 'PATCH',
+        credentials: 'include'
+      })
+      if (!response.ok) throw new Error('Failed to mark message as replied')
+      await fetchContactMessages()
+      alert('Message marked as replied!')
+    } catch (error) {
+      console.error('Error updating message:', error)
+      alert(`Failed to update message: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{t.loading}</p>
         </div>
       </div>
     )
@@ -275,13 +531,13 @@ export default function AdminPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-serif font-bold text-foreground mb-4">Access Required</h1>
-          <p className="text-muted-foreground mb-6">Please log in to access the admin panel.</p>
+          <h1 className="text-2xl font-serif font-bold text-foreground mb-4">{t.accessRequired}</h1>
+          <p className="text-muted-foreground mb-6">{t.pleaseLogin}</p>
           <a 
             href="/api/login"
             className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
-            Log In
+            {t.login}
           </a>
         </div>
       </div>
@@ -295,10 +551,10 @@ export default function AdminPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-serif font-bold text-foreground">La Cantina Admin</h1>
+              <h1 className="text-2xl font-serif font-bold text-foreground">{t.adminTitle}</h1>
               {user && (
                 <span className="text-sm text-muted-foreground">
-                  Welcome, {(user as any).firstName || (user as any).email || 'User'}
+                  {t.welcome}, {(user as any).firstName || (user as any).email || 'User'}
                 </span>
               )}
             </div>
@@ -306,7 +562,7 @@ export default function AdminPage() {
               onClick={handleLogout}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              Log Out
+              {t.logout}
             </button>
           </div>
         </div>
@@ -317,13 +573,13 @@ export default function AdminPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-8">
             {[
-              { id: 'menu', label: 'Menu Management', icon: '🍝' },
-              { id: 'gallery', label: 'Gallery Management', icon: '📸' },
-              { id: 'events', label: 'Events Management', icon: '🎉' },
-              { id: 'bookings', label: 'Event Bookings', icon: '🎫' },
-              { id: 'reservations', label: 'Reservations', icon: '📅' },
-              { id: 'feedback', label: 'Feedback & Reviews', icon: '⭐' },
-              { id: 'contact', label: 'Contact Messages', icon: '📧' },
+              { id: 'menu', label: t.tabs.menu, icon: '🍝' },
+              { id: 'gallery', label: t.tabs.gallery, icon: '📸' },
+              { id: 'events', label: t.tabs.events, icon: '🎉' },
+              { id: 'bookings', label: t.tabs.bookings, icon: '🎫' },
+              { id: 'reservations', label: t.tabs.reservations, icon: '📅' },
+              { id: 'feedback', label: t.tabs.feedback, icon: '⭐' },
+              { id: 'contact', label: t.tabs.contact, icon: '📧' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -347,12 +603,12 @@ export default function AdminPage() {
         {activeTab === 'menu' && (
           <div>
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-serif font-bold text-foreground">Menu Items</h2>
+              <h2 className="text-3xl font-serif font-bold text-foreground">{t.menu.title}</h2>
               <button 
                 onClick={() => {setEditingItem(null); setShowMenuModal(true)}}
                 className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
               >
-                Add New Item
+                {t.menu.addNew}
               </button>
             </div>
             
@@ -364,7 +620,7 @@ export default function AdminPage() {
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       item.isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
-                      {item.isAvailable ? 'Available' : 'Unavailable'}
+                      {item.isAvailable ? t.menu.available : t.menu.unavailable}
                     </span>
                   </div>
                   <p className="text-muted-foreground text-sm mb-4 line-clamp-2">{item.description}</p>
@@ -379,13 +635,13 @@ export default function AdminPage() {
                       onClick={() => {setEditingItem(item); setShowMenuModal(true)}}
                       className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
                     >
-                      Edit
+                      {t.actions.edit}
                     </button>
                     <button
                       onClick={() => deleteMenuItem(item.id)}
                       className="text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors"
                     >
-                      Delete
+                      {t.actions.delete}
                     </button>
                   </div>
                 </div>
@@ -397,12 +653,12 @@ export default function AdminPage() {
         {activeTab === 'gallery' && (
           <div>
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-serif font-bold text-foreground">Gallery Images</h2>
+              <h2 className="text-3xl font-serif font-bold text-foreground">{t.gallery.title}</h2>
               <button 
                 onClick={() => {setEditingItem(null); setShowGalleryModal(true)}}
                 className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
               >
-                Upload Image
+                {t.gallery.uploadImage}
               </button>
             </div>
             
@@ -424,13 +680,13 @@ export default function AdminPage() {
                         onClick={() => {setEditingItem(image); setShowGalleryModal(true)}}
                         className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
                       >
-                        Edit
+                        {t.actions.edit}
                       </button>
                       <button
                         onClick={() => deleteGalleryImage(image.id)}
                         className="text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors"
                       >
-                        Delete
+                        {t.actions.delete}
                       </button>
                     </div>
                   </div>
@@ -443,12 +699,12 @@ export default function AdminPage() {
         {activeTab === 'events' && (
           <div>
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-serif font-bold text-foreground">Events Management</h2>
+              <h2 className="text-3xl font-serif font-bold text-foreground">{t.events.title}</h2>
               <button 
                 onClick={() => {setEditingItem(null); setShowEventModal(true)}}
                 className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
               >
-                Create New Event
+                {t.events.createNew}
               </button>
             </div>
             
@@ -467,7 +723,7 @@ export default function AdminPage() {
                       {new Date(event.event_date).toLocaleDateString()}
                     </span>
                     <span className="text-muted-foreground">
-                      {event.current_attendees}/{event.max_attendees} attendees
+                      {event.current_attendees}/{event.max_attendees} {t.events.attendees}
                     </span>
                   </div>
                   <div className="flex justify-between items-center mt-4 pt-4 border-t">
@@ -475,13 +731,13 @@ export default function AdminPage() {
                       onClick={() => {setEditingItem(event); setShowEventModal(true)}}
                       className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
                     >
-                      Edit
+                      {t.actions.edit}
                     </button>
                     <button
                       onClick={() => deleteEvent(event.id)}
                       className="text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors"
                     >
-                      Delete
+                      {t.actions.delete}
                     </button>
                   </div>
                 </div>
@@ -493,17 +749,17 @@ export default function AdminPage() {
         {activeTab === 'bookings' && (
           <div>
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-serif font-bold text-foreground">Event Bookings Management</h2>
+              <h2 className="text-3xl font-serif font-bold text-foreground">{t.bookings.title}</h2>
               <div className="text-sm text-muted-foreground">
-                Total Bookings: {eventBookings.length}
+                {t.bookings.totalBookings}: {eventBookings.length}
               </div>
             </div>
             
             {eventBookings.length === 0 ? (
               <div className="text-center py-12 bg-card rounded-lg border border-dashed">
                 <div className="text-6xl mb-4">🎫</div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">No Event Bookings Yet</h3>
-                <p className="text-muted-foreground">Event bookings will appear here once customers start registering for events.</p>
+                <h3 className="text-xl font-semibold text-foreground mb-2">{t.bookings.noBookings}</h3>
+                <p className="text-muted-foreground">{t.bookings.noBookingsDesc}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-6">
@@ -517,7 +773,7 @@ export default function AdminPage() {
                             {event ? event.title_en : `Event ID: ${booking.eventId}`}
                           </h3>
                           <p className="text-sm text-muted-foreground">
-                            Booking #{booking.id} • {new Date(booking.created_at).toLocaleDateString()}
+                            {t.bookings.booking} #{booking.id} • {new Date(booking.created_at).toLocaleDateString()}
                           </p>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -526,7 +782,9 @@ export default function AdminPage() {
                             booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                             'bg-red-100 text-red-800'
                           }`}>
-                            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                            {booking.status === 'confirmed' ? t.bookings.confirmed :
+                             booking.status === 'pending' ? t.bookings.pending :
+                             t.bookings.cancelled}
                           </span>
                           <span className="text-lg font-bold text-primary">
                             €{booking.totalAmount}
@@ -536,25 +794,25 @@ export default function AdminPage() {
                       
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                         <div>
-                          <p className="font-medium text-foreground">Customer Details</p>
+                          <p className="font-medium text-foreground">{t.bookings.customerDetails}</p>
                           <p className="text-muted-foreground">{booking.name}</p>
                           <p className="text-muted-foreground">{booking.email}</p>
                           <p className="text-muted-foreground">{booking.phone}</p>
                         </div>
                         <div>
-                          <p className="font-medium text-foreground">Booking Details</p>
-                          <p className="text-muted-foreground">Guests: {booking.guests}</p>
+                          <p className="font-medium text-foreground">{t.bookings.bookingDetails}</p>
+                          <p className="text-muted-foreground">{t.bookings.guests}: {booking.guests}</p>
                           <p className="text-muted-foreground">
-                            Event: {event ? new Date(event.event_date).toLocaleDateString() : 'Unknown'}
+                            {t.bookings.event}: {event ? new Date(event.event_date).toLocaleDateString() : 'Unknown'}
                           </p>
                           <p className="text-muted-foreground">
-                            Per person: €{event ? event.price : booking.totalAmount / booking.guests}
+                            {t.bookings.perPerson}: €{event ? event.price : booking.totalAmount / booking.guests}
                           </p>
                         </div>
                         <div>
-                          <p className="font-medium text-foreground">Special Requests</p>
+                          <p className="font-medium text-foreground">{t.bookings.specialRequests}</p>
                           <p className="text-muted-foreground">
-                            {booking.specialRequests || 'None'}
+                            {booking.specialRequests || t.bookings.none}
                           </p>
                         </div>
                       </div>
@@ -565,13 +823,13 @@ export default function AdminPage() {
                             onClick={() => updateBookingStatus(booking.id, 'confirmed')}
                             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
                           >
-                            Confirm Booking
+                            {t.bookings.confirmBooking}
                           </button>
                           <button 
                             onClick={() => updateBookingStatus(booking.id, 'cancelled')}
                             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
                           >
-                            Cancel Booking
+                            {t.bookings.cancelBooking}
                           </button>
                         </div>
                       )}
@@ -581,13 +839,13 @@ export default function AdminPage() {
                             onClick={() => updateBookingStatus(booking.id, 'cancelled')}
                             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
                           >
-                            Cancel Booking
+                            {t.bookings.cancelBooking}
                           </button>
                           <button 
                             onClick={() => deleteBooking(booking.id)}
                             className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
                           >
-                            Delete Booking
+                            {t.bookings.deleteBooking}
                           </button>
                         </div>
                       )}
@@ -652,13 +910,37 @@ export default function AdminPage() {
                           </span>
                         </td>
                         <td className="p-4">
-                          <div className="flex space-x-2">
-                            <button className="text-primary hover:text-primary/80 text-sm font-medium">
-                              Edit
-                            </button>
-                            <button className="text-red-600 hover:text-red-500 text-sm font-medium">
-                              Delete
-                            </button>
+                          <div className="flex flex-col space-y-1">
+                            <div className="flex space-x-2">
+                              <button 
+                                onClick={() => {setEditingItem(reservation); setShowReservationModal(true)}}
+                                className="text-primary hover:text-primary/80 text-sm font-medium"
+                              >
+                                Edit
+                              </button>
+                              <button 
+                                onClick={() => deleteReservation(reservation.id)}
+                                className="text-red-600 hover:text-red-500 text-sm font-medium"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                            {reservation.status === 'pending' && (
+                              <div className="flex space-x-1">
+                                <button 
+                                  onClick={() => updateReservationStatus(reservation.id, 'confirmed')}
+                                  className="text-green-600 hover:text-green-500 text-xs font-medium"
+                                >
+                                  Confirm
+                                </button>
+                                <button 
+                                  onClick={() => updateReservationStatus(reservation.id, 'cancelled')}
+                                  className="text-red-600 hover:text-red-500 text-xs font-medium"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -711,10 +993,16 @@ export default function AdminPage() {
                   <div className="flex justify-between items-center text-xs text-muted-foreground">
                     <span>{new Date(feedback.created_at).toLocaleDateString()}</span>
                     <div className="flex space-x-2">
-                      <button className="text-green-600 hover:text-green-500 font-medium">
+                      <button 
+                        onClick={() => approveFeedback(feedback.id)}
+                        className="text-green-600 hover:text-green-500 font-medium"
+                      >
                         Approve
                       </button>
-                      <button className="text-red-600 hover:text-red-500 font-medium">
+                      <button 
+                        onClick={() => deleteFeedback(feedback.id)}
+                        className="text-red-600 hover:text-red-500 font-medium"
+                      >
                         Delete
                       </button>
                     </div>
@@ -757,10 +1045,16 @@ export default function AdminPage() {
                       New
                     </span>
                     <div className="flex space-x-2">
-                      <button className="text-primary hover:text-primary/80 text-sm font-medium">
-                        Reply
+                      <button 
+                        onClick={() => markMessageAsReplied(message.id)}
+                        className="text-primary hover:text-primary/80 text-sm font-medium"
+                      >
+                        Mark Replied
                       </button>
-                      <button className="text-red-600 hover:text-red-500 text-sm font-medium">
+                      <button 
+                        onClick={() => deleteContactMessage(message.id)}
+                        className="text-red-600 hover:text-red-500 text-sm font-medium"
+                      >
                         Delete
                       </button>
                     </div>
