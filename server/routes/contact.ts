@@ -8,7 +8,7 @@ const router = express.Router()
 import { requireAuth } from './admin'
 
 // POST /api/contact - Submit contact form
-router.post('/', async (req, res) => {
+router.post('/', async (req, res): Promise<void> => {
   try {
     const {
       name,
@@ -46,7 +46,7 @@ router.post('/', async (req, res) => {
 })
 
 // GET /api/contact - Get all contact submissions (admin)
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, async (req, res): Promise<void> => {
   try {
     const submissions = await db.select().from(schema.contactMessages)
     

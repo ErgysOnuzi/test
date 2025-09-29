@@ -1,0 +1,84 @@
+Run these **exact** Replit steps. Copy–paste blocks as-is.
+
+## 1) Remove the `tsx` dependency from the deploy path
+
+```bash
+# Inspect where "tsx" is referenced
+grep -RIn "tsx" .
+
+# Rewrite scripts to use Next’s production server
+node -e "const fs=require('fs');const p=require('./package.json');p.scripts=p.scripts||{};p.scripts.dev='next dev --port 5000 --hostname 0.0.0.0';p.scripts.build='next build';p.scripts.start='next start -p $PORT --hostname 0.0.0.0';delete p.scripts['start:server'];fs.writeFileSync('package.json',JSON.stringify(p,null,2))"
+```
+
+## 2) Force Replit to run a clean prod build + start
+
+```bash
+cat > .replit <<'EOF'
+run = ["bash","-lc","npm ci && npm run build && npm run start"]
+EOF
+```
+
+> If your repl uses Nix and `.replit` is ignored, also add a Procfile fallback:
+
+```bash
+echo "web: npm run start" > Procfile
+```
+
+## 3) Clean, install, build, start
+
+```bash
+rm -rf .next node_modules
+npm ci
+npm run build
+npm run start
+```
+
+## 4) Quick health endpoint (optional but recommended)
+
+```bash
+mkdir -p src/app/api/health
+cat > src/app/api/health/route.ts <<'EOF'
+export const runtime = 'nodejs';
+export async function GET(){ return new Response('ok',{status:200}); }
+EOF
+
+npm run build
+npm run start
+```
+
+* Open `/api/health` → must return **200 ok**.
+
+## 5) If you still see “Internal Server Error”, apply these two hard fixes
+
+**A. Next/Image transformer off (common on Replit)**
+
+```bash
+cat > next.config.js <<'EOF'
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: { unoptimized: true }
+};
+module.exports = nextConfig;
+EOF
+```
+
+**B. Ensure Node runtime for server-only code**
+Add at the **top** of any route/page using Node-only libs (DB, `better-sqlite3`, `ws`, etc.):
+
+```ts
+export const runtime = 'nodejs';
+```
+
+Rebuild and start:
+
+```bash
+npm run build
+npm run start
+```
+
+## 6) Verify
+
+* Root page loads without 500.
+* `/api/health` → **200**.
+* DevTools Network: `/favicon.ico` → **200** (place a real file at `public/favicon.ico` if missing).
+* No crash loop in **Deployments → Logs**; no `tsx: command not found`.

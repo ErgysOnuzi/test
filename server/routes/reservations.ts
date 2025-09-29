@@ -9,7 +9,7 @@ const router = express.Router()
 import { requireAuth } from './admin'
 
 // POST /api/reservations - Create new reservation
-router.post('/', async (req, res) => {
+router.post('/', async (req, res): Promise<void> => {
   try {
     const {
       name,
@@ -35,6 +35,10 @@ router.post('/', async (req, res) => {
       notes: specialRequests || '',
       status: 'pending',
     }).returning()
+
+    if (!reservation) {
+      return res.status(500).json({ error: 'Failed to create reservation' })
+    }
 
     // Transform to match GET endpoint format
     const transformedReservation = {
@@ -63,7 +67,7 @@ router.post('/', async (req, res) => {
 })
 
 // GET /api/reservations - Get all reservations (admin)
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, async (req, res): Promise<void> => {
   try {
     const allReservations = await db.select().from(schema.reservations)
     
