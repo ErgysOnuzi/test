@@ -117,6 +117,10 @@ function initializeServer() {
 
   // Enhanced health check for load balancer
   app.get('/health', (req, res) => {
+    console.log('🏥 Health check requested');
+    console.log('Environment:', process.env.NODE_ENV);
+    console.log('Database URL available:', !!process.env.DATABASE_URL);
+    console.log('Port:', process.env.PORT || 5000);
     const healthData = {
       status: 'ok',
       timestamp: new Date().toISOString(),

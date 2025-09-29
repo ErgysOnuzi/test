@@ -48453,8 +48453,10 @@ var eventBookingsRelations = relations(eventBookings, ({ one }) => ({
 // server/db.ts
 _e.webSocketConstructor = wrapper_default;
 if (!process.env.DATABASE_URL) {
+  console.error("\u274C DATABASE_URL environment variable is missing");
+  console.error("Available env vars:", Object.keys(process.env).filter((key) => key.includes("DATABASE") || key.includes("PG")));
   throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?"
+    "DATABASE_URL must be set. Did you forget to provision a database? Check deployment environment variables."
   );
 }
 var pool = new eo({ connectionString: process.env.DATABASE_URL });
@@ -49517,6 +49519,10 @@ app.use(import_express9.default.static(distPath, {
 }));
 function initializeServer() {
   app.get("/health", (req, res) => {
+    console.log("\u{1F3E5} Health check requested");
+    console.log("Environment:", process.env.NODE_ENV);
+    console.log("Database URL available:", !!process.env.DATABASE_URL);
+    console.log("Port:", process.env.PORT || 5e3);
     const healthData = {
       status: "ok",
       timestamp: (/* @__PURE__ */ new Date()).toISOString(),
