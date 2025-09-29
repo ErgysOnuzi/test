@@ -128,15 +128,10 @@ export const securityHeaders = helmet({
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
 })
 
-// Input sanitization middleware
+// Input sanitization middleware - Temporarily disabled mongo-sanitize due to Node.js compatibility
 export const inputSanitization = [
-  // Remove any keys that contain prohibited characters
-  mongoSanitize({
-    replaceWith: '_',
-    onSanitize: ({ req, key }: { req: any, key: string }) => {
-      console.warn(`⚠️  Sanitized potentially malicious input: ${key} from ${req.ip}`)
-    }
-  }),
+  // MongoDB sanitization temporarily disabled due to readonly property conflicts with current Node.js version
+  // mongoSanitize({ replaceWith: '_' }), // TODO: Re-enable when compatible version available
   
   // Protect against HTTP Parameter Pollution attacks
   hpp({

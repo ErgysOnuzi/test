@@ -64,13 +64,13 @@ export default function SimpleLayout() {
               ))}
             </nav>
 
-            {/* Tablet Navigation - Priority Items */}
-            <nav className='hidden md:flex lg:hidden space-x-3 text-sm' role="navigation" aria-label="Main navigation">
-              {navigation.slice(0, 4).map((item) => (
+            {/* Tablet Navigation - All Items Responsive */}
+            <nav className='hidden md:flex lg:hidden space-x-2 text-sm flex-wrap' role="navigation" aria-label="Main navigation">
+              {navigation.map((item) => (
                 <Link
                   key={item.name}
                   to={`/${currentLocale}/${item.href}`}
-                  className={`text-foreground hover:text-primary transition-colors duration-200 ${
+                  className={`whitespace-nowrap text-foreground hover:text-primary transition-colors duration-200 ${
                     pathWithoutLocale === `/${item.href}` || (item.href === '' && pathWithoutLocale === '')
                       ? 'text-primary font-medium'
                       : ''
@@ -81,9 +81,9 @@ export default function SimpleLayout() {
               ))}
             </nav>
 
-            {/* Mobile Navigation - Priority Items Always Visible */}
-            <nav className='flex md:hidden space-x-1 text-xs overflow-x-auto scrollbar-hide' role="navigation" aria-label="Main navigation">
-              {navigation.slice(0, 6).map((item) => (
+            {/* Mobile Navigation - All Items with Horizontal Scroll */}
+            <nav className='flex md:hidden space-x-1 text-xs overflow-x-auto scrollbar-hide pb-1' role="navigation" aria-label="Main navigation">
+              {navigation.map((item) => (
                 <Link
                   key={item.name}
                   to={`/${currentLocale}/${item.href}`}
