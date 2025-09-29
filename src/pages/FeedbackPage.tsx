@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 // Sample customer reviews and testimonials
 const sampleReviews = [
@@ -63,6 +63,33 @@ export default function FeedbackPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
   const [showAllReviews, setShowAllReviews] = useState(false)
+  const [googleReviews, setGoogleReviews] = useState<any[]>([])
+  const [businessInfo, setBusinessInfo] = useState<any>(null)
+  const [isLoadingReviews, setIsLoadingReviews] = useState(true)
+
+  // Fetch Google reviews on component mount
+  useEffect(() => {
+    const fetchGoogleReviews = async () => {
+      try {
+        const response = await fetch('/api/google-reviews')
+        if (response.ok) {
+          const data = await response.json()
+          setGoogleReviews(data.reviews || [])
+          setBusinessInfo(data.businessInfo || null)
+        } else {
+          console.warn('Failed to fetch Google reviews, using sample data')
+          setGoogleReviews(sampleReviews)
+        }
+      } catch (error) {
+        console.warn('Error fetching Google reviews, using sample data:', error)
+        setGoogleReviews(sampleReviews)
+      } finally {
+        setIsLoadingReviews(false)
+      }
+    }
+
+    fetchGoogleReviews()
+  }, [])
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (

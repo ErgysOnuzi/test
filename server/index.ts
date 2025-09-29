@@ -14,6 +14,7 @@ import eventRoutes from './routes/events'
 import contactRoutes from './routes/contact'
 import feedbackRoutes from './routes/feedback'
 import adminRoutes from './routes/admin'
+import googleReviewsRoutes from './routes/google-reviews'
 
 // Load environment variables
 config()
@@ -160,6 +161,7 @@ function initializeServer() {
   app.use('/api/contact', contactRoutes)
   app.use('/api/feedback', feedbackRoutes)
   app.use('/api/admin', adminRoutes)
+  app.use('/api/google-reviews', googleReviewsRoutes)
 
   // Serve React app for all non-API routes (SPA fallback)
   app.use((req, res, next) => {
