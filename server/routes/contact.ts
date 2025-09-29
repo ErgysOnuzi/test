@@ -8,7 +8,7 @@ const router = express.Router()
 import { requireAuth } from './admin'
 
 // POST /api/contact - Submit contact form
-router.post('/', async (req, res): Promise<void> => {
+router.post('/', async (req, res) => {
   try {
     const {
       name,
@@ -34,7 +34,7 @@ router.post('/', async (req, res): Promise<void> => {
     }
 
     console.log(`📧 New contact submission: ${submission.id}`)
-    res.status(201).json({ 
+    return res.status(201).json({ 
       success: true, 
       id: submission.id,
       message: 'Contact form submitted successfully'
@@ -46,12 +46,12 @@ router.post('/', async (req, res): Promise<void> => {
 })
 
 // GET /api/contact - Get all contact submissions (admin)
-router.get('/', requireAuth, async (req, res): Promise<void> => {
+router.get('/', requireAuth, async (req, res) => {
   try {
     const submissions = await db.select().from(schema.contactMessages)
     
     console.log(`📧 Fetched ${submissions.length} contact submissions`)
-    res.json(submissions)
+    return res.json(submissions)
   } catch (error) {
     console.error('Error fetching contact submissions:', error)
     return res.status(500).json({ error: 'Failed to fetch contact submissions' })

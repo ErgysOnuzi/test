@@ -137,7 +137,7 @@ router.post('/login', async (req, res) => {
 })
 
 // POST /api/admin/logout - Admin logout
-router.post('/logout', async (req, res): Promise<void> => {
+router.post('/logout', async (req, res) => {
   try {
     const sessionCookie = req.cookies?.['la_cantina_admin_session']
     
@@ -167,7 +167,7 @@ router.post('/logout', async (req, res): Promise<void> => {
 })
 
 // GET /api/admin/session - Check admin session
-router.get('/session', async (req, res): Promise<void> => {
+router.get('/session', async (req, res) => {
   try {
     const sessionCookie = req.cookies?.['la_cantina_admin_session']
     
@@ -205,7 +205,7 @@ router.get('/session', async (req, res): Promise<void> => {
 })
 
 // GET /api/admin/csrf - Get CSRF token
-router.get('/csrf', async (req, res): Promise<void> => {
+router.get('/csrf', async (req, res) => {
   try {
     const { token: csrfToken, secret: csrfSecret } = generateCSRFToken()
     

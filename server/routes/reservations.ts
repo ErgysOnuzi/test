@@ -9,7 +9,7 @@ const router = express.Router()
 import { requireAuth } from './admin'
 
 // POST /api/reservations - Create new reservation
-router.post('/', async (req, res): Promise<void> => {
+router.post('/', async (req, res) => {
   try {
     const {
       name,
@@ -67,7 +67,7 @@ router.post('/', async (req, res): Promise<void> => {
 })
 
 // GET /api/reservations - Get all reservations (admin)
-router.get('/', requireAuth, async (req, res): Promise<void> => {
+router.get('/', requireAuth, async (req, res) => {
   try {
     const allReservations = await db.select().from(schema.reservations)
     
@@ -85,7 +85,7 @@ router.get('/', requireAuth, async (req, res): Promise<void> => {
     }))
 
     console.log(`📅 Fetched ${transformedReservations.length} reservations`)
-    res.json(transformedReservations)
+    return res.json(transformedReservations)
   } catch (error) {
     console.error('Error fetching reservations:', error)
     return res.status(500).json({ error: 'Failed to fetch reservations' })

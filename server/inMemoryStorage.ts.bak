@@ -151,10 +151,9 @@ class InMemoryStorage {
         imageUrl: item.image_url ?? null,
       }))
 
-      this.nextMenuId =
-        (this.menuItems.length
-          ? Math.max(...this.menuItems.map((item) => item.id))
-          : 0) + 1
+      this.nextMenuId = (this.menuItems.length
+        ? Math.max(...this.menuItems.map((item) => item.id))
+        : 0) + 1
 
       console.log(`✅ Loaded ${this.menuItems.length} authentic menu items`)
     } catch (error) {
@@ -345,24 +344,21 @@ class InMemoryStorage {
     return newItem
   }
 
-  updateMenuItem(
-    id: number,
-    data: Partial<Omit<MenuItem, 'id'>>
-  ): MenuItem | null {
-    const index = this.menuItems.findIndex((item) => item.id === id)
-    if (index === -1) return null
+  updateMenuItem(id: number, data: Partial<Omit<MenuItem, 'id'>>): MenuItem | null {
+  const index = this.menuItems.findIndex(item => item.id === id)
+  if (index === -1) return null
 
-    const definedOnly = Object.fromEntries(
-      Object.entries(data).filter(([, v]) => v !== undefined)
-    ) as Partial<Omit<MenuItem, 'id'>>
+  // Strip undefined keys so required fields never become possibly-undefined
+  const definedOnly = Object.fromEntries(
+    Object.entries(data).filter(([, v]) => v !== undefined)
+  ) as Partial<Omit<MenuItem, 'id'>>
 
-    const existing = this.menuItems[index]
-    const updated = ({ ...existing, ...definedOnly, id }) as MenuItem
-    this.menuItems[index] = updated
-    return updated
-  }
-
-  deleteMenuItem(id: number): boolean {
+  const existing = this.menuItems[index]
+  const updated = ({ ...existing, ...definedOnly, id }) as MenuItem
+  this.menuItems[index] = updated
+  return updated
+}
+deleteMenuItem(id: number): boolean {
     const index = this.menuItems.findIndex((item) => item.id === id)
     if (index === -1) return false
 
@@ -400,7 +396,7 @@ class InMemoryStorage {
     ) as Partial<Omit<GalleryItem, 'id'>>
 
     const existing = this.galleryItems[index]
-    const updated = ({ ...existing, ...definedOnly, id }) as GalleryItem
+    const updated: GalleryItem = { ...existing, ...definedOnly, id }
     this.galleryItems[index] = updated
     return updated
   }
@@ -435,8 +431,8 @@ class InMemoryStorage {
     const index = this.events.findIndex((event) => event.id === id)
     if (index === -1) return null
 
-    this.events[index] = { ...this.events[index], ...data, id } as Event
-    return this.events[index] || null
+    this.events[index] = { ...this.events[index], ...data, id }
+    return this.events[index]
   }
 
   deleteEvent(id: number): boolean {
