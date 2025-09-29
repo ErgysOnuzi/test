@@ -2,9 +2,25 @@ import { Metadata } from 'next';
 
 interface RestaurantSchemaProps {
   locale: string;
+  reviewsData?: any;
+  menuItems?: any[];
 }
 
-export function RestaurantSchema({ locale }: RestaurantSchemaProps) {
+interface EventSchemaProps {
+  event: any;
+  locale: string;
+}
+
+interface BreadcrumbSchemaProps {
+  breadcrumbs: Array<{name: string; url: string}>;
+}
+
+interface FAQSchemaProps {
+  faqs: Array<{question: string; answer: string}>;
+  locale: string;
+}
+
+export function RestaurantSchema({ locale, reviewsData, menuItems }: RestaurantSchemaProps) {
   const restaurantData = {
     '@context': 'https://schema.org',
     '@type': 'Restaurant',
@@ -61,30 +77,81 @@ export function RestaurantSchema({ locale }: RestaurantSchemaProps) {
     paymentAccepted: ['Cash', 'Credit Card', 'Debit Card'],
     hasMenu: 'https://lacantina-berlin.de/menu',
     acceptsReservations: true,
-    makesOffer: [
-      {
-        '@type': 'Offer',
-        itemOffered: {
-          '@type': 'MenuItem',
-          name: locale === 'de' ? 'Hausgemachte Pasta' : 'Homemade Pasta',
-          description:
-            locale === 'de'
-              ? 'Täglich frisch zubereitete Pasta'
-              : 'Daily fresh prepared pasta',
+    // Add Google Reviews aggregate rating if available
+    ...(reviewsData && reviewsData.place_info?.rating > 0 && {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: reviewsData.place_info.rating,
+        reviewCount: reviewsData.place_info.user_ratings_total || reviewsData.reviews.length,
+        bestRating: 5,
+        worstRating: 1
+      }
+    }),
+
+    // Add actual reviews if available
+    ...(reviewsData && reviewsData.reviews.length > 0 && {
+      review: reviewsData.reviews.slice(0, 5).map((review: any) => ({
+        '@type': 'Review',
+        author: {
+          '@type': 'Person',
+          name: review.author_name
         },
-      },
-      {
-        '@type': 'Offer',
-        itemOffered: {
-          '@type': 'MenuItem',
-          name: locale === 'de' ? 'Holzofen Pizza' : 'Wood-Fired Pizza',
-          description:
-            locale === 'de'
-              ? 'Authentische neapolitanische Pizza aus dem Holzofen'
-              : 'Authentic Neapolitan pizza from wood oven',
+        reviewRating: {
+          '@type': 'Rating',
+          ratingValue: review.rating,
+          bestRating: 5,
+          worstRating: 1
         },
-      },
-    ],
+        reviewBody: review.text,
+        datePublished: review.created_at || new Date(review.time * 1000).toISOString(),
+        publisher: {
+          '@type': 'Organization',
+          name: 'Google'
+        }
+      }))
+    }),
+
+    // Add menu items as offers if available
+    makesOffer: menuItems && menuItems.length > 0 
+      ? menuItems.slice(0, 10).map(item => ({
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'MenuItem',
+            name: locale === 'de' ? (item.titleDe || item.title) : (item.titleEn || item.title),
+            description: locale === 'de' ? (item.descriptionDe || item.description) : (item.descriptionEn || item.description),
+            image: item.imageUrl,
+            offers: {
+              '@type': 'Offer',
+              price: item.price,
+              priceCurrency: 'EUR',
+              availability: item.isAvailable ? 'InStock' : 'OutOfStock'
+            }
+          }
+        }))
+      : [
+          {
+            '@type': 'Offer',
+            itemOffered: {
+              '@type': 'MenuItem',
+              name: locale === 'de' ? 'Hausgemachte Pasta' : 'Homemade Pasta',
+              description:
+                locale === 'de'
+                  ? 'Täglich frisch zubereitete Pasta'
+                  : 'Daily fresh prepared pasta',
+            },
+          },
+          {
+            '@type': 'Offer',
+            itemOffered: {
+              '@type': 'MenuItem',
+              name: locale === 'de' ? 'Holzofen Pizza' : 'Wood-Fired Pizza',
+              description:
+                locale === 'de'
+                  ? 'Authentische neapolitanische Pizza aus dem Holzofen'
+                  : 'Authentic Neapolitan pizza from wood oven',
+            },
+          },
+        ],
   };
 
   const breadcrumbData = {

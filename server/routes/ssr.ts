@@ -46,7 +46,7 @@ router.get(['/', '/de', '/en'], async (req, res) => {
       reviewsData, // Pass reviews data for SSR
       seoTitle,
       seoDescription,
-      ogImage: 'https://la-cantina.replit.app/og-landing.jpg'
+      ogImage: '/og.jpg'
     })
     
     res.send(html)
@@ -76,7 +76,7 @@ router.get(['/de/menu', '/en/menu'], async (req, res) => {
       menuItems,
       seoTitle,
       seoDescription,
-      ogImage: 'https://la-cantina.replit.app/og-menu.jpg'
+      ogImage: '/og.jpg'
     })
     
     res.send(html)
