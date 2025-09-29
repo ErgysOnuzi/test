@@ -133,22 +133,7 @@ export default function SimpleLayout() {
             </div>
 
             {/* Mobile Menu Button */}
-            <div className='md:hidden flex items-center gap-2'>
-              <div className="flex items-center gap-2">
-                <Link 
-                  to="/de" 
-                  className={`px-2 py-1 text-sm transition-colors ${currentLocale === 'de' ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
-                >
-                  DE
-                </Link>
-                <span className="text-muted-foreground">|</span>
-                <Link 
-                  to="/en" 
-                  className={`px-2 py-1 text-sm transition-colors ${currentLocale === 'en' ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
-                >
-                  EN
-                </Link>
-              </div>
+            <div className='md:hidden flex items-center'>
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="p-3 text-foreground hover:text-primary transition-all duration-200 rounded-md hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -214,7 +199,29 @@ export default function SimpleLayout() {
                     {item.name}
                   </Link>
                 ))}
-                <div className="px-4 py-4 border-t border-border/50 mt-4">
+                
+                {/* Language Toggle in Mobile Menu */}
+                <div className="px-4 py-3 border-t border-border/50 mt-4">
+                  <div className="flex items-center justify-center gap-4 mb-4">
+                    <span className="text-sm font-medium text-muted-foreground">{isGerman ? 'Sprache' : 'Language'}:</span>
+                    <div className="flex items-center gap-2">
+                      <Link 
+                        to="/de" 
+                        className={`px-3 py-2 text-sm font-medium transition-colors rounded-md ${currentLocale === 'de' ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-primary hover:bg-primary/5'}`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        DE
+                      </Link>
+                      <span className="text-muted-foreground">|</span>
+                      <Link 
+                        to="/en" 
+                        className={`px-3 py-2 text-sm font-medium transition-colors rounded-md ${currentLocale === 'en' ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-primary hover:bg-primary/5'}`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        EN
+                      </Link>
+                    </div>
+                  </div>
                   <Link to={`/${currentLocale}/reservations`}>
                     <button className="w-full bg-primary hover:bg-primary/90 active:bg-primary/95 text-primary-foreground px-6 py-4 rounded-lg font-medium text-lg transition-all duration-200 touch-manipulation shadow-sm hover:shadow-md">
                       {isGerman ? 'Reservieren' : 'Reserve'}
