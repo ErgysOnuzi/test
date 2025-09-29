@@ -3,6 +3,7 @@
  * Exits with code 1 if any required secrets are missing
  */
 
+// Required secrets (storage variables excluded for now as specified)
 const REQUIRED_SECRETS = [
   'DATABASE_URL',
   'PGHOST', 
@@ -10,13 +11,12 @@ const REQUIRED_SECRETS = [
   'PGUSER',
   'PGPASSWORD', 
   'PGDATABASE',
+  'SESSION_SECRET',
   'JWT_SECRET',
   'ADMIN_PASSWORD',
   'GOOGLE_API_KEY',
-  'STORAGE_ENDPOINT',
-  'STORAGE_ACCESS_KEY', 
-  'STORAGE_SECRET_KEY',
-  'STORAGE_BUCKET'
+  'GOOGLE_PLACES_API_KEY',
+  'GOOGLE_PLACE_ID'
 ] as const;
 
 export function validateEnvironment(): void {

@@ -8,6 +8,7 @@ import { validateEnvironment } from './boot-guard'
 import { db } from './db'
 // import { setupAuth, isAuthenticated } from './replitAuth' // Disabled - using token auth instead
 import { storage } from './storage'
+import healthRoutes from './routes/health'
 import menuRoutes from './routes/menu'
 import galleryRoutes from './routes/gallery'
 import reservationRoutes from './routes/reservations'
@@ -24,7 +25,10 @@ config()
 validateEnvironment()
 
 const app = express()
-const PORT = parseInt(process.env.PORT || '5000')
+// Use port 3001 in development for API server, 5000 in production
+const PORT = process.env.NODE_ENV === 'production' 
+  ? parseInt(process.env.PORT || '5000')
+  : 3001
 
 // Advanced logging middleware for production monitoring
 app.use((req, res, next) => {
@@ -119,27 +123,8 @@ function initializeServer() {
   //   }
   // });
 
-  // Enhanced health check for load balancer
-  app.get('/health', (req, res) => {
-    console.log('🏥 Health check requested');
-    console.log('Environment:', process.env.NODE_ENV);
-    console.log('Database URL available:', !!process.env.DATABASE_URL);
-    console.log('Port:', process.env.PORT || 5000);
-    const healthData = {
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
-      uptime: process.uptime(),
-      memory: process.memoryUsage(),
-      pid: process.pid
-    }
-    res.json(healthData)
-  })
-
-  // Readiness probe for Kubernetes-style orchestration
-  app.get('/ready', (req, res) => {
-    res.status(200).send('Ready')
-  })
+  // Health and monitoring routes
+  app.use('/api', healthRoutes)
 
   // Database health check for backup monitoring
   app.get('/health/db', async (req, res) => {

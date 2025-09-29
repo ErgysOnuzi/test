@@ -24273,16 +24273,16 @@ var require_router = __commonJS({
         return new Router(options);
       }
       const opts = options || {};
-      function router9(req, res, next) {
-        router9.handle(req, res, next);
+      function router10(req, res, next) {
+        router10.handle(req, res, next);
       }
-      Object.setPrototypeOf(router9, this);
-      router9.caseSensitive = opts.caseSensitive;
-      router9.mergeParams = opts.mergeParams;
-      router9.params = {};
-      router9.strict = opts.strict;
-      router9.stack = [];
-      return router9;
+      Object.setPrototypeOf(router10, this);
+      router10.caseSensitive = opts.caseSensitive;
+      router10.mergeParams = opts.mergeParams;
+      router10.params = {};
+      router10.strict = opts.strict;
+      router10.stack = [];
+      return router10;
     }
     Router.prototype = function() {
     };
@@ -24670,7 +24670,7 @@ var require_application = __commonJS({
     var app2 = exports2 = module2.exports = {};
     var trustProxyDefaultSymbol = "@@symbol:trust_proxy_default";
     app2.init = function init() {
-      var router9 = null;
+      var router10 = null;
       this.cache = /* @__PURE__ */ Object.create(null);
       this.engines = /* @__PURE__ */ Object.create(null);
       this.settings = /* @__PURE__ */ Object.create(null);
@@ -24679,13 +24679,13 @@ var require_application = __commonJS({
         configurable: true,
         enumerable: true,
         get: function getrouter() {
-          if (router9 === null) {
-            router9 = new Router({
+          if (router10 === null) {
+            router10 = new Router({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
           }
-          return router9;
+          return router10;
         }
       });
     };
@@ -24756,15 +24756,15 @@ var require_application = __commonJS({
       if (fns.length === 0) {
         throw new TypeError("app.use() requires a middleware function");
       }
-      var router9 = this.router;
+      var router10 = this.router;
       fns.forEach(function(fn2) {
         if (!fn2 || !fn2.handle || !fn2.set) {
-          return router9.use(path2, fn2);
+          return router10.use(path2, fn2);
         }
         debug(".use app under %s", path2);
         fn2.mountpath = path2;
         fn2.parent = this;
-        router9.use(path2, function mounted_app(req, res, next) {
+        router10.use(path2, function mounted_app(req, res, next) {
           var orig = req.app;
           fn2.handle(req, res, function(err) {
             Object.setPrototypeOf(req, orig.request);
@@ -36202,12 +36202,50 @@ __export(index_exports, {
   default: () => index_default
 });
 module.exports = __toCommonJS(index_exports);
-var import_express9 = __toESM(require_express2(), 1);
+var import_express10 = __toESM(require_express2(), 1);
 var import_cors = __toESM(require_lib4(), 1);
 var import_cookie_parser = __toESM(require_cookie_parser(), 1);
 var import_dotenv = __toESM(require_main(), 1);
 var import_path2 = __toESM(require("path"), 1);
 var import_url = require("url");
+
+// server/boot-guard.ts
+var REQUIRED_SECRETS = [
+  "DATABASE_URL",
+  "PGHOST",
+  "PGPORT",
+  "PGUSER",
+  "PGPASSWORD",
+  "PGDATABASE",
+  "SESSION_SECRET",
+  "JWT_SECRET",
+  "ADMIN_PASSWORD",
+  "GOOGLE_API_KEY",
+  "GOOGLE_PLACES_API_KEY",
+  "GOOGLE_PLACE_ID"
+];
+function validateEnvironment() {
+  console.log("\u{1F50D} Boot Guard: Validating environment variables...");
+  const missing = [];
+  const present = [];
+  for (const secret of REQUIRED_SECRETS) {
+    if (!process.env[secret] || process.env[secret]?.trim() === "") {
+      missing.push(secret);
+    } else {
+      present.push(secret);
+    }
+  }
+  console.log(`\u2705 Present (${present.length}/${REQUIRED_SECRETS.length}):`, present.join(", "));
+  if (missing.length > 0) {
+    console.error("\u274C Boot Guard: Missing required environment variables:");
+    missing.forEach((secret) => {
+      console.error(`   - ${secret}`);
+    });
+    console.error("\n\u{1F6A8} Exiting with code 1. Please add missing secrets to Replit Secrets.");
+    process.exit(1);
+  }
+  console.log("\u2705 Boot Guard: All required environment variables are present");
+}
 
 // node_modules/@neondatabase/serverless/index.mjs
 var io = Object.create;
@@ -48462,15 +48500,50 @@ if (!process.env.DATABASE_URL) {
 var pool = new eo({ connectionString: process.env.DATABASE_URL });
 var db = drizzle({ client: pool, schema: schema_exports });
 
+// server/routes/health.ts
+var import_express = __toESM(require_express2(), 1);
+var router = import_express.default.Router();
+router.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
+router.get("/ready", async (req, res) => {
+  const readiness = { db: "fail" };
+  try {
+    await db.execute(sql`SELECT 1`);
+    readiness.db = "ok";
+    const hasStorageConfig = process.env.STORAGE_ENDPOINT && process.env.STORAGE_ACCESS_KEY && process.env.STORAGE_SECRET_KEY && process.env.STORAGE_BUCKET;
+    if (hasStorageConfig) {
+      readiness.storage = "ok";
+    }
+    if (readiness.db === "ok") {
+      res.json(readiness);
+    } else {
+      res.status(500).json(readiness);
+    }
+  } catch (error) {
+    readiness.error = error instanceof Error ? error.message : "Unknown error";
+    console.error("\u274C Readiness check failed:", error);
+    res.status(500).json(readiness);
+  }
+});
+router.get("/version", (req, res) => {
+  const version2 = {
+    git: process.env.GIT_SHA || "dev-build",
+    builtAt: process.env.BUILD_TIMESTAMP || (/* @__PURE__ */ new Date()).toISOString()
+  };
+  res.json(version2);
+});
+var health_default = router;
+
 // server/routes/menu.ts
-var import_express2 = __toESM(require_express2(), 1);
+var import_express3 = __toESM(require_express2(), 1);
 init_inMemoryStorage();
 
 // server/routes/admin.ts
-var import_express = __toESM(require_express2(), 1);
+var import_express2 = __toESM(require_express2(), 1);
 var import_crypto = require("crypto");
 var import_jsonwebtoken = __toESM(require_jsonwebtoken(), 1);
-var router = import_express.default.Router();
+var router2 = import_express2.default.Router();
 var JWT_SECRET = process.env.JWT_SECRET || "development-secret-change-in-production";
 var ADMIN_EMAIL = "ergysonuzi12@gmail.com";
 var ADMIN_USERNAME = "ergysonuzi";
@@ -48511,7 +48584,7 @@ var requireAuth = (req, res, next) => {
     res.status(401).json({ error: "Invalid session" });
   }
 };
-router.post("/login", async (req, res) => {
+router2.post("/login", async (req, res) => {
   try {
     const { identifier, password } = req.body;
     const passwordHash = (0, import_crypto.createHash)("sha256").update(password).digest("hex");
@@ -48564,7 +48637,7 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ error: "Login failed" });
   }
 });
-router.post("/logout", async (req, res) => {
+router2.post("/logout", async (req, res) => {
   try {
     const sessionCookie = req.cookies?.["la_cantina_admin_session"];
     if (sessionCookie) {
@@ -48589,7 +48662,7 @@ router.post("/logout", async (req, res) => {
     res.status(500).json({ error: "Logout failed" });
   }
 });
-router.get("/session", async (req, res) => {
+router2.get("/session", async (req, res) => {
   try {
     const sessionCookie = req.cookies?.["la_cantina_admin_session"];
     if (!sessionCookie) {
@@ -48622,7 +48695,7 @@ router.get("/session", async (req, res) => {
     });
   }
 });
-router.get("/csrf", async (req, res) => {
+router2.get("/csrf", async (req, res) => {
   try {
     const { token: csrfToken, secret: csrfSecret } = generateCSRFToken();
     res.cookie("la_cantina_csrf_secret", csrfSecret, {
@@ -48638,7 +48711,7 @@ router.get("/csrf", async (req, res) => {
     res.status(500).json({ error: "Failed to generate CSRF token" });
   }
 });
-router.get("/bookings", requireAuth, async (req, res) => {
+router2.get("/bookings", requireAuth, async (req, res) => {
   try {
     const { inMemoryStorage: inMemoryStorage2 } = await Promise.resolve().then(() => (init_inMemoryStorage(), inMemoryStorage_exports));
     const bookings = inMemoryStorage2.getAllEventBookings();
@@ -48649,7 +48722,7 @@ router.get("/bookings", requireAuth, async (req, res) => {
     res.status(500).json({ error: "Failed to fetch bookings" });
   }
 });
-router.patch("/bookings/:id/status", requireAuth, async (req, res) => {
+router2.patch("/bookings/:id/status", requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -48701,7 +48774,7 @@ router.patch("/bookings/:id/status", requireAuth, async (req, res) => {
     res.status(500).json({ error: "Failed to update booking status" });
   }
 });
-router.delete("/bookings/:id", requireAuth, async (req, res) => {
+router2.delete("/bookings/:id", requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const { inMemoryStorage: inMemoryStorage2 } = await Promise.resolve().then(() => (init_inMemoryStorage(), inMemoryStorage_exports));
@@ -48742,11 +48815,11 @@ setInterval(() => {
     }
   }
 }, 60 * 60 * 1e3);
-var admin_default = router;
+var admin_default = router2;
 
 // server/routes/menu.ts
-var router2 = import_express2.default.Router();
-router2.get("/", async (req, res) => {
+var router3 = import_express3.default.Router();
+router3.get("/", async (req, res) => {
   try {
     const items = inMemoryStorage.getAllMenuItems();
     console.log(`\u{1F4CB} Fetched ${items.length} menu items`);
@@ -48756,7 +48829,7 @@ router2.get("/", async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch menu items" });
   }
 });
-router2.get("/:id", async (req, res) => {
+router3.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const item = inMemoryStorage.getMenuItemById(parseInt(id));
@@ -48769,7 +48842,7 @@ router2.get("/:id", async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch menu item" });
   }
 });
-router2.post("/", requireAuth, async (req, res) => {
+router3.post("/", requireAuth, async (req, res) => {
   try {
     const {
       title,
@@ -48811,7 +48884,7 @@ router2.post("/", requireAuth, async (req, res) => {
     return res.status(500).json({ error: "Failed to create menu item" });
   }
 });
-router2.put("/:id", requireAuth, async (req, res) => {
+router3.put("/:id", requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -48826,7 +48899,7 @@ router2.put("/:id", requireAuth, async (req, res) => {
     return res.status(500).json({ error: "Failed to update menu item" });
   }
 });
-router2.delete("/:id", requireAuth, async (req, res) => {
+router3.delete("/:id", requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = inMemoryStorage.deleteMenuItem(parseInt(id));
@@ -48840,13 +48913,13 @@ router2.delete("/:id", requireAuth, async (req, res) => {
     return res.status(500).json({ error: "Failed to delete menu item" });
   }
 });
-var menu_default = router2;
+var menu_default = router3;
 
 // server/routes/gallery.ts
-var import_express3 = __toESM(require_express2(), 1);
+var import_express4 = __toESM(require_express2(), 1);
 init_inMemoryStorage();
-var router3 = import_express3.default.Router();
-router3.get("/", async (req, res) => {
+var router4 = import_express4.default.Router();
+router4.get("/", async (req, res) => {
   try {
     const images = inMemoryStorage.getAllGalleryItems();
     console.log(`\u{1F5BC}\uFE0F Fetched ${images.length} gallery images`);
@@ -48856,7 +48929,7 @@ router3.get("/", async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch gallery images" });
   }
 });
-router3.get("/:id", async (req, res) => {
+router4.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const image = inMemoryStorage.getGalleryItemById(parseInt(id));
@@ -48869,7 +48942,7 @@ router3.get("/:id", async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch gallery image" });
   }
 });
-router3.post("/", requireAuth, async (req, res) => {
+router4.post("/", requireAuth, async (req, res) => {
   try {
     const {
       imageUrl,
@@ -48899,7 +48972,7 @@ router3.post("/", requireAuth, async (req, res) => {
     return res.status(500).json({ error: "Failed to create gallery image" });
   }
 });
-router3.put("/:id", requireAuth, async (req, res) => {
+router4.put("/:id", requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -48914,7 +48987,7 @@ router3.put("/:id", requireAuth, async (req, res) => {
     return res.status(500).json({ error: "Failed to update gallery image" });
   }
 });
-router3.delete("/:id", requireAuth, async (req, res) => {
+router4.delete("/:id", requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = inMemoryStorage.deleteGalleryItem(parseInt(id));
@@ -48928,7 +49001,7 @@ router3.delete("/:id", requireAuth, async (req, res) => {
     return res.status(500).json({ error: "Failed to delete gallery image" });
   }
 });
-router3.patch("/:id/toggle", requireAuth, async (req, res) => {
+router4.patch("/:id/toggle", requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const image = inMemoryStorage.getGalleryItemById(parseInt(id));
@@ -48948,12 +49021,12 @@ router3.patch("/:id/toggle", requireAuth, async (req, res) => {
     return res.status(500).json({ error: "Failed to update gallery image visibility" });
   }
 });
-var gallery_default = router3;
+var gallery_default = router4;
 
 // server/routes/reservations.ts
-var import_express4 = __toESM(require_express2(), 1);
-var router4 = import_express4.default.Router();
-router4.post("/", async (req, res) => {
+var import_express5 = __toESM(require_express2(), 1);
+var router5 = import_express5.default.Router();
+router5.post("/", async (req, res) => {
   try {
     const {
       name,
@@ -49003,7 +49076,7 @@ router4.post("/", async (req, res) => {
     return res.status(500).json({ error: "Failed to create reservation" });
   }
 });
-router4.get("/", requireAuth, async (req, res) => {
+router5.get("/", requireAuth, async (req, res) => {
   try {
     const allReservations = await db.select().from(reservations);
     const transformedReservations = allReservations.map((reservation) => ({
@@ -49025,7 +49098,7 @@ router4.get("/", requireAuth, async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch reservations" });
   }
 });
-router4.put("/:id", async (req, res) => {
+router5.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const {
@@ -49074,7 +49147,7 @@ router4.put("/:id", async (req, res) => {
     return res.status(500).json({ error: "Failed to update reservation" });
   }
 });
-router4.delete("/:id", async (req, res) => {
+router5.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const [deletedReservation] = await db.delete(reservations).where(eq(reservations.id, parseInt(id))).returning();
@@ -49091,7 +49164,7 @@ router4.delete("/:id", async (req, res) => {
     return res.status(500).json({ error: "Failed to delete reservation" });
   }
 });
-router4.patch("/:id/status", async (req, res) => {
+router5.patch("/:id/status", async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -49125,13 +49198,13 @@ router4.patch("/:id/status", async (req, res) => {
     return res.status(500).json({ error: "Failed to update reservation status" });
   }
 });
-var reservations_default = router4;
+var reservations_default = router5;
 
 // server/routes/events.ts
-var import_express5 = __toESM(require_express2(), 1);
+var import_express6 = __toESM(require_express2(), 1);
 init_inMemoryStorage();
-var router5 = import_express5.default.Router();
-router5.get("/", async (req, res) => {
+var router6 = import_express6.default.Router();
+router6.get("/", async (req, res) => {
   try {
     const events2 = inMemoryStorage.getAllEvents();
     console.log(`\u{1F389} Fetched ${events2.length} events`);
@@ -49141,7 +49214,7 @@ router5.get("/", async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch events" });
   }
 });
-router5.get("/:id", async (req, res) => {
+router6.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const event = inMemoryStorage.getEventById(parseInt(id));
@@ -49154,7 +49227,7 @@ router5.get("/:id", async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch event" });
   }
 });
-router5.post("/", requireAuth, async (req, res) => {
+router6.post("/", requireAuth, async (req, res) => {
   try {
     const {
       title_de,
@@ -49187,7 +49260,7 @@ router5.post("/", requireAuth, async (req, res) => {
     return res.status(500).json({ error: "Failed to create event" });
   }
 });
-router5.put("/:id", requireAuth, async (req, res) => {
+router6.put("/:id", requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -49202,7 +49275,7 @@ router5.put("/:id", requireAuth, async (req, res) => {
     return res.status(500).json({ error: "Failed to update event" });
   }
 });
-router5.post("/:id/book", async (req, res) => {
+router6.post("/:id/book", async (req, res) => {
   try {
     const { id } = req.params;
     const { name, email, phone, guests, specialRequests } = req.body;
@@ -49242,7 +49315,7 @@ router5.post("/:id/book", async (req, res) => {
     return res.status(500).json({ error: "Failed to create booking" });
   }
 });
-router5.delete("/:id", requireAuth, async (req, res) => {
+router6.delete("/:id", requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = inMemoryStorage.deleteEvent(parseInt(id));
@@ -49256,12 +49329,12 @@ router5.delete("/:id", requireAuth, async (req, res) => {
     return res.status(500).json({ error: "Failed to delete event" });
   }
 });
-var events_default = router5;
+var events_default = router6;
 
 // server/routes/contact.ts
-var import_express6 = __toESM(require_express2(), 1);
-var router6 = import_express6.default.Router();
-router6.post("/", async (req, res) => {
+var import_express7 = __toESM(require_express2(), 1);
+var router7 = import_express7.default.Router();
+router7.post("/", async (req, res) => {
   try {
     const {
       name,
@@ -49293,7 +49366,7 @@ router6.post("/", async (req, res) => {
     return res.status(500).json({ error: "Failed to submit contact form" });
   }
 });
-router6.get("/", requireAuth, async (req, res) => {
+router7.get("/", requireAuth, async (req, res) => {
   try {
     const submissions = await db.select().from(contactMessages);
     console.log(`\u{1F4E7} Fetched ${submissions.length} contact submissions`);
@@ -49303,13 +49376,13 @@ router6.get("/", requireAuth, async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch contact submissions" });
   }
 });
-var contact_default = router6;
+var contact_default = router7;
 
 // server/routes/feedback.ts
-var import_express7 = __toESM(require_express2(), 1);
+var import_express8 = __toESM(require_express2(), 1);
 init_inMemoryStorage();
-var router7 = import_express7.default.Router();
-router7.get("/", requireAuth, async (req, res) => {
+var router8 = import_express8.default.Router();
+router8.get("/", requireAuth, async (req, res) => {
   try {
     const feedback = inMemoryStorage.getAllFeedback();
     console.log(`\u2B50 Fetched ${feedback.length} feedback submissions`);
@@ -49319,7 +49392,7 @@ router7.get("/", requireAuth, async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch feedback" });
   }
 });
-router7.get("/:id", async (req, res) => {
+router8.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const feedback = inMemoryStorage.getFeedbackById(parseInt(id));
@@ -49332,7 +49405,7 @@ router7.get("/:id", async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch feedback" });
   }
 });
-router7.post("/", async (req, res) => {
+router8.post("/", async (req, res) => {
   try {
     const {
       name,
@@ -49364,7 +49437,7 @@ router7.post("/", async (req, res) => {
     return res.status(500).json({ error: "Failed to submit feedback" });
   }
 });
-router7.put("/:id", requireAuth, async (req, res) => {
+router8.put("/:id", requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -49379,7 +49452,7 @@ router7.put("/:id", requireAuth, async (req, res) => {
     return res.status(500).json({ error: "Failed to update feedback" });
   }
 });
-router7.delete("/:id", requireAuth, async (req, res) => {
+router8.delete("/:id", requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const success = inMemoryStorage.deleteFeedback(parseInt(id));
@@ -49393,7 +49466,7 @@ router7.delete("/:id", requireAuth, async (req, res) => {
     return res.status(500).json({ error: "Failed to delete feedback" });
   }
 });
-router7.patch("/:id/approve", requireAuth, async (req, res) => {
+router8.patch("/:id/approve", requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const { approved } = req.body;
@@ -49408,12 +49481,12 @@ router7.patch("/:id/approve", requireAuth, async (req, res) => {
     return res.status(500).json({ error: "Failed to update feedback approval" });
   }
 });
-var feedback_default = router7;
+var feedback_default = router8;
 
 // server/routes/google-reviews.ts
-var import_express8 = __toESM(require_express2(), 1);
-var router8 = import_express8.default.Router();
-router8.get("/", async (req, res) => {
+var import_express9 = __toESM(require_express2(), 1);
+var router9 = import_express9.default.Router();
+router9.get("/", async (req, res) => {
   try {
     const placeId = "ChIJu3mKd0lOqEcRb5l8dZ2N-9o";
     const apiKey = process.env.GOOGLE_PLACES_API_KEY;
@@ -49456,12 +49529,13 @@ router8.get("/", async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch Google reviews" });
   }
 });
-var google_reviews_default = router8;
+var google_reviews_default = router9;
 
 // server/index.ts
 var import_meta = {};
 (0, import_dotenv.config)();
-var app = (0, import_express9.default)();
+validateEnvironment();
+var app = (0, import_express10.default)();
 var PORT = parseInt(process.env.PORT || "5000");
 app.use((req, res, next) => {
   const start = Date.now();
@@ -49503,8 +49577,8 @@ app.use((0, import_cors.default)({
   credentials: true
 }));
 app.use((0, import_cookie_parser.default)());
-app.use(import_express9.default.json({ limit: "10mb" }));
-app.use(import_express9.default.urlencoded({ extended: true, limit: "10mb" }));
+app.use(import_express10.default.json({ limit: "10mb" }));
+app.use(import_express10.default.urlencoded({ extended: true, limit: "10mb" }));
 app.use((req, res, next) => {
   res.set("Cache-Control", "no-cache");
   next();
@@ -49512,30 +49586,13 @@ app.use((req, res, next) => {
 var __filename = import_meta?.url ? (0, import_url.fileURLToPath)(import_meta.url) : process.cwd() + "/server/index.ts";
 var __dirname2 = import_path2.default.dirname(__filename);
 var distPath = import_path2.default.join(__dirname2, "../dist");
-app.use(import_express9.default.static(distPath, {
+app.use(import_express10.default.static(distPath, {
   maxAge: process.env.NODE_ENV === "production" ? "1d" : 0,
   etag: false,
   lastModified: false
 }));
 function initializeServer() {
-  app.get("/health", (req, res) => {
-    console.log("\u{1F3E5} Health check requested");
-    console.log("Environment:", process.env.NODE_ENV);
-    console.log("Database URL available:", !!process.env.DATABASE_URL);
-    console.log("Port:", process.env.PORT || 5e3);
-    const healthData = {
-      status: "ok",
-      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
-      environment: process.env.NODE_ENV || "development",
-      uptime: process.uptime(),
-      memory: process.memoryUsage(),
-      pid: process.pid
-    };
-    res.json(healthData);
-  });
-  app.get("/ready", (req, res) => {
-    res.status(200).send("Ready");
-  });
+  app.use("/api", health_default);
   app.get("/health/db", async (req, res) => {
     try {
       await db.$client.query("SELECT 1");
