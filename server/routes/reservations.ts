@@ -1,6 +1,7 @@
 import express from 'express'
 import { eq } from 'drizzle-orm'
-import db, { schema } from '../../src/lib/db'
+import { db } from '../db'
+import * as schema from '../../shared/schema'
 
 const router = express.Router()
 

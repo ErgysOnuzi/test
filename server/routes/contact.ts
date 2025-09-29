@@ -1,5 +1,6 @@
 import express from 'express'
-import db, { schema } from '../../src/lib/db'
+import { db } from '../db'
+import * as schema from '../../shared/schema'
 
 const router = express.Router()
 
@@ -27,6 +28,10 @@ router.post('/', async (req, res) => {
       message,
       createdAt: new Date(),
     }).returning()
+
+    if (!submission) {
+      return res.status(500).json({ error: 'Failed to create contact submission' })
+    }
 
     console.log(`📧 New contact submission: ${submission.id}`)
     res.status(201).json({ 

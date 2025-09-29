@@ -4,7 +4,7 @@ import cookieParser from 'cookie-parser'
 import { config } from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import db from '../src/lib/db'
+import { db } from './db'
 // import { setupAuth, isAuthenticated } from './replitAuth' // Disabled - using token auth instead
 import { storage } from './storage'
 import menuRoutes from './routes/menu'
