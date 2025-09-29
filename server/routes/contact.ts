@@ -2,14 +2,15 @@ import express from 'express'
 import { eq } from 'drizzle-orm'
 import { db } from '../db'
 import * as schema from '../../shared/schema'
+import { validateContactForm, handleValidationErrors } from '../middleware/validation'
 
 const router = express.Router()
 
 // Import admin authentication middleware
 import { requireAuth, requireAuthWithCSRF } from './admin'
 
-// POST /api/contact - Submit contact form
-router.post('/', async (req, res) => {
+// POST /api/contact - Submit contact form with validation
+router.post('/', validateContactForm, handleValidationErrors, async (req, res) => {
   try {
     const {
       name,

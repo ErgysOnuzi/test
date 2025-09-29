@@ -6,11 +6,12 @@ import {
   ImageProcessor,
 } from '../services/imageUpload'
 import { requireAuthWithCSRF } from './admin'
+import { validateImageUpload, handleValidationErrors } from '../middleware/validation'
 
 const router = express.Router()
 
-// POST /api/upload/image - Secure image upload endpoint
-router.post('/image', requireAuthWithCSRF, uploadMiddleware.single('image'), createImageUploadHandler(), async (req: Request & { processedImage?: any }, res: Response) => {
+// POST /api/upload/image - Secure image upload endpoint with validation
+router.post('/image', requireAuthWithCSRF, uploadMiddleware.single('image'), validateImageUpload, handleValidationErrors, createImageUploadHandler(), async (req: Request & { processedImage?: any }, res: Response) => {
   try {
     const { processedImage } = req
 

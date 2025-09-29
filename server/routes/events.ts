@@ -2,6 +2,7 @@ import express from 'express'
 import { db } from '../db'
 import { events, eventBookings } from '../../shared/schema'
 import { eq, desc } from 'drizzle-orm'
+import { validateEventBooking, handleValidationErrors } from '../middleware/validation'
 
 const router = express.Router()
 
@@ -160,8 +161,8 @@ router.put('/:id', requireAuthWithCSRF, async (req, res) => {
   }
 })
 
-// POST /api/events/:id/book - Book event (public endpoint)
-router.post('/:id/book', async (req, res) => {
+// POST /api/events/:id/book - Book event with validation
+router.post('/:id/book', validateEventBooking, handleValidationErrors, async (req, res) => {
   try {
     const { id } = req.params
     const { name, email, phone, guests, specialRequests } = req.body

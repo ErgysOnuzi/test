@@ -1,10 +1,11 @@
 import express from 'express'
 import { inMemoryStorage } from '../inMemoryStorage'
+import { validateFeedback, handleValidationErrors } from '../middleware/validation'
 
 const router = express.Router()
 
 // Import admin authentication middleware
-import { requireAuth } from './admin'
+import { requireAuth, requireAuthWithCSRF } from './admin'
 
 // GET /api/feedback - Get all feedback submissions (admin)
 router.get('/', requireAuth, async (req, res) => {
@@ -35,8 +36,8 @@ router.get('/:id', async (req, res) => {
   }
 })
 
-// POST /api/feedback - Submit new feedback
-router.post('/', async (req, res) => {
+// POST /api/feedback - Submit new feedback with validation
+router.post('/', validateFeedback, handleValidationErrors, async (req, res) => {
   try {
     const {
       name,
@@ -72,8 +73,8 @@ router.post('/', async (req, res) => {
   }
 })
 
-// PUT /api/feedback/:id - Update feedback (admin)
-router.put('/:id', requireAuth, async (req, res) => {
+// PUT /api/feedback/:id - Update feedback (admin) with CSRF protection
+router.put('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
     const { id } = req.params
     const updateData = req.body
@@ -92,8 +93,8 @@ router.put('/:id', requireAuth, async (req, res) => {
   }
 })
 
-// DELETE /api/feedback/:id - Delete feedback (admin)
-router.delete('/:id', requireAuth, async (req, res) => {
+// DELETE /api/feedback/:id - Delete feedback (admin) with CSRF protection
+router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
     const { id } = req.params
     const success = inMemoryStorage.deleteFeedback(parseInt(id))
@@ -110,8 +111,8 @@ router.delete('/:id', requireAuth, async (req, res) => {
   }
 })
 
-// PATCH /api/feedback/:id/approve - Approve/reject feedback (admin)
-router.patch('/:id/approve', requireAuth, async (req, res) => {
+// PATCH /api/feedback/:id/approve - Approve/reject feedback (admin) with CSRF protection
+router.patch('/:id/approve', requireAuthWithCSRF, async (req, res) => {
   try {
     const { id } = req.params
     const { approved } = req.body

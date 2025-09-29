@@ -2,14 +2,15 @@ import express from 'express'
 import { eq } from 'drizzle-orm'
 import { db } from '../db'
 import * as schema from '../../shared/schema'
+import { validateReservation, handleValidationErrors } from '../middleware/validation'
 
 const router = express.Router()
 
 // Import admin authentication middleware
 import { requireAuth, requireAuthWithCSRF } from './admin'
 
-// POST /api/reservations - Create new reservation
-router.post('/', async (req, res) => {
+// POST /api/reservations - Create new reservation with validation
+router.post('/', validateReservation, handleValidationErrors, async (req, res) => {
   try {
     const {
       name,

@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import { db } from '../db'
 import { events, eventBookings } from '../../shared/schema'
 import { eq, desc } from 'drizzle-orm'
+import { validateAdminLogin, handleValidationErrors } from '../middleware/validation'
 
 const router = express.Router()
 
@@ -117,8 +118,8 @@ const requireAuth = (req: express.Request, res: express.Response, next: express.
 // Combined authentication and CSRF validation for state-changing operations
 const requireAuthWithCSRF = [requireAuth, validateCSRF]
 
-// POST /api/admin/login - Admin login
-router.post('/login', async (req, res) => {
+// POST /api/admin/login - Admin login with validation
+router.post('/login', validateAdminLogin, handleValidationErrors, async (req, res) => {
   try {
     const { identifier, password } = req.body
 

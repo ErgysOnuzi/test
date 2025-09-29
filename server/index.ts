@@ -19,6 +19,18 @@ import feedbackRoutes from './routes/feedback'
 import adminRoutes from './routes/admin'
 import uploadRoutes from './routes/upload'
 import googleReviewsRoutes from './routes/google-reviews'
+// Security middleware imports
+import { 
+  generalRateLimit, 
+  authRateLimit, 
+  apiRateLimit, 
+  uploadRateLimit,
+  securityHeaders, 
+  inputSanitization, 
+  compressionMiddleware,
+  securityLogger,
+  corsConfig
+} from './middleware/security'
 
 // Load environment variables
 config()
@@ -31,6 +43,14 @@ const app = express()
 const PORT = process.env.NODE_ENV === 'production' 
   ? parseInt(process.env.PORT || '5000')
   : 3001
+
+// Essential security middleware - applied first
+app.use(securityHeaders)
+app.use(compressionMiddleware)
+app.use(securityLogger)
+
+// Apply general rate limiting to all routes
+app.use(generalRateLimit)
 
 // Advanced logging middleware for production monitoring
 app.use((req, res, next) => {
@@ -66,26 +86,15 @@ if (process.env.NODE_ENV === 'production') {
     next()
   })
   
-  app.use((req, res, next) => {
-    res.set({
-      'X-Content-Type-Options': 'nosniff',
-      'X-Frame-Options': 'DENY',
-      'X-XSS-Protection': '1; mode=block',
-      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
-      'Referrer-Policy': 'strict-origin-when-cross-origin',
-      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'"
-    })
-    next()
-  })
+  // Note: Security headers now handled by helmet middleware for consistency
+  // Removed manual headers to prevent conflicts with helmet configuration
 }
 
-// Middleware
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL || true
-    : true,
-  credentials: true
-}))
+// Middleware with enhanced security
+// Input sanitization middleware
+app.use(inputSanitization)
+// CORS with security configuration
+app.use(cors(corsConfig))
 app.use(cookieParser()) // Add cookie parser middleware
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
@@ -145,17 +154,18 @@ function initializeServer() {
   })
 
   // API Routes
-  app.use('/api/menu', menuRoutes)
-  app.use('/api/gallery', galleryRoutes)
-  app.use('/api/reservations', reservationRoutes)
-  app.use('/api/events', eventRoutes)
-  app.use('/api/contact', contactRoutes)
-  app.use('/api/feedback', feedbackRoutes)
-  app.use('/api/admin', adminRoutes)
-  app.use('/api/upload', uploadRoutes)
-  app.use('/api/reviews', googleReviewsRoutes)
+  // API routes with rate limiting
+  app.use('/api/menu', apiRateLimit, menuRoutes)
+  app.use('/api/gallery', apiRateLimit, galleryRoutes)
+  app.use('/api/reservations', apiRateLimit, reservationRoutes)
+  app.use('/api/events', apiRateLimit, eventRoutes)
+  app.use('/api/contact', apiRateLimit, contactRoutes)
+  app.use('/api/feedback', apiRateLimit, feedbackRoutes)
+  app.use('/api/admin', authRateLimit, adminRoutes)
+  app.use('/api/upload', uploadRateLimit, uploadRoutes)
+  app.use('/api/reviews', apiRateLimit, googleReviewsRoutes)
   // Backward compatibility for frontend
-  app.use('/api/google-reviews', googleReviewsRoutes)
+  app.use('/api/google-reviews', apiRateLimit, googleReviewsRoutes)
 
   // Serve uploaded images with proper caching
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), {
