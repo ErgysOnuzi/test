@@ -33,6 +33,7 @@ export default function AdminPage() {
   const [showGalleryModal, setShowGalleryModal] = useState(false)
   const [showEventModal, setShowEventModal] = useState(false)
   const [editingItem, setEditingItem] = useState<any>(null)
+  const [formData, setFormData] = useState<any>({})
 
   // Check authentication using our new cookie-based system
   useEffect(() => {
@@ -778,17 +779,95 @@ export default function AdminPage() {
             <h3 className="text-xl font-semibold mb-4">
               {editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}
             </h3>
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">
-                {editingItem ? 'Edit functionality' : 'Create functionality'} will be implemented in the next update.
-              </p>
-              <button 
-                onClick={() => setShowMenuModal(false)}
-                className="bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90"
-              >
-                Close
-              </button>
-            </div>
+            <form onSubmit={async (e) => {
+              e.preventDefault()
+              const form = e.target as HTMLFormElement
+              const formData = new FormData(form)
+              
+              const itemData = {
+                title: formData.get('title') as string,
+                description: formData.get('description') as string,
+                price: parseFloat(formData.get('price') as string),
+                category: formData.get('category') as string,
+                isAvailable: true
+              }
+              
+              try {
+                const url = editingItem ? `/api/admin/menu/${editingItem.id}` : '/api/admin/menu'
+                const method = editingItem ? 'PUT' : 'POST'
+                
+                const response = await fetch(url, {
+                  method,
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify(itemData)
+                })
+                
+                if (!response.ok) throw new Error('Failed to save menu item')
+                
+                await fetchMenuItems()
+                setShowMenuModal(false)
+                setEditingItem(null)
+                alert(editingItem ? 'Menu item updated successfully!' : 'Menu item created successfully!')
+              } catch (error) {
+                alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+              }
+            }}>
+              <div className="space-y-4">
+                <input 
+                  name="title"
+                  type="text" 
+                  placeholder="Item Title" 
+                  className="w-full p-3 border rounded-lg"
+                  defaultValue={editingItem?.title || ''}
+                  required
+                />
+                <textarea 
+                  name="description"
+                  placeholder="Description" 
+                  className="w-full p-3 border rounded-lg h-24"
+                  defaultValue={editingItem?.description || ''}
+                  required
+                />
+                <input 
+                  name="price"
+                  type="number" 
+                  placeholder="Price" 
+                  step="0.01"
+                  className="w-full p-3 border rounded-lg"
+                  defaultValue={editingItem?.price || ''}
+                  required
+                />
+                <select 
+                  name="category"
+                  className="w-full p-3 border rounded-lg" 
+                  defaultValue={editingItem?.category || ''}
+                  required
+                >
+                  <option value="">Select Category</option>
+                  <option value="Antipasti">Antipasti</option>
+                  <option value="Primi">Primi</option>
+                  <option value="Secondi">Secondi</option>
+                  <option value="Dolci">Dolci</option>
+                  <option value="Bevande">Bevande</option>
+                </select>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button 
+                  type="submit"
+                  className="flex-1 bg-primary text-primary-foreground py-2 rounded-lg hover:bg-primary/90"
+                >
+                  {editingItem ? 'Update' : 'Create'}
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setShowMenuModal(false)}
+                  className="flex-1 bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -799,17 +878,78 @@ export default function AdminPage() {
             <h3 className="text-xl font-semibold mb-4">
               {editingItem ? 'Edit Gallery Image' : 'Upload New Image'}
             </h3>
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">
-                {editingItem ? 'Edit functionality' : 'Upload functionality'} will be implemented in the next update.
-              </p>
-              <button 
-                onClick={() => setShowGalleryModal(false)}
-                className="bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90"
-              >
-                Close
-              </button>
-            </div>
+            <form onSubmit={async (e) => {
+              e.preventDefault()
+              const form = e.target as HTMLFormElement
+              const formData = new FormData(form)
+              
+              const imageData = {
+                title: formData.get('title') as string,
+                imageUrl: formData.get('imageUrl') as string,
+                description: formData.get('description') as string || ''
+              }
+              
+              try {
+                const url = editingItem ? `/api/admin/gallery/${editingItem.id}` : '/api/admin/gallery'
+                const method = editingItem ? 'PUT' : 'POST'
+                
+                const response = await fetch(url, {
+                  method,
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify(imageData)
+                })
+                
+                if (!response.ok) throw new Error('Failed to save gallery image')
+                
+                await fetchGalleryImages()
+                setShowGalleryModal(false)
+                setEditingItem(null)
+                alert(editingItem ? 'Gallery image updated successfully!' : 'Gallery image uploaded successfully!')
+              } catch (error) {
+                alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+              }
+            }}>
+              <div className="space-y-4">
+                <input 
+                  name="title"
+                  type="text" 
+                  placeholder="Image Title" 
+                  className="w-full p-3 border rounded-lg"
+                  defaultValue={editingItem?.title || ''}
+                  required
+                />
+                <input 
+                  name="imageUrl"
+                  type="url" 
+                  placeholder="Image URL" 
+                  className="w-full p-3 border rounded-lg"
+                  defaultValue={editingItem?.imageUrl || ''}
+                  required
+                />
+                <textarea 
+                  name="description"
+                  placeholder="Description (optional)" 
+                  className="w-full p-3 border rounded-lg h-24"
+                  defaultValue={editingItem?.description || ''}
+                />
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button 
+                  type="submit"
+                  className="flex-1 bg-primary text-primary-foreground py-2 rounded-lg hover:bg-primary/90"
+                >
+                  {editingItem ? 'Update' : 'Upload'}
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setShowGalleryModal(false)}
+                  className="flex-1 bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -820,17 +960,114 @@ export default function AdminPage() {
             <h3 className="text-xl font-semibold mb-4">
               {editingItem ? 'Edit Event' : 'Create New Event'}
             </h3>
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">
-                {editingItem ? 'Edit functionality' : 'Create functionality'} will be implemented in the next update.
-              </p>
-              <button 
-                onClick={() => setShowEventModal(false)}
-                className="bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90"
-              >
-                Close
-              </button>
-            </div>
+            <form onSubmit={async (e) => {
+              e.preventDefault()
+              const form = e.target as HTMLFormElement
+              const formData = new FormData(form)
+              
+              const eventData = {
+                title_en: formData.get('title_en') as string,
+                title_de: formData.get('title_de') as string,
+                description_en: formData.get('description_en') as string,
+                description_de: formData.get('description_de') as string || '',
+                event_date: formData.get('event_date') as string,
+                price: parseFloat(formData.get('price') as string),
+                max_attendees: parseInt(formData.get('max_attendees') as string),
+                current_attendees: editingItem?.current_attendees || 0
+              }
+              
+              try {
+                const url = editingItem ? `/api/events/${editingItem.id}` : '/api/events'
+                const method = editingItem ? 'PUT' : 'POST'
+                
+                const response = await fetch(url, {
+                  method,
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify(eventData)
+                })
+                
+                if (!response.ok) throw new Error('Failed to save event')
+                
+                await fetchEvents()
+                setShowEventModal(false)
+                setEditingItem(null)
+                alert(editingItem ? 'Event updated successfully!' : 'Event created successfully!')
+              } catch (error) {
+                alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+              }
+            }}>
+              <div className="space-y-4">
+                <input 
+                  name="title_en"
+                  type="text" 
+                  placeholder="Event Title (English)" 
+                  className="w-full p-3 border rounded-lg"
+                  defaultValue={editingItem?.title_en || ''}
+                  required
+                />
+                <input 
+                  name="title_de"
+                  type="text" 
+                  placeholder="Event Title (German)" 
+                  className="w-full p-3 border rounded-lg"
+                  defaultValue={editingItem?.title_de || ''}
+                  required
+                />
+                <textarea 
+                  name="description_en"
+                  placeholder="Description (English)" 
+                  className="w-full p-3 border rounded-lg h-24"
+                  defaultValue={editingItem?.description_en || ''}
+                  required
+                />
+                <textarea 
+                  name="description_de"
+                  placeholder="Description (German)" 
+                  className="w-full p-3 border rounded-lg h-24"
+                  defaultValue={editingItem?.description_de || ''}
+                />
+                <input 
+                  name="event_date"
+                  type="datetime-local" 
+                  className="w-full p-3 border rounded-lg"
+                  defaultValue={editingItem?.event_date ? new Date(editingItem.event_date).toISOString().slice(0, 16) : ''}
+                  required
+                />
+                <input 
+                  name="price"
+                  type="number" 
+                  placeholder="Price per person" 
+                  step="0.01"
+                  className="w-full p-3 border rounded-lg"
+                  defaultValue={editingItem?.price || ''}
+                  required
+                />
+                <input 
+                  name="max_attendees"
+                  type="number" 
+                  placeholder="Max attendees" 
+                  className="w-full p-3 border rounded-lg"
+                  defaultValue={editingItem?.max_attendees || ''}
+                  required
+                />
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button 
+                  type="submit"
+                  className="flex-1 bg-primary text-primary-foreground py-2 rounded-lg hover:bg-primary/90"
+                >
+                  {editingItem ? 'Update' : 'Create'}
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setShowEventModal(false)}
+                  className="flex-1 bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
