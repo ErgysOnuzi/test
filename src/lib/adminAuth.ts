@@ -40,6 +40,23 @@ export const adminAuth = {
     }
   },
 
+  async refresh(): Promise<{ success: boolean; csrfToken?: string }> {
+    try {
+      const response = await fetch('/api/admin/refresh', {
+        method: 'POST',
+        credentials: 'include' // Include cookies in request
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return { success: true, csrfToken: data.csrfToken };
+      }
+      return { success: false };
+    } catch {
+      return { success: false };
+    }
+  },
+
   async logout(): Promise<void> {
     try {
       await fetch('/api/admin/logout', { 

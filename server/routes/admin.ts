@@ -13,12 +13,6 @@ const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'ergysonuzi'
 // Hash the password from environment variable for security
 const ADMIN_PASSWORD_HASH = createHash('sha256').update(process.env.ADMIN_PASSWORD || 'Xharie123').digest('hex')
 
-// Debug output to verify environment values
-console.log('🔐 Admin credentials loaded:')
-console.log(`  Email: ${ADMIN_EMAIL}`)
-console.log(`  Username: ${ADMIN_USERNAME}`)
-console.log(`  Password source: ${process.env.ADMIN_PASSWORD ? 'ENV_VAR' : 'DEFAULT'}`)
-console.log(`  Expected hash: ${ADMIN_PASSWORD_HASH}`)
 
 // In-memory session storage (since database is not working)
 const activeSessions = new Map<string, { 
@@ -49,6 +43,36 @@ const generateCSRFToken = (): { token: string; secret: string } => {
   return { token, secret }
 }
 
+// CSRF token validation middleware
+const validateCSRF = (req: express.Request, res: express.Response, next: express.NextFunction): void => {
+  try {
+    const csrfToken = req.headers['x-csrf-token'] as string
+    const csrfSecret = req.cookies?.['la_cantina_csrf_secret']
+    
+    if (!csrfToken || !csrfSecret) {
+      res.status(403).json({ error: 'CSRF token required' })
+      return
+    }
+    
+    // Validate CSRF token format and HMAC
+    const [nonce, providedHmac] = csrfToken.split('.')
+    if (!nonce || !providedHmac) {
+      res.status(403).json({ error: 'Invalid CSRF token format' })
+      return
+    }
+    
+    const expectedHmac = createHash('sha256').update(csrfSecret + nonce).digest('hex')
+    if (providedHmac !== expectedHmac) {
+      res.status(403).json({ error: 'Invalid CSRF token' })
+      return
+    }
+    
+    next()
+  } catch (error) {
+    res.status(403).json({ error: 'CSRF validation failed' })
+  }
+}
+
 // Admin authentication middleware - now uses session cookies instead of Bearer tokens
 const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction): void => {
   try {
@@ -70,6 +94,9 @@ const requireAuth = (req: express.Request, res: express.Response, next: express.
     res.status(401).json({ error: 'Invalid session' })
   }
 }
+
+// Combined authentication and CSRF validation for state-changing operations
+const requireAuthWithCSRF = [requireAuth, validateCSRF]
 
 // POST /api/admin/login - Admin login
 router.post('/login', async (req, res) => {
@@ -135,9 +162,6 @@ router.post('/login', async (req, res) => {
       })
     } else {
       console.log(`🚫 Failed login attempt: ${identifier}`)
-      console.log(`Provided password hash: ${passwordHash}`)
-      console.log(`Expected password hash: ${ADMIN_PASSWORD_HASH}`)
-      console.log(`Password hash matches: ${passwordHash === ADMIN_PASSWORD_HASH}`)
       res.status(401).json({ error: 'Invalid credentials' })
     }
   } catch (error) {
@@ -211,6 +235,69 @@ router.get('/session', async (req, res) => {
       authenticated: false,
       user: null
     })
+  }
+})
+
+// POST /api/admin/refresh - Refresh session token
+router.post('/refresh', async (req, res) => {
+  try {
+    const sessionCookie = req.cookies?.['la_cantina_admin_session']
+    
+    if (!sessionCookie) {
+      return res.status(401).json({ error: 'No active session to refresh' })
+    }
+    
+    // Verify current JWT token
+    const decoded = jwt.verify(sessionCookie, JWT_SECRET) as any
+    if (decoded.role === 'admin' && decoded.authenticated === true) {
+      // Generate new session token
+      const newSessionToken = generateSessionToken()
+      
+      // Update session in memory
+      activeSessions.delete(sessionCookie) // Remove old session
+      activeSessions.set(newSessionToken, {
+        email: ADMIN_EMAIL,
+        username: ADMIN_USERNAME,
+        loginTime: Date.now()
+      })
+      
+      // Generate new CSRF token
+      const { token: csrfToken, secret: csrfSecret } = generateCSRFToken()
+      
+      console.log(`🔄 Admin session refreshed`)
+      
+      // Set new secure session cookie
+      res.cookie('la_cantina_admin_session', newSessionToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 2 * 60 * 60 * 1000, // 2 hours
+        signed: false
+      })
+      
+      // Set new CSRF secret cookie
+      res.cookie('la_cantina_csrf_secret', csrfSecret, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 2 * 60 * 60 * 1000
+      })
+      
+      res.json({ 
+        success: true,
+        message: 'Session refreshed successfully',
+        csrfToken: csrfToken,
+        user: {
+          email: ADMIN_EMAIL,
+          username: ADMIN_USERNAME
+        }
+      })
+    } else {
+      res.status(401).json({ error: 'Invalid session' })
+    }
+  } catch (error) {
+    console.error('Error refreshing admin session:', error)
+    res.status(401).json({ error: 'Invalid session' })
   }
 })
 
