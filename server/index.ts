@@ -46,9 +46,9 @@ app.use((req, res, next) => {
 if (process.env.NODE_ENV === 'production') {
   app.set('trust proxy', 1)
   
-  // Force HTTPS redirect in production
+  // Force HTTPS redirect in production only when actually deployed
   app.use((req, res, next) => {
-    if (req.header('x-forwarded-proto') !== 'https') {
+    if (req.header('x-forwarded-proto') && req.header('x-forwarded-proto') !== 'https') {
       res.redirect(`https://${req.header('host')}${req.url}`)
       return
     }
