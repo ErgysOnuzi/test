@@ -20,7 +20,7 @@ import googleReviewsRoutes from './routes/google-reviews'
 config()
 
 const app = express()
-const PORT = parseInt(process.env.PORT || (process.env.NODE_ENV === 'production' ? '5000' : '3001'))
+const PORT = parseInt(process.env.PORT || '5000')
 
 // Advanced logging middleware for production monitoring
 app.use((req, res, next) => {
