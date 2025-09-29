@@ -9,6 +9,7 @@ import { db } from './db'
 // import { setupAuth, isAuthenticated } from './replitAuth' // Disabled - using token auth instead
 import { storage } from './storage'
 import healthRoutes from './routes/health'
+import ssrRoutes from './routes/ssr'
 import menuRoutes from './routes/menu'
 import galleryRoutes from './routes/gallery'
 import reservationRoutes from './routes/reservations'
@@ -99,12 +100,8 @@ const __filename = import.meta?.url ? fileURLToPath(import.meta.url) : process.c
 const __dirname = path.dirname(__filename)
 const distPath = path.join(__dirname, '../dist')
 
-// Serve static files with proper headers and performance optimizations
-app.use(express.static(distPath, {
-  maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0,
-  etag: false,
-  lastModified: false
-}))
+// SSR routes for SEO-critical pages MUST come before static file serving
+app.use(ssrRoutes)
 
 // Setup routes without database-dependent authentication
 function initializeServer() {
@@ -155,6 +152,13 @@ function initializeServer() {
   app.use('/api/feedback', feedbackRoutes)
   app.use('/api/admin', adminRoutes)
   app.use('/api/google-reviews', googleReviewsRoutes)
+
+  // Static file serving comes AFTER SSR routes and API routes
+  app.use(express.static(distPath, {
+    maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0,
+    etag: false,
+    lastModified: false
+  }))
 
   // Serve React app for all non-API routes (SPA fallback)
   app.use((req, res, next) => {
