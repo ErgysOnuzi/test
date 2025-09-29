@@ -87,7 +87,7 @@ app.use((req, res, next) => {
 })
 
 // Serve static files from Vite build (production)
-const __filename = fileURLToPath(import.meta.url)
+const __filename = import.meta?.url ? fileURLToPath(import.meta.url) : process.cwd() + '/server/index.ts'
 const __dirname = path.dirname(__filename)
 const distPath = path.join(__dirname, '../dist')
 
