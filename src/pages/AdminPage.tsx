@@ -182,6 +182,56 @@ export default function AdminPage() {
     }
   }
 
+  // Admin CRUD functions
+  const deleteMenuItem = async (itemId: number) => {
+    if (!confirm('Are you sure you want to delete this menu item?')) return
+    try {
+      const response = await fetch(`/api/admin/menu/${itemId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+      if (!response.ok) throw new Error('Failed to delete menu item')
+      await fetchMenuItems()
+      console.log(`Menu item ${itemId} deleted successfully`)
+    } catch (error) {
+      console.error('Error deleting menu item:', error)
+      alert(`Failed to delete menu item: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  const deleteGalleryImage = async (imageId: number) => {
+    if (!confirm('Are you sure you want to delete this image?')) return
+    try {
+      const response = await fetch(`/api/admin/gallery/${imageId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+      if (!response.ok) throw new Error('Failed to delete image')
+      await fetchGalleryImages()
+      console.log(`Gallery image ${imageId} deleted successfully`)
+    } catch (error) {
+      console.error('Error deleting gallery image:', error)
+      alert(`Failed to delete image: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  const deleteEvent = async (eventId: number) => {
+    if (!confirm('Are you sure you want to delete this event? All associated bookings will also be deleted.')) return
+    try {
+      const response = await fetch(`/api/events/${eventId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+      if (!response.ok) throw new Error('Failed to delete event')
+      await fetchEvents()
+      await fetchEventBookings()
+      console.log(`Event ${eventId} deleted successfully`)
+    } catch (error) {
+      console.error('Error deleting event:', error)
+      alert(`Failed to delete event: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
   const deleteBooking = async (bookingId: number) => {
     if (!confirm('Are you sure you want to delete this booking? This action cannot be undone.')) {
       return
@@ -720,6 +770,70 @@ export default function AdminPage() {
           </div>
         )}
       </main>
+
+      {/* Quick Create/Edit Modals */}
+      {showMenuModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-semibold mb-4">
+              {editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}
+            </h3>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">
+                {editingItem ? 'Edit functionality' : 'Create functionality'} will be implemented in the next update.
+              </p>
+              <button 
+                onClick={() => setShowMenuModal(false)}
+                className="bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showGalleryModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-semibold mb-4">
+              {editingItem ? 'Edit Gallery Image' : 'Upload New Image'}
+            </h3>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">
+                {editingItem ? 'Edit functionality' : 'Upload functionality'} will be implemented in the next update.
+              </p>
+              <button 
+                onClick={() => setShowGalleryModal(false)}
+                className="bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEventModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-semibold mb-4">
+              {editingItem ? 'Edit Event' : 'Create New Event'}
+            </h3>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">
+                {editingItem ? 'Edit functionality' : 'Create functionality'} will be implemented in the next update.
+              </p>
+              <button 
+                onClick={() => setShowEventModal(false)}
+                className="bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
