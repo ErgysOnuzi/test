@@ -132,6 +132,26 @@ function initializeServer() {
     res.status(200).send('Ready')
   })
 
+  // Database health check for backup monitoring
+  app.get('/health/db', async (req, res) => {
+    try {
+      // Simple database connectivity test
+      await db.$client.query('SELECT 1')
+      res.json({ 
+        status: 'ok', 
+        database: 'connected',
+        timestamp: new Date().toISOString()
+      })
+    } catch (error) {
+      console.error('Database health check failed:', error)
+      res.status(503).json({ 
+        status: 'error', 
+        database: 'disconnected',
+        timestamp: new Date().toISOString()
+      })
+    }
+  })
+
   // API Routes
   app.use('/api/menu', menuRoutes)
   app.use('/api/gallery', galleryRoutes)
