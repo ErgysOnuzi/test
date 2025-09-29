@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import { useTranslation } from '../i18n/translations'
 import MenuWithFilters from '../components/MenuWithFilters'
 
 interface MenuItem {
@@ -13,6 +14,7 @@ interface MenuItem {
 
 export default function MenuPage() {
   const { locale = 'de' } = useParams<{ locale: string }>()
+  const { t } = useTranslation(locale as 'de' | 'en')
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -37,10 +39,10 @@ export default function MenuPage() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
         <h1 className="text-4xl font-serif font-bold text-foreground mb-6">
-          {locale === 'de' ? 'Speisekarte' : 'Menu'}
+          {t('pages.menu.title')}
         </h1>
         <p className="text-muted-foreground">
-          {locale === 'de' ? 'Speisekarte wird geladen...' : 'Loading menu items...'}
+          {t('pages.menu.loading')}
         </p>
       </div>
     )
@@ -50,10 +52,10 @@ export default function MenuPage() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
         <h1 className="text-4xl font-serif font-bold text-foreground mb-6">
-          {locale === 'de' ? 'Speisekarte' : 'Menu'}
+          {t('pages.menu.title')}
         </h1>
         <p className="text-destructive">
-          {locale === 'de' ? 'Fehler:' : 'Error:'} {error}
+          {t('common.error')} {error}
         </p>
       </div>
     )
