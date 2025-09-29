@@ -1,1 +1,135 @@
-run = ["bash","-lc","npm ci && npm run build && npm run start"]
+# La Cantina Berlin - Next.js Restaurant Website Configuration
+modules = ["nodejs-20", "web", "postgresql-16"]
+
+[agent]
+expertMode = true
+integrations = ["javascript_database:1.0.0", "replitmail:1.0.0", "javascript_object_storage:1.0.0", "javascript_log_in_with_replit:1.0.0"]
+
+[nix]
+channel = "stable-25_05"
+packages = ["python3", "gnumake", "gcc", "pkg-config", "sqlite", "openssl", "imagemagick"]
+
+# Environment Variables
+[env]
+NODE_ENV = "development"
+NEXT_TELEMETRY_DISABLED = "1"
+
+# Development Server Configuration
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Frontend"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Backend"
+
+[[workflows.workflow]]
+name = "Frontend"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow]]
+name = "Backend"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run start:server"
+waitForPort = 3001
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[ports]]
+localPort = 3001
+externalPort = 3001
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 36951
+externalPort = 8080
+
+[[ports]]
+localPort = 37589
+externalPort = 4200
+
+[[ports]]
+localPort = 37951
+externalPort = 3003
+
+[[ports]]
+localPort = 38131
+externalPort = 3000
+
+[[ports]]
+localPort = 38675
+externalPort = 3001
+
+[[ports]]
+localPort = 39437
+externalPort = 5000
+
+[[ports]]
+localPort = 41027
+externalPort = 6800
+
+[[ports]]
+localPort = 41305
+externalPort = 5173
+
+[[ports]]
+localPort = 44097
+externalPort = 6000
+
+[[ports]]
+localPort = 44967
+externalPort = 3002
+
+[[ports]]
+localPort = 46355
+externalPort = 8008
+
+[[ports]]
+localPort = 46471
+externalPort = 8000
+
+# Deployment Configuration
+[deployment]
+deploymentTarget = "vm"
+build = ["npm", "run", "build"]
+run = ["bash", "-c", "npm run start:server & npm run preview"]
+
+[deployment.env]
+NODE_ENV = "production"
+NEXT_TELEMETRY_DISABLED = "1"
+
+# Language Server Protocol Settings
+[languages.typescript]
+pattern = "**/{*.ts,*.tsx,*.js,*.jsx}"
+syntax = "typescript"
+[languages.typescript.languageServer]
+start = ["typescript-language-server", "--stdio"]
+
+[languages.javascript]
+pattern = "**/{*.js,*.jsx}"
+syntax = "javascript"
+[languages.javascript.languageServer]
+start = ["typescript-language-server", "--stdio"]
