@@ -9,8 +9,8 @@
   "scripts": {
     "dev": "vite --port 5000 --host 0.0.0.0",
     "build": "vite build",
-    "start": "bash -lc \"vite preview --port 5000 --host 0.0.0.0\"",
-    "start:server": "tsx server/index.ts",
+    "start": "npx tsx server/index.ts",
+    "start:server": "npx tsx server/index.ts",
     "preview": "vite preview --port 5000 --host 0.0.0.0",
     "postinstall": "echo 'Setup complete'",
     "db:migrate": "drizzle-kit migrate",
