@@ -177,29 +177,61 @@ export default function EventsPage() {
                           {event.description_en}
                         </p>
                         
-                        <div className="flex items-center justify-between mb-6">
-                          <div className="flex items-center gap-6">
-                            <div className="text-center">
-                              <div className="text-2xl font-bold text-primary">€{event.price}</div>
-                              <div className="text-sm text-muted-foreground">per person</div>
+                        <div className="space-y-6 mb-6">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div className="flex items-center gap-6">
+                              <div className="text-center">
+                                <div className="text-2xl font-bold text-primary">€{event.price}</div>
+                                <div className="text-sm text-muted-foreground">per person</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-lg font-semibold text-card-foreground">
+                                  {availableSpots} left
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  of {event.max_attendees} spots
+                                </div>
+                              </div>
                             </div>
-                            <div className="text-center">
-                              <div className="text-lg font-semibold text-card-foreground">
-                                {availableSpots} left
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                of {event.max_attendees} spots
-                              </div>
+                            <div className="flex items-center gap-2">
+                              {availableSpots === 0 ? (
+                                <div className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
+                                  Sold Out
+                                </div>
+                              ) : isNearlyFull ? (
+                                <div className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium">
+                                  Almost Full!
+                                </div>
+                              ) : (
+                                <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                                  Available
+                                </div>
+                              )}
                             </div>
                           </div>
-                          {isNearlyFull && (
-                            <div className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium">
-                              Almost Full!
+                          
+                          {/* Capacity Progress Bar */}
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm text-muted-foreground">
+                              <span>Capacity</span>
+                              <span>{event.current_attendees}/{event.max_attendees}</span>
                             </div>
-                          )}
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className={`h-2 rounded-full transition-all duration-300 ${
+                                  availableSpots === 0 
+                                    ? 'bg-red-500' 
+                                    : isNearlyFull 
+                                    ? 'bg-amber-500' 
+                                    : 'bg-green-500'
+                                }`}
+                                style={{ width: `${(event.current_attendees / event.max_attendees) * 100}%` }}
+                              />
+                            </div>
+                          </div>
                         </div>
                         
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                           <div className="flex -space-x-2">
                             {Array.from({ length: Math.min(event.current_attendees, 5) }).map((_, i) => (
                               <div
@@ -214,10 +246,21 @@ export default function EventsPage() {
                                 +{event.current_attendees - 5}
                               </div>
                             )}
+                            {event.current_attendees === 0 && (
+                              <div className="text-sm text-muted-foreground italic">Be the first to join!</div>
+                            )}
                           </div>
-                          <button className="bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-3 rounded-lg font-semibold transition-colors duration-200 shadow-sm hover:shadow-md">
-                            Reserve Spot
-                          </button>
+                          <Link
+                            to={`/events/${event.id}`}
+                            className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-sm hover:shadow-md text-center min-w-[140px] ${
+                              availableSpots === 0
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                            }`}
+                            onClick={(e) => availableSpots === 0 && e.preventDefault()}
+                          >
+                            {availableSpots === 0 ? 'Sold Out' : 'Reserve Spot'}
+                          </Link>
                         </div>
                       </div>
                     </div>
