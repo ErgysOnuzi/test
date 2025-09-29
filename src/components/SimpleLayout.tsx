@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useTransition } from 'react'
 import { Outlet, Link, useParams, useLocation } from 'react-router-dom'
 
 export default function SimpleLayout() {
@@ -6,6 +6,7 @@ export default function SimpleLayout() {
   const location = useLocation()
   const currentLocale = locale || 'de'
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
   const isGerman = currentLocale === 'de'
 
@@ -52,7 +53,8 @@ export default function SimpleLayout() {
                     pathWithoutLocale === `/${item.href}` || (item.href === '' && pathWithoutLocale === '')
                       ? 'text-primary font-medium'
                       : ''
-                  }`}
+                  } ${isPending ? 'opacity-50' : ''}`}
+                  onClick={() => startTransition(() => {})}
                 >
                   {item.name}
                 </Link>
