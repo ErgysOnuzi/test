@@ -52,7 +52,7 @@ router.get('/', async (req, res) => {
     })
   } catch (error) {
     console.error('Error fetching Google reviews:', error)
-    res.status(500).json({ error: 'Failed to fetch Google reviews' })
+    return res.status(500).json({ error: 'Failed to fetch Google reviews' })
   }
 })
 

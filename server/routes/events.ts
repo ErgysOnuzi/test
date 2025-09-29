@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
     res.json(events)
   } catch (error) {
     console.error('Error fetching events:', error)
-    res.status(500).json({ error: 'Failed to fetch events' })
+    return res.status(500).json({ error: 'Failed to fetch events' })
   }
 })
 
@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const event = inMemoryStorage.getEventById(parseInt(id))
+    const event = inMemoryStorage.getEventById(parseInt(id!))
     
     if (!event) {
       return res.status(404).json({ error: 'Event not found' })
@@ -66,7 +66,7 @@ router.post('/', requireAuth, async (req, res) => {
     })
 
     console.log(`🎉 Created event: ${newEvent.title_en}`)
-    res.status(201).json(newEvent)
+    return res.status(201).json(newEvent)
   } catch (error) {
     console.error('Error creating event:', error)
     return res.status(500).json({ error: 'Failed to create event' })
@@ -86,7 +86,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     }
 
     console.log(`🎉 Updated event: ${updatedEvent.title_en}`)
-    res.json(updatedEvent)
+    return res.json(updatedEvent)
   } catch (error) {
     console.error('Error updating event:', error)
     return res.status(500).json({ error: 'Failed to update event' })
@@ -105,7 +105,7 @@ router.post('/:id/book', async (req, res) => {
     }
 
     // Get the event to check availability
-    const event = inMemoryStorage.getEventById(parseInt(id))
+    const event = inMemoryStorage.getEventById(parseInt(id!))
     if (!event) {
       return res.status(404).json({ error: 'Event not found' })
     }
@@ -136,7 +136,7 @@ router.post('/:id/book', async (req, res) => {
 
     console.log(`🎉 Event booking created: ${name} for ${guests} guests at ${event.title_en}`)
     
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       booking,
       message: 'Booking submitted successfully! Your reservation is pending confirmation by our staff. You will receive a confirmation email shortly.',
@@ -152,14 +152,14 @@ router.post('/:id/book', async (req, res) => {
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params
-    const deleted = inMemoryStorage.deleteEvent(parseInt(id))
+    const deleted = inMemoryStorage.deleteEvent(parseInt(id!))
     
     if (!deleted) {
       return res.status(404).json({ error: 'Event not found' })
     }
 
     console.log(`🎉 Deleted event ID: ${id}`)
-    res.json({ message: 'Event deleted successfully' })
+    return res.json({ message: 'Event deleted successfully' })
   } catch (error) {
     console.error('Error deleting event:', error)
     return res.status(500).json({ error: 'Failed to delete event' })
