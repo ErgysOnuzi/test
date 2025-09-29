@@ -1,11 +1,11 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Outlet, Link, useParams, useLocation } from 'react-router-dom'
 
 export default function SimpleLayout() {
   const { locale } = useParams<{ locale: string }>()
   const location = useLocation()
   const currentLocale = locale || 'de'
-  // Mobile menu state removed - new design doesn't need burger menu
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const isGerman = currentLocale === 'de'
 
@@ -24,10 +24,10 @@ export default function SimpleLayout() {
 
   const pathWithoutLocale = location.pathname.replace(`/${currentLocale}`, '') || ''
 
-  // Clean up unused mobile menu effect
-  // useEffect(() => {
-  //   setIsMenuOpen(false)
-  // }, [location.pathname])
+  // Close menu on route change
+  useEffect(() => {
+    setIsMenuOpen(false)
+  }, [location.pathname])
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -47,133 +47,129 @@ export default function SimpleLayout() {
               </Link>
             </div>
 
-            {/* Desktop Navigation - Full Menu */}
-            <nav className='hidden lg:flex xl:space-x-8 lg:space-x-6 flex-wrap' role="navigation" aria-label="Main navigation">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={`/${currentLocale}/${item.href}`}
-                  className={`text-foreground hover:text-primary transition-colors duration-200 ${
-                    pathWithoutLocale === `/${item.href}` || (item.href === '' && pathWithoutLocale === '')
-                      ? 'text-primary font-medium'
-                      : ''
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </nav>
-
-            {/* Tablet Navigation - All Items Responsive */}
-            <nav className='hidden md:flex lg:hidden space-x-2 text-sm flex-wrap' role="navigation" aria-label="Main navigation">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={`/${currentLocale}/${item.href}`}
-                  className={`whitespace-nowrap text-foreground hover:text-primary transition-colors duration-200 ${
-                    pathWithoutLocale === `/${item.href}` || (item.href === '' && pathWithoutLocale === '')
-                      ? 'text-primary font-medium'
-                      : ''
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </nav>
-
-            {/* Mobile Navigation - All Items with Horizontal Scroll */}
-            <nav className='flex md:hidden space-x-1 text-xs overflow-x-auto scrollbar-hide pb-1' role="navigation" aria-label="Main navigation">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={`/${currentLocale}/${item.href}`}
-                  className={`flex-shrink-0 px-2 py-1 rounded-md text-foreground hover:text-primary transition-colors duration-200 ${
-                    pathWithoutLocale === `/${item.href}` || (item.href === '' && pathWithoutLocale === '')
-                      ? 'text-primary font-medium bg-primary/10'
-                      : 'hover:bg-primary/5'
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </nav>
-
-            {/* Desktop CTA & Language Toggle */}
-            <div className='hidden lg:flex items-center gap-4'>
+            {/* Right Side: Language Switcher + Hamburger */}
+            <div className='flex items-center gap-4'>
+              {/* Language Toggle */}
               <div className="flex items-center gap-2">
                 <Link 
-                  to="/de" 
+                  to={`/de${pathWithoutLocale}`}
                   className={`px-2 py-1 text-sm transition-colors ${currentLocale === 'de' ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
                 >
                   DE
                 </Link>
                 <span className="text-muted-foreground">|</span>
                 <Link 
-                  to="/en" 
+                  to={`/en${pathWithoutLocale}`}
                   className={`px-2 py-1 text-sm transition-colors ${currentLocale === 'en' ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
                 >
                   EN
                 </Link>
               </div>
-              <Link to={`/${currentLocale}/reservations`}>
-                <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md font-medium transition-colors">
-                  {isGerman ? 'Reservieren' : 'Reserve'}
-                </button>
-              </Link>
-            </div>
 
-            {/* Tablet CTA & Language Toggle */}
-            <div className='hidden md:flex lg:hidden items-center gap-2'>
-              <div className="flex items-center gap-1">
-                <Link 
-                  to={`/de${pathWithoutLocale}`}
-                  className={`px-1 py-1 text-xs transition-colors ${currentLocale === 'de' ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
-                >
-                  DE
-                </Link>
-                <span className="text-muted-foreground text-xs">|</span>
-                <Link 
-                  to={`/en${pathWithoutLocale}`}
-                  className={`px-1 py-1 text-xs transition-colors ${currentLocale === 'en' ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
-                >
-                  EN
-                </Link>
-              </div>
-              <Link to={`/${currentLocale}/reservations`}>
-                <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-1 rounded text-sm font-medium transition-colors">
-                  {isGerman ? 'Reservieren' : 'Reserve'}
-                </button>
-              </Link>
-            </div>
-
-            {/* Mobile Language Toggle & Reserve CTA */}
-            <div className='md:hidden flex items-center gap-2'>
-              <div className="flex items-center gap-1">
-                <Link 
-                  to={`/de${pathWithoutLocale}`}
-                  className={`px-1 py-1 text-xs transition-colors ${currentLocale === 'de' ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
-                >
-                  DE
-                </Link>
-                <span className="text-muted-foreground text-xs">|</span>
-                <Link 
-                  to={`/en${pathWithoutLocale}`}
-                  className={`px-1 py-1 text-xs transition-colors ${currentLocale === 'en' ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
-                >
-                  EN
-                </Link>
-              </div>
-              <Link to={`/${currentLocale}/reservations`}>
-                <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-2 py-1 rounded text-xs font-medium transition-colors">
-                  {isGerman ? 'Reservieren' : 'Reserve'}
-                </button>
-              </Link>
+              {/* Hamburger Button */}
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 text-foreground hover:text-primary transition-all duration-200 rounded-md hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                aria-haspopup="menu"
+                aria-expanded={isMenuOpen}
+                role="button"
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape' && isMenuOpen) {
+                    setIsMenuOpen(false)
+                  }
+                }}
+              >
+                <div className="relative w-6 h-6 flex flex-col justify-center items-center">
+                  <span 
+                    className={`block h-0.5 w-6 bg-current transform transition-all duration-300 ${
+                      isMenuOpen ? 'rotate-45 translate-y-1.5' : 'translate-y-0'
+                    }`}
+                  />
+                  <span 
+                    className={`block h-0.5 w-6 bg-current transform transition-all duration-300 ${
+                      isMenuOpen ? 'opacity-0' : 'opacity-100 translate-y-1'
+                    }`}
+                  />
+                  <span 
+                    className={`block h-0.5 w-6 bg-current transform transition-all duration-300 ${
+                      isMenuOpen ? '-rotate-45 -translate-y-1.5' : 'translate-y-2'
+                    }`}
+                  />
+                </div>
+              </button>
             </div>
           </div>
 
-          {/* Old mobile dropdown removed - navigation now always visible above */}
+          {/* Hamburger Navigation Panel */}
+          {isMenuOpen && (
+            <>
+              {/* Backdrop Overlay */}
+              <div 
+                className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40" 
+                onClick={() => setIsMenuOpen(false)}
+                aria-hidden="true"
+              />
+              
+              {/* Navigation Panel */}
+              <div 
+                className={`absolute top-full right-0 z-50 bg-background border border-border/50 shadow-xl rounded-lg min-w-64 max-w-sm w-full sm:w-auto ${
+                  // Mobile: Full width panel
+                  'sm:max-w-sm'
+                }`}
+                role="menu"
+                aria-orientation="vertical"
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    setIsMenuOpen(false)
+                  }
+                }}
+              >
+                <div className='p-4'>
+                  <div className="grid gap-2">
+                    {navigation.map((item) => (
+                      <Link
+                        key={item.key}
+                        to={`/${currentLocale}/${item.href}`}
+                        className={`block px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
+                          pathWithoutLocale === `/${item.href}` || (item.href === '' && pathWithoutLocale === '')
+                            ? 'text-primary bg-primary/10 border border-primary/20'
+                            : 'text-foreground hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/10'
+                        }`}
+                        onClick={() => setIsMenuOpen(false)}
+                        role="menuitem"
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
+                    
+                    {/* Reservation CTA in Menu */}
+                    <div className="pt-2 mt-2 border-t border-border/50">
+                      <Link 
+                        to={`/${currentLocale}/reservations`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-3 rounded-lg font-medium transition-colors">
+                          {isGerman ? 'Tisch Reservieren' : 'Make Reservation'}
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </header>
+      
+      {/* Click outside handler for menu */}
+      {isMenuOpen && (
+        <div 
+          className="fixed inset-0 z-30" 
+          onClick={() => setIsMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
       <main className="flex-1">
         <Outlet />
