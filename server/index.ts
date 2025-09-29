@@ -153,6 +153,8 @@ function initializeServer() {
   app.use('/api/feedback', feedbackRoutes)
   app.use('/api/admin', adminRoutes)
   app.use('/api/upload', uploadRoutes)
+  app.use('/api/reviews', googleReviewsRoutes)
+  // Backward compatibility for frontend
   app.use('/api/google-reviews', googleReviewsRoutes)
 
   // Serve uploaded images with proper caching

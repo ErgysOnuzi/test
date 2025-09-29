@@ -14,7 +14,7 @@ interface SSROptions {
 }
 
 export function renderPage(options: SSROptions): string {
-  const { url, locale, menuItems = [], seoTitle, seoDescription, ogImage } = options
+  const { url, locale, menuItems = [], reviewsData, seoTitle, seoDescription, ogImage } = options
   
   // Create a query client for SSR
   const queryClient = new QueryClient({
@@ -29,6 +29,12 @@ export function renderPage(options: SSROptions): string {
   // Pre-populate the cache with menu items if provided
   if (menuItems.length > 0) {
     queryClient.setQueryData(['/api/menu'], menuItems)
+  }
+
+  // Pre-populate the cache with reviews data if provided
+  if (reviewsData) {
+    queryClient.setQueryData(['/api/reviews'], reviewsData)
+    queryClient.setQueryData(['/api/google-reviews'], reviewsData) // Backward compatibility
   }
 
   // Render the React app to string
