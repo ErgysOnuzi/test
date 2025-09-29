@@ -546,21 +546,33 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Tailwind scrollbar hiding - works with Vite */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+        `
+      }} />
       {/* Header */}
       <header className="bg-card border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16">
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-serif font-bold text-foreground">{t.adminTitle}</h1>
+              <h1 className="text-xl sm:text-2xl font-serif font-bold text-foreground">{t.adminTitle}</h1>
               {user && (
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline">
                   {t.welcome}, {(user as any).firstName || (user as any).email || 'User'}
                 </span>
               )}
             </div>
             <button
               onClick={handleLogout}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded border border-muted-foreground/20 hover:bg-muted/50"
             >
               {t.logout}
             </button>
@@ -570,28 +582,30 @@ export default function AdminPage() {
 
       {/* Navigation Tabs */}
       <div className="bg-card border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+          {/* Mobile Navigation Tabs - Horizontal Scroll */}
+          <nav className="flex overflow-x-auto space-x-1 sm:space-x-4 lg:space-x-8 scrollbar-hide py-2">
             {[
-              { id: 'menu', label: t.tabs.menu, icon: '🍝' },
-              { id: 'gallery', label: t.tabs.gallery, icon: '📸' },
-              { id: 'events', label: t.tabs.events, icon: '🎉' },
-              { id: 'bookings', label: t.tabs.bookings, icon: '🎫' },
-              { id: 'reservations', label: t.tabs.reservations, icon: '📅' },
-              { id: 'feedback', label: t.tabs.feedback, icon: '⭐' },
-              { id: 'contact', label: t.tabs.contact, icon: '📧' },
+              { id: 'menu', label: t.tabs.menu, icon: '🍝', shortLabel: isGerman ? 'Menü' : 'Menu' },
+              { id: 'gallery', label: t.tabs.gallery, icon: '📸', shortLabel: isGerman ? 'Galerie' : 'Gallery' },
+              { id: 'events', label: t.tabs.events, icon: '🎉', shortLabel: isGerman ? 'Events' : 'Events' },
+              { id: 'bookings', label: t.tabs.bookings, icon: '🎫', shortLabel: isGerman ? 'Buchungen' : 'Bookings' },
+              { id: 'reservations', label: t.tabs.reservations, icon: '📅', shortLabel: isGerman ? 'Reservierungen' : 'Reservations' },
+              { id: 'feedback', label: t.tabs.feedback, icon: '⭐', shortLabel: 'Feedback' },
+              { id: 'contact', label: t.tabs.contact, icon: '📧', shortLabel: 'Contact' },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                className={`flex-shrink-0 flex items-center space-x-1 sm:space-x-2 py-3 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors rounded-t-lg ${
                   activeTab === tab.id
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'
+                    ? 'border-primary text-primary bg-primary/5'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground hover:bg-muted/50'
                 }`}
               >
-                <span>{tab.icon}</span>
-                <span>{tab.label}</span>
+                <span className="text-sm sm:text-base">{tab.icon}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden">{tab.shortLabel}</span>
               </button>
             ))}
           </nav>
@@ -599,14 +613,14 @@ export default function AdminPage() {
       </div>
 
       {/* Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-8">
         {activeTab === 'menu' && (
           <div>
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-serif font-bold text-foreground">{t.menu.title}</h2>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">{t.menu.title}</h2>
               <button 
                 onClick={() => {setEditingItem(null); setShowMenuModal(true)}}
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm sm:text-base w-full sm:w-auto"
               >
                 {t.menu.addNew}
               </button>
@@ -652,39 +666,39 @@ export default function AdminPage() {
 
         {activeTab === 'gallery' && (
           <div>
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-serif font-bold text-foreground">{t.gallery.title}</h2>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">{t.gallery.title}</h2>
               <button 
                 onClick={() => {setEditingItem(null); setShowGalleryModal(true)}}
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm sm:text-base w-full sm:w-auto"
               >
                 {t.gallery.uploadImage}
               </button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
               {galleryImages.map((image) => (
                 <div key={image.id} className="bg-card rounded-lg border overflow-hidden hover:shadow-lg transition-shadow">
                   <img 
                     src={image.imageUrl} 
                     alt={image.title}
-                    className="w-full h-48 object-cover"
+                    className="w-full h-32 sm:h-48 object-cover"
                   />
-                  <div className="p-4">
-                    <h3 className="font-medium text-card-foreground mb-2">{image.title}</h3>
+                  <div className="p-2 sm:p-4">
+                    <h3 className="font-medium text-card-foreground mb-2 text-sm sm:text-base line-clamp-1">{image.title}</h3>
                     {image.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{image.description}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mb-3 hidden sm:block">{image.description}</p>
                     )}
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row justify-between items-center space-y-1 sm:space-y-0">
                       <button
                         onClick={() => {setEditingItem(image); setShowGalleryModal(true)}}
-                        className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
+                        className="text-xs sm:text-sm bg-blue-600 text-white px-2 sm:px-3 py-1 rounded hover:bg-blue-700 transition-colors w-full sm:w-auto"
                       >
                         {t.actions.edit}
                       </button>
                       <button
                         onClick={() => deleteGalleryImage(image.id)}
-                        className="text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors"
+                        className="text-xs sm:text-sm bg-red-600 text-white px-2 sm:px-3 py-1 rounded hover:bg-red-700 transition-colors w-full sm:w-auto"
                       >
                         {t.actions.delete}
                       </button>
@@ -698,19 +712,19 @@ export default function AdminPage() {
 
         {activeTab === 'events' && (
           <div>
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-serif font-bold text-foreground">{t.events.title}</h2>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">{t.events.title}</h2>
               <button 
                 onClick={() => {setEditingItem(null); setShowEventModal(true)}}
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm sm:text-base w-full sm:w-auto"
               >
                 {t.events.createNew}
               </button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {events.map((event) => (
-                <div key={event.id} className="bg-card rounded-lg border p-6 hover:shadow-lg transition-shadow">
+                <div key={event.id} className="bg-card rounded-lg border p-4 sm:p-6 hover:shadow-lg transition-shadow">
                   <div className="flex justify-between items-start mb-4">
                     <h3 className="font-serif font-semibold text-lg text-card-foreground">{event.title_en}</h3>
                     <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
@@ -726,16 +740,16 @@ export default function AdminPage() {
                       {event.current_attendees}/{event.max_attendees} {t.events.attendees}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center mt-4 pt-4 border-t">
+                  <div className="flex flex-col sm:flex-row justify-between items-center mt-4 pt-4 border-t space-y-2 sm:space-y-0">
                     <button
                       onClick={() => {setEditingItem(event); setShowEventModal(true)}}
-                      className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
+                      className="text-sm bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 transition-colors w-full sm:w-auto"
                     >
                       {t.actions.edit}
                     </button>
                     <button
                       onClick={() => deleteEvent(event.id)}
-                      className="text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors"
+                      className="text-sm bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 transition-colors w-full sm:w-auto"
                     >
                       {t.actions.delete}
                     </button>
@@ -748,25 +762,25 @@ export default function AdminPage() {
 
         {activeTab === 'bookings' && (
           <div>
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-serif font-bold text-foreground">{t.bookings.title}</h2>
-              <div className="text-sm text-muted-foreground">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">{t.bookings.title}</h2>
+              <div className="text-sm text-muted-foreground bg-muted/30 px-3 py-2 rounded-lg">
                 {t.bookings.totalBookings}: {eventBookings.length}
               </div>
             </div>
             
             {eventBookings.length === 0 ? (
-              <div className="text-center py-12 bg-card rounded-lg border border-dashed">
-                <div className="text-6xl mb-4">🎫</div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">{t.bookings.noBookings}</h3>
-                <p className="text-muted-foreground">{t.bookings.noBookingsDesc}</p>
+              <div className="text-center py-8 sm:py-12 bg-card rounded-lg border border-dashed">
+                <div className="text-4xl sm:text-6xl mb-4">🎫</div>
+                <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">{t.bookings.noBookings}</h3>
+                <p className="text-muted-foreground text-sm sm:text-base">{t.bookings.noBookingsDesc}</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-1 gap-4 sm:gap-6">
                 {eventBookings.map((booking) => {
                   const event = events.find(e => e.id === booking.eventId)
                   return (
-                    <div key={booking.id} className="bg-card p-6 rounded-lg border">
+                    <div key={booking.id} className="bg-card p-4 sm:p-6 rounded-lg border">
                       <div className="flex justify-between items-start mb-4">
                         <div>
                           <h3 className="text-xl font-semibold text-foreground mb-1">
@@ -792,7 +806,7 @@ export default function AdminPage() {
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                         <div>
                           <p className="font-medium text-foreground">{t.bookings.customerDetails}</p>
                           <p className="text-muted-foreground">{booking.name}</p>
@@ -818,32 +832,32 @@ export default function AdminPage() {
                       </div>
                       
                       {booking.status === 'pending' && (
-                        <div className="mt-4 flex space-x-2">
+                        <div className="mt-4 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                           <button 
                             onClick={() => updateBookingStatus(booking.id, 'confirmed')}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm w-full sm:w-auto"
                           >
                             {t.bookings.confirmBooking}
                           </button>
                           <button 
                             onClick={() => updateBookingStatus(booking.id, 'cancelled')}
-                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm w-full sm:w-auto"
                           >
                             {t.bookings.cancelBooking}
                           </button>
                         </div>
                       )}
                       {booking.status === 'confirmed' && (
-                        <div className="mt-4 flex space-x-2">
+                        <div className="mt-4 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                           <button 
                             onClick={() => updateBookingStatus(booking.id, 'cancelled')}
-                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm w-full sm:w-auto"
                           >
                             {t.bookings.cancelBooking}
                           </button>
                           <button 
                             onClick={() => deleteBooking(booking.id)}
-                            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
+                            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm w-full sm:w-auto"
                           >
                             {t.bookings.deleteBooking}
                           </button>
