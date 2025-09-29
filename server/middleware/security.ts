@@ -133,7 +133,7 @@ export const inputSanitization = [
   // Remove any keys that contain prohibited characters
   mongoSanitize({
     replaceWith: '_',
-    onSanitize: ({ req, key }) => {
+    onSanitize: ({ req, key }: { req: any, key: string }) => {
       console.warn(`⚠️  Sanitized potentially malicious input: ${key} from ${req.ip}`)
     }
   }),
@@ -148,7 +148,7 @@ export const inputSanitization = [
 export const compressionMiddleware = compression({
   level: 6, // Compression level (0-9)
   threshold: 1024, // Only compress files over 1KB
-  filter: (req, res) => {
+  filter: (req: any, res: any) => {
     if (req.headers['x-no-compression']) {
       return false
     }
@@ -184,10 +184,9 @@ export const securityLogger = (req: Request, res: Response, next: NextFunction) 
     })
   }
   
-  // Add response time header
+  // Log response time (cannot set headers after response is sent)
   res.on('finish', () => {
     const duration = Date.now() - startTime
-    res.setHeader('X-Response-Time', `${duration}ms`)
     
     // Log slow requests
     if (duration > 5000) {

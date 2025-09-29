@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { adminAuth } from '@/lib/adminAuth'
+import { useTranslation } from '../i18n/translations'
+import AdminOverview from '../components/admin/AdminOverview'
 
 interface MenuItem {
   id: number
@@ -20,164 +22,33 @@ interface GalleryImage {
 
 export default function AdminPage() {
   const { locale } = useParams<{ locale: string }>()
-  const currentLocale = locale || 'de'
+  const currentLocale = (locale || 'de') as 'de' | 'en'
   const isGerman = currentLocale === 'de'
+  const { t } = useTranslation(currentLocale)
   
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
-  const [activeTab, setActiveTab] = useState<'menu' | 'gallery' | 'events' | 'bookings' | 'reservations' | 'feedback' | 'contact'>('menu')
+  const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'gallery' | 'events' | 'bookings' | 'reservations' | 'feedback' | 'contact'>('overview')
   
-  // Translations
-  const t = {
-    // Header
-    adminTitle: isGerman ? 'La Cantina Admin' : 'La Cantina Admin',
-    welcome: isGerman ? 'Willkommen' : 'Welcome',
-    logout: isGerman ? 'Abmelden' : 'Log Out',
-    loading: isGerman ? 'Lädt...' : 'Loading...',
-    accessRequired: isGerman ? 'Zugang erforderlich' : 'Access Required',
-    pleaseLogin: isGerman ? 'Bitte melden Sie sich an, um auf das Admin-Panel zuzugreifen.' : 'Please log in to access the admin panel.',
-    login: isGerman ? 'Anmelden' : 'Log In',
-    
-    // Navigation tabs
-    tabs: {
-      menu: isGerman ? 'Speisekarten-Verwaltung' : 'Menu Management',
-      gallery: isGerman ? 'Galerie-Verwaltung' : 'Gallery Management', 
-      events: isGerman ? 'Veranstaltungs-Verwaltung' : 'Events Management',
-      bookings: isGerman ? 'Veranstaltungsanmeldungen' : 'Event Bookings',
-      reservations: isGerman ? 'Reservierungen' : 'Reservations',
-      feedback: isGerman ? 'Bewertungen & Feedback' : 'Feedback & Reviews',
-      contact: isGerman ? 'Kontaktnachrichten' : 'Contact Messages'
-    },
-    
-    // Common actions
-    actions: {
-      edit: isGerman ? 'Bearbeiten' : 'Edit',
-      delete: isGerman ? 'Löschen' : 'Delete',
-      create: isGerman ? 'Erstellen' : 'Create',
-      update: isGerman ? 'Aktualisieren' : 'Update',
-      cancel: isGerman ? 'Abbrechen' : 'Cancel',
-      confirm: isGerman ? 'Bestätigen' : 'Confirm',
-      approve: isGerman ? 'Genehmigen' : 'Approve',
-      reply: isGerman ? 'Antworten' : 'Reply',
-      save: isGerman ? 'Speichern' : 'Save'
-    },
-    
-    // Menu management
-    menu: {
-      title: isGerman ? 'Speisekarten-Artikel' : 'Menu Items',
-      addNew: isGerman ? 'Neuen Artikel hinzufügen' : 'Add New Item',
-      editItem: isGerman ? 'Artikel bearbeiten' : 'Edit Menu Item',
-      addItem: isGerman ? 'Neuen Artikel hinzufügen' : 'Add New Menu Item',
-      itemTitle: isGerman ? 'Artikel-Titel' : 'Item Title',
-      description: isGerman ? 'Beschreibung' : 'Description',
-      price: isGerman ? 'Preis' : 'Price',
-      category: isGerman ? 'Kategorie' : 'Category',
-      selectCategory: isGerman ? 'Kategorie auswählen' : 'Select Category',
-      available: isGerman ? 'Verfügbar' : 'Available',
-      unavailable: isGerman ? 'Nicht verfügbar' : 'Unavailable'
-    },
-    
-    // Gallery management
-    gallery: {
-      title: isGerman ? 'Galerie-Bilder' : 'Gallery Images',
-      uploadImage: isGerman ? 'Bild hochladen' : 'Upload Image',
-      editImage: isGerman ? 'Bild bearbeiten' : 'Edit Gallery Image',
-      uploadNew: isGerman ? 'Neues Bild hochladen' : 'Upload New Image',
-      imageTitle: isGerman ? 'Bild-Titel' : 'Image Title',
-      imageUrl: isGerman ? 'Bild-URL' : 'Image URL',
-      descriptionOptional: isGerman ? 'Beschreibung (optional)' : 'Description (optional)',
-      upload: isGerman ? 'Hochladen' : 'Upload'
-    },
-    
-    // Events management
-    events: {
-      title: isGerman ? 'Veranstaltungs-Verwaltung' : 'Events Management',
-      createNew: isGerman ? 'Neue Veranstaltung erstellen' : 'Create New Event',
-      editEvent: isGerman ? 'Veranstaltung bearbeiten' : 'Edit Event',
-      createNewEvent: isGerman ? 'Neue Veranstaltung erstellen' : 'Create New Event',
-      titleEnglish: isGerman ? 'Veranstaltungstitel (Englisch)' : 'Event Title (English)',
-      titleGerman: isGerman ? 'Veranstaltungstitel (Deutsch)' : 'Event Title (German)',
-      descriptionEnglish: isGerman ? 'Beschreibung (Englisch)' : 'Description (English)',
-      descriptionGerman: isGerman ? 'Beschreibung (Deutsch)' : 'Description (German)',
-      pricePerPerson: isGerman ? 'Preis pro Person' : 'Price per person',
-      maxAttendees: isGerman ? 'Max. Teilnehmer' : 'Max attendees',
-      attendees: isGerman ? 'Teilnehmer' : 'attendees'
-    },
-    
-    // Bookings management
-    bookings: {
-      title: isGerman ? 'Veranstaltungsanmeldungen-Verwaltung' : 'Event Bookings Management',
-      totalBookings: isGerman ? 'Anmeldungen gesamt' : 'Total Bookings',
-      noBookings: isGerman ? 'Noch keine Veranstaltungsanmeldungen' : 'No Event Bookings Yet',
-      noBookingsDesc: isGerman ? 'Veranstaltungsanmeldungen erscheinen hier, sobald Kunden sich für Veranstaltungen registrieren.' : 'Event bookings will appear here once customers start registering for events.',
-      booking: isGerman ? 'Anmeldung' : 'Booking',
-      customerDetails: isGerman ? 'Kundendaten' : 'Customer Details',
-      bookingDetails: isGerman ? 'Anmeldungsdetails' : 'Booking Details',
-      guests: isGerman ? 'Gäste' : 'Guests',
-      event: isGerman ? 'Veranstaltung' : 'Event',
-      perPerson: isGerman ? 'Pro Person' : 'Per person',
-      specialRequests: isGerman ? 'Besondere Wünsche' : 'Special Requests',
-      none: isGerman ? 'Keine' : 'None',
-      confirmBooking: isGerman ? 'Anmeldung bestätigen' : 'Confirm Booking',
-      cancelBooking: isGerman ? 'Anmeldung stornieren' : 'Cancel Booking',
-      deleteBooking: isGerman ? 'Anmeldung löschen' : 'Delete Booking',
-      confirmed: isGerman ? 'Bestätigt' : 'Confirmed',
-      pending: isGerman ? 'Ausstehend' : 'Pending',
-      cancelled: isGerman ? 'Storniert' : 'Cancelled'
-    },
-    
-    // Reservations management
-    reservations: {
-      title: isGerman ? 'Reservierungen-Verwaltung' : 'Reservations Management',
-      allStatus: isGerman ? 'Alle Status' : 'All Status',
-      guest: isGerman ? 'Gast' : 'Guest',
-      dateTime: isGerman ? 'Datum & Zeit' : 'Date & Time',
-      guests: isGerman ? 'Gäste' : 'Guests',
-      status: isGerman ? 'Status' : 'Status',
-      actions: isGerman ? 'Aktionen' : 'Actions'
-    },
-    
-    // Feedback management
-    feedback: {
-      title: isGerman ? 'Bewertungen & Feedback' : 'Feedback & Reviews',
-      allRatings: isGerman ? 'Alle Bewertungen' : 'All Ratings',
-      stars: isGerman ? 'Sterne' : 'Stars',
-      suggestions: isGerman ? 'Vorschläge' : 'Suggestions'
-    },
-    
-    // Contact management
-    contact: {
-      title: isGerman ? 'Kontaktnachrichten' : 'Contact Messages',
-      allMessages: isGerman ? 'Alle Nachrichten' : 'All Messages',
-      unread: isGerman ? 'Ungelesen' : 'Unread',
-      replied: isGerman ? 'Beantwortet' : 'Replied',
-      new: isGerman ? 'Neu' : 'New',
-      markReplied: isGerman ? 'Als beantwortet markieren' : 'Mark Replied',
-      subject: isGerman ? 'Betreff' : 'Subject',
-      message: isGerman ? 'Nachricht' : 'Message'
-    },
-    
-    // Success/Error messages
-    messages: {
-      deleteConfirm: isGerman ? 'Sind Sie sicher, dass Sie dies löschen möchten?' : 'Are you sure you want to delete this?',
-      deleteEventConfirm: isGerman ? 'Sind Sie sicher, dass Sie diese Veranstaltung löschen möchten? Alle zugehörigen Anmeldungen werden ebenfalls gelöscht.' : 'Are you sure you want to delete this event? All associated bookings will also be deleted.',
-      deleteBookingConfirm: isGerman ? 'Sind Sie sicher, dass Sie diese Anmeldung löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.' : 'Are you sure you want to delete this booking? This action cannot be undone.',
-      itemCreated: isGerman ? 'Artikel erfolgreich erstellt!' : 'Menu item created successfully!',
-      itemUpdated: isGerman ? 'Artikel erfolgreich aktualisiert!' : 'Menu item updated successfully!',
-      imageUploaded: isGerman ? 'Bild erfolgreich hochgeladen!' : 'Gallery image uploaded successfully!',
-      imageUpdated: isGerman ? 'Bild erfolgreich aktualisiert!' : 'Gallery image updated successfully!',
-      eventCreated: isGerman ? 'Veranstaltung erfolgreich erstellt!' : 'Event created successfully!',
-      eventUpdated: isGerman ? 'Veranstaltung erfolgreich aktualisiert!' : 'Event updated successfully!',
-      reservationDeleted: isGerman ? 'Reservierung erfolgreich gelöscht!' : 'Reservation deleted successfully!',
-      reservationStatusUpdated: isGerman ? 'Reservierungsstatus erfolgreich aktualisiert!' : 'Reservation status updated successfully!',
-      feedbackDeleted: isGerman ? 'Feedback erfolgreich gelöscht!' : 'Feedback deleted successfully!',
-      feedbackApproved: isGerman ? 'Feedback erfolgreich genehmigt!' : 'Feedback approved successfully!',
-      messageDeleted: isGerman ? 'Nachricht erfolgreich gelöscht!' : 'Message deleted successfully!',
-      messageMarkedReplied: isGerman ? 'Nachricht als beantwortet markiert!' : 'Message marked as replied!',
-      error: isGerman ? 'Fehler' : 'Error',
-      unknownError: isGerman ? 'Unbekannter Fehler' : 'Unknown error'
+  // Simple fallback translations for admin page
+  const adminT = (key: string): string => {
+    const adminTranslations: Record<string, Record<string, string>> = {
+      'admin.title': { de: 'La Cantina Admin', en: 'La Cantina Admin' },
+      'admin.welcome': { de: 'Willkommen', en: 'Welcome' },
+      'admin.logout': { de: 'Abmelden', en: 'Log Out' },
+      'admin.loading': { de: 'Lädt...', en: 'Loading...' },
+      'admin.accessRequired': { de: 'Zugang erforderlich', en: 'Access Required' },
+      'admin.pleaseLogin': { de: 'Bitte melden Sie sich an, um auf das Admin-Panel zuzugreifen.', en: 'Please log in to access the admin panel.' },
+      'admin.login': { de: 'Anmelden', en: 'Log In' },
+      'menu.title': { de: 'Speisekarten-Artikel', en: 'Menu Items' },
+      'menu.addNew': { de: 'Neuen Artikel hinzufügen', en: 'Add New Item' },
+      'menu.available': { de: 'Verfügbar', en: 'Available' },
+      'menu.unavailable': { de: 'Nicht verfügbar', en: 'Unavailable' },
+      'actions.edit': { de: 'Bearbeiten', en: 'Edit' },
+      'actions.delete': { de: 'Löschen', en: 'Delete' }
     }
+    return adminTranslations[key]?.[currentLocale] || key
   }
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([])
@@ -563,10 +434,10 @@ export default function AdminPage() {
         <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16">
             <div className="flex items-center space-x-4">
-              <h1 className="text-xl sm:text-2xl font-serif font-bold text-foreground">{t.adminTitle}</h1>
+              <h1 className="text-xl sm:text-2xl font-serif font-bold text-foreground">{adminT('admin.title')}</h1>
               {user && (
                 <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline">
-                  {t.welcome}, {(user as any).firstName || (user as any).email || 'User'}
+                  {adminT('admin.welcome')}, {(user as any).firstName || (user as any).email || 'User'}
                 </span>
               )}
             </div>
@@ -574,7 +445,7 @@ export default function AdminPage() {
               onClick={handleLogout}
               className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded border border-muted-foreground/20 hover:bg-muted/50"
             >
-              {t.logout}
+              {adminT('admin.logout')}
             </button>
           </div>
         </div>
@@ -586,13 +457,14 @@ export default function AdminPage() {
           {/* Mobile Navigation Tabs - Horizontal Scroll */}
           <nav className="flex overflow-x-auto space-x-1 sm:space-x-4 lg:space-x-8 scrollbar-hide py-2">
             {[
-              { id: 'menu', label: t.tabs.menu, icon: '🍝', shortLabel: isGerman ? 'Menü' : 'Menu' },
-              { id: 'gallery', label: t.tabs.gallery, icon: '📸', shortLabel: isGerman ? 'Galerie' : 'Gallery' },
-              { id: 'events', label: t.tabs.events, icon: '🎉', shortLabel: isGerman ? 'Events' : 'Events' },
-              { id: 'bookings', label: t.tabs.bookings, icon: '🎫', shortLabel: isGerman ? 'Buchungen' : 'Bookings' },
-              { id: 'reservations', label: t.tabs.reservations, icon: '📅', shortLabel: isGerman ? 'Reservierungen' : 'Reservations' },
-              { id: 'feedback', label: t.tabs.feedback, icon: '⭐', shortLabel: 'Feedback' },
-              { id: 'contact', label: t.tabs.contact, icon: '📧', shortLabel: 'Contact' },
+              { id: 'overview', label: isGerman ? 'Übersicht' : 'Overview', icon: '📊', shortLabel: isGerman ? 'Übersicht' : 'Overview' },
+              { id: 'menu', label: isGerman ? 'Speisekarte' : 'Menu', icon: '🍝', shortLabel: isGerman ? 'Menü' : 'Menu' },
+              { id: 'gallery', label: isGerman ? 'Galerie' : 'Gallery', icon: '📸', shortLabel: isGerman ? 'Galerie' : 'Gallery' },
+              { id: 'events', label: isGerman ? 'Veranstaltungen' : 'Events', icon: '🎉', shortLabel: isGerman ? 'Events' : 'Events' },
+              { id: 'bookings', label: isGerman ? 'Buchungen' : 'Bookings', icon: '🎫', shortLabel: isGerman ? 'Buchungen' : 'Bookings' },
+              { id: 'reservations', label: isGerman ? 'Reservierungen' : 'Reservations', icon: '📅', shortLabel: isGerman ? 'Reservierungen' : 'Reservations' },
+              { id: 'feedback', label: isGerman ? 'Feedback' : 'Feedback', icon: '⭐', shortLabel: 'Feedback' },
+              { id: 'contact', label: isGerman ? 'Kontakt' : 'Contact', icon: '📧', shortLabel: 'Contact' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -614,15 +486,28 @@ export default function AdminPage() {
 
       {/* Content */}
       <main className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-8">
+        {activeTab === 'overview' && (
+          <AdminOverview
+            locale={currentLocale}
+            menuItems={menuItems}
+            galleryImages={galleryImages}
+            events={events}
+            eventBookings={eventBookings}
+            reservations={reservations}
+            feedbackList={feedbackList}
+            contactMessages={contactMessages}
+          />
+        )}
+
         {activeTab === 'menu' && (
           <div>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
-              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">{t.menu.title}</h2>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">{adminT('menu.title')}</h2>
               <button 
                 onClick={() => {setEditingItem(null); setShowMenuModal(true)}}
                 className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm sm:text-base w-full sm:w-auto"
               >
-                {t.menu.addNew}
+                {adminT('menu.addNew')}
               </button>
             </div>
             
@@ -634,7 +519,7 @@ export default function AdminPage() {
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       item.isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
-                      {item.isAvailable ? t.menu.available : t.menu.unavailable}
+                      {item.isAvailable ? adminT('menu.available') : adminT('menu.unavailable')}
                     </span>
                   </div>
                   <p className="text-muted-foreground text-sm mb-4 line-clamp-2">{item.description}</p>
@@ -649,13 +534,13 @@ export default function AdminPage() {
                       onClick={() => {setEditingItem(item); setShowMenuModal(true)}}
                       className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
                     >
-                      {t.actions.edit}
+                      {adminT('actions.edit')}
                     </button>
                     <button
                       onClick={() => deleteMenuItem(item.id)}
                       className="text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors"
                     >
-                      {t.actions.delete}
+                      {adminT('actions.delete')}
                     </button>
                   </div>
                 </div>
