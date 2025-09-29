@@ -77,3 +77,9 @@ replit.nix
 *.ai
 *.woff
 *.woff2
+
+# Temporary debugging files
+create-github-repo.js
+github-client.js
+browser_cookies.txt
+auth_cookies.txt
