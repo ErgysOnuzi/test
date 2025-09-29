@@ -21,6 +21,27 @@ config()
 const app = express()
 const PORT = process.env.PORT || (process.env.NODE_ENV === 'production' ? 5000 : 3001)
 
+// Advanced logging middleware for production monitoring
+app.use((req, res, next) => {
+  const start = Date.now()
+  const { method, url, ip } = req
+  
+  res.on('finish', () => {
+    const duration = Date.now() - start
+    const { statusCode } = res
+    const logLevel = statusCode >= 400 ? 'ERROR' : 'INFO'
+    
+    console.log(`[${logLevel}] ${method} ${url} ${statusCode} - ${duration}ms - ${ip}`)
+    
+    // Performance monitoring - log slow requests
+    if (duration > 1000) {
+      console.warn(`⚠️ SLOW REQUEST: ${method} ${url} took ${duration}ms`)
+    }
+  })
+  
+  next()
+})
+
 // Production security middleware
 if (process.env.NODE_ENV === 'production') {
   app.set('trust proxy', 1)
@@ -93,13 +114,22 @@ function initializeServer() {
   //   }
   // });
 
-  // Health check
+  // Enhanced health check for load balancer
   app.get('/health', (req, res) => {
-    res.json({ 
-      status: 'ok', 
+    const healthData = {
+      status: 'ok',
       timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development'
-    })
+      environment: process.env.NODE_ENV || 'development',
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      pid: process.pid
+    }
+    res.json(healthData)
+  })
+
+  // Readiness probe for Kubernetes-style orchestration
+  app.get('/ready', (req, res) => {
+    res.status(200).send('Ready')
   })
 
   // API Routes
@@ -141,10 +171,29 @@ function initializeServer() {
     })
   })
 
-  app.listen(PORT, () => {
+  // Graceful shutdown handling for scaling
+  const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Express server running on port ${PORT}`)
     console.log(`📊 Health check: http://localhost:${PORT}/health`)
     console.log(`🌐 Frontend: Serving React app from ${distPath}`)
+    console.log(`⚡ Ready for autoscaling with graceful shutdown`)
+  })
+
+  // Graceful shutdown for load balancer health checks
+  process.on('SIGTERM', () => {
+    console.log('🔄 SIGTERM received, shutting down gracefully...')
+    server.close(() => {
+      console.log('✅ Process terminated')
+      process.exit(0)
+    })
+  })
+
+  process.on('SIGINT', () => {
+    console.log('🔄 SIGINT received, shutting down gracefully...')
+    server.close(() => {
+      console.log('✅ Process terminated')
+      process.exit(0)
+    })
   })
 }
 
