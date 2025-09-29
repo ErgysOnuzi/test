@@ -24,10 +24,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Restaurant Website"
+args = "Next.js Restaurant"
 
 [[workflows.workflow]]
-name = "Restaurant Website"
+name = "Next.js Restaurant"
 author = "agent"
 
 [[workflows.workflow.tasks]]
@@ -45,10 +45,6 @@ externalPort = 3001
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 5001
-externalPort = 3000
 
 [[ports]]
 localPort = 34943
