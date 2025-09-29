@@ -17,6 +17,7 @@ import eventRoutes from './routes/events'
 import contactRoutes from './routes/contact'
 import feedbackRoutes from './routes/feedback'
 import adminRoutes from './routes/admin'
+import uploadRoutes from './routes/upload'
 import googleReviewsRoutes from './routes/google-reviews'
 
 // Load environment variables
@@ -151,7 +152,19 @@ function initializeServer() {
   app.use('/api/contact', contactRoutes)
   app.use('/api/feedback', feedbackRoutes)
   app.use('/api/admin', adminRoutes)
+  app.use('/api/upload', uploadRoutes)
   app.use('/api/google-reviews', googleReviewsRoutes)
+
+  // Serve uploaded images with proper caching
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), {
+    maxAge: process.env.NODE_ENV === 'production' ? '7d' : '1h',
+    etag: true,
+    lastModified: true,
+    setHeaders: (res, path) => {
+      res.set('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400')
+      res.set('Cross-Origin-Resource-Policy', 'cross-origin')
+    }
+  }))
 
   // Static file serving comes AFTER SSR routes and API routes
   app.use(express.static(distPath, {

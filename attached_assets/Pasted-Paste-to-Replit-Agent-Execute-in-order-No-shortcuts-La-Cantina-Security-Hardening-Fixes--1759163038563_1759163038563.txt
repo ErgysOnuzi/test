@@ -1,0 +1,221 @@
+Paste to Replit Agent. Execute in order. No shortcuts.
+
+⸻
+
+La Cantina — Security Hardening + Fixes (Both Domains)
+
+Targets:
+	•	https://la-cantina.replit.app
+	•	https://servepos.online
+
+0) Secrets hygiene and rotation
+	•	Rotate immediately: SESSION_SECRET, JWT_SECRET, PGPASSWORD, GOOGLE_API_KEY. Replace any value ever pasted in chat or repo history.
+	•	Remove secrets from repo history, logs, and client bundles. Verify by grepping the codebase for each key pattern.
+	•	Enforce runtime-only secrets via Replit Secrets. Fail fast on missing envs.
+
+Acceptance
+	•	Boot refuses to start if any required secret is missing.
+	•	npm run build generates no bundles containing secrets (grep dist/.next for keys).
+
+1) TLS + HSTS + canonical
+	•	Force HTTPS with 301. Add HSTS: Strict-Transport-Security: max-age=31536000; includeSubDomains; preload.
+	•	Pick a primary domain and 301 all others to it. Add <link rel="canonical" …>.
+
+Acceptance
+	•	curl -I http://<domain> → 301 to https://<primary>/.
+	•	curl -I https://<primary>/ includes HSTS.
+
+2) Security headers (helmet)
+
+Add Helmet (or Next.js middleware) with strict policies:
+
+Content-Security-Policy:
+  default-src 'self';
+  base-uri 'self';
+  frame-ancestors 'none';
+  object-src 'none';
+  script-src 'self' 'nonce-<dynamic>';  # no 'unsafe-inline'
+  style-src 'self' 'nonce-<dynamic>';
+  img-src 'self' data: https:;
+  font-src 'self' https: data:;
+  connect-src 'self' https://*.googleapis.com https://maps.googleapis.com;
+  frame-src 'none';
+  upgrade-insecure-requests
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=()
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp
+
+Use per-request nonces for script-src and style-src. Remove inline scripts/styles or attach the nonce.
+
+Acceptance
+	•	curl -I https://<primary>/ shows all headers above.
+	•	Page renders fully with CSP enforced (no CSP violations in console).
+
+3) CORS
+	•	Lock API CORS to exact allowed origins (https://<primary> only). No "*" anywhere. Block credentials by default.
+
+Acceptance
+	•	Preflight to /api/* returns Access-Control-Allow-Origin: https://<primary> only.
+
+4) Authentication + session safety
+	•	Admin login at /api/auth/login checks ADMIN_PASSWORD. Issue JWT:
+	•	httpOnly, secure, SameSite=Lax, 1h expiry, aud=admin, iss=<domain>, alg=HS256.
+	•	Refresh token rotation; revoke on logout. Store a token version in DB to invalidate older tokens.
+	•	Middleware on all admin CRUD verifies JWT claims, token version, expiry.
+	•	Prevent session fixation: always issue a new cookie on login.
+
+Acceptance
+	•	Access to any /api/(menu|gallery|events|reservations|feedback|contacts) without a valid cookie returns 401.
+	•	JWT includes aud and iss, rejects mismatches.
+
+5) Input validation + sanitization
+	•	Validate every request body, params, and query with Zod (strict mode: unknownKeys: 'strict').
+	•	Normalize and encode output. Server-side HTML escapes for any user content.
+	•	Strip/escape dangerous HTML from reviews/feedback using a safe allowlist (e.g., DOMPurify on server).
+
+Acceptance
+	•	Fuzz invalid payloads → 400 with a compact error list. No stack traces.
+
+6) SQL injection and ORM discipline
+	•	Use Drizzle parameterized queries only. Ban raw SQL in code review.
+	•	Turn on Postgres log_statements='ddl' and audit suspicious patterns in app logs.
+	•	Use least-privilege DB user: no CREATE EXTENSION, no superuser. Restrict to required schemas/tables.
+
+Acceptance
+	•	Attempted ' OR '1'='1 in inputs does not alter query behavior.
+	•	DB role shows limited grants only.
+
+7) Rate limiting + brute-force protection
+	•	Global rate limit: 100 req/5min per IP.
+	•	Tighter for auth and mutation routes: 10 req/5min per IP + username lockout for 10 min after 5 failed attempts.
+	•	Add small, invisible proof-of-work or reCAPTCHA v3 on login after 3 failures.
+
+Acceptance
+	•	Rapid-fire login attempts start returning 429 with Retry-After.
+	•	Mutations beyond threshold return 429.
+
+8) CSRF protection
+	•	All state-changing routes require:
+	•	SameSite Lax + CSRF token (double-submit or Origin check).
+	•	Verify Origin/Referer header matches primary domain.
+	•	Admin panel includes CSRF token on each POST/PUT/DELETE.
+
+Acceptance
+	•	Cross-site POST without token or with wrong Origin returns 403.
+
+9) File upload hardening
+	•	Accept only image/jpeg, image/png, image/webp.
+	•	Enforce 2MB max and pixel dimension limits.
+	•	Use magic-byte sniffing; reject mismatched MIME/extension.
+	•	Convert via sharp to WebP, strip EXIF, sanitize filename to random UUID path.
+	•	Store on S3-compatible storage; serve via separate subdomain if available (reduces XSS risk). No SVG uploads.
+
+Acceptance
+	•	Uploading non-image or >2MB returns 400.
+	•	Stored objects are WebP, no EXIF, random names.
+
+10) SSRF and outbound requests
+	•	For Google Places:
+	•	Allowlist only https://maps.googleapis.com and https://places.googleapis.com.
+	•	Disallow user-supplied URLs for fetches anywhere.
+	•	Set short timeouts, retries with backoff, and size caps.
+
+Acceptance
+	•	Attempt to force server to fetch http://169.254.169.254 returns 400.
+
+11) DoS/Resource limits
+	•	Set server timeouts: header timeout 10s, keep-alive 5s, body size limit 1MB on JSON, 10MB on multipart.
+	•	Enable gzip/Brotli.
+	•	Cache GET responses with Cache-Control: public, max-age=300, stale-while-revalidate=60.
+	•	Debounce heavy endpoints and ensure N+1 queries are eliminated.
+
+Acceptance
+	•	Large request bodies return 413.
+	•	Repeated GETs hit cache (observe headers).
+
+12) Dependency and build integrity
+	•	Pin exact versions. Commit a clean package-lock.json.
+	•	npm audit --production must be clean or explicitly justified.
+	•	Remove dev-only dependencies from production image.
+	•	Disable Next.js telemetry. Set NODE_ENV=production.
+
+Acceptance
+	•	npm ci --only=production installs cleanly.
+	•	npm audit --production shows 0 critical/high issues.
+
+13) Error handling + logging + tracing
+	•	Replace stack traces in responses with generic 5xx + traceId.
+	•	Log JSON lines: time, level, reqId, userId(optional), method, path, status, latencyMs.
+	•	Add /api/version returning git SHA and build time.
+
+Acceptance
+	•	Triggered server error returns 500 with traceId.
+	•	Logs show structured JSON containing the traceId.
+
+14) Google Places reviews
+	•	Server endpoint /api/reviews uses GOOGLE_PLACES_API_KEY + GOOGLE_PLACE_ID.
+	•	Response cache 6h. Strip PII except author_name if provided by API terms. Sanitize text.
+	•	Render reviews on server so they exist in HTML (SEO).
+
+Acceptance
+	•	curl -s /api/reviews returns sanitized fields.
+	•	Reviews appear in initial HTML (view-source).
+
+15) i18n correctness
+	•	Centralize translations (/i18n/en.json, /i18n/de.json). No hardcoded UI strings.
+	•	Middleware enforces locale prefix and loads the correct namespace.
+
+Acceptance
+	•	Switching /en ↔ /de yields zero mixed-language artifacts.
+
+16) Admin audit trail
+	•	Log who did what: create/update/delete with timestamp, IP, user agent.
+	•	Store in an admin_audit table. No PII beyond what’s necessary.
+
+Acceptance
+	•	Performing a CRUD op inserts an immutable audit record.
+
+17) WAF/CDN edge
+	•	Put Cloudflare in front. Enable:
+	•	DDoS protection (auto).
+	•	Bot Fight Mode.
+	•	Rate limiting at edge for /api/*.
+	•	Cache static aggressively; bypass cache for auth.
+	•	Turn on DNSSEC.
+
+Acceptance
+	•	Cloudflare analytics show caching and rate-limit events on abuse.
+
+18) security.txt
+	•	Add /.well-known/security.txt with contact method and policy URL.
+
+Acceptance
+	•	GET /.well-known/security.txt returns file.
+
+⸻
+
+Final verification script
+
+primary="https://la-cantina.replit.app"
+secondary="https://servepos.online"
+
+for host in "$primary" "$secondary"; do
+  echo "== $host HEADERS =="
+  curl -sI "$host" | sed -n '1,999p' | egrep -i "strict-transport-security|content-security-policy|x-frame-options|x-content-type-options|referrer-policy|permissions-policy|cross-origin|content-type|cache-control"
+  echo "== HEALTH =="
+  curl -s "$host/api/health" || true
+  echo "== READY =="
+  curl -s "$host/api/ready" || true
+  echo "== VERSION =="
+  curl -s "$host/api/version" || true
+  echo "== ROBOTS =="
+  curl -s "$host/robots.txt" | head -n 5 || true
+  echo "== REVIEWS =="
+  curl -s "$host/api/reviews" | head -n 20 || true
+done
+
+All checks above must pass.

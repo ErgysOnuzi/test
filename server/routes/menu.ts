@@ -1,5 +1,7 @@
 import express from 'express'
-import { inMemoryStorage } from '../inMemoryStorage'
+import { db } from '../db'
+import { menuItems } from '../../shared/schema'
+import { eq, sql } from 'drizzle-orm'
 
 const router = express.Router()
 
@@ -9,7 +11,7 @@ import { requireAuth, requireAuthWithCSRF } from './admin'
 // GET /api/menu - Get all menu items
 router.get('/', async (req, res) => {
   try {
-    const items = inMemoryStorage.getAllMenuItems()
+    const items = await db.select().from(menuItems)
     console.log(`📋 Fetched ${items.length} menu items`)
     res.json(items)
   } catch (error) {
@@ -22,7 +24,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const item = inMemoryStorage.getMenuItemById(parseInt(id))
+    const [item] = await db.select().from(menuItems).where(eq(menuItems.id, parseInt(id)))
     
     if (!item) {
       return res.status(404).json({ error: 'Menu item not found' })
@@ -58,7 +60,7 @@ router.post('/', requireAuthWithCSRF, async (req, res) => {
       return res.status(400).json({ error: 'Title, price, and category are required' })
     }
 
-    const newItem = inMemoryStorage.createMenuItem({
+    const [newItem] = await db.insert(menuItems).values({
       title,
       titleDe: titleDe || title,
       titleEn: titleEn || title,
@@ -72,7 +74,7 @@ router.post('/', requireAuthWithCSRF, async (req, res) => {
       isAvailable,
       allergens,
       imageUrl
-    })
+    }).returning()
 
     console.log(`📋 Created menu item: ${newItem.title}`)
     res.status(201).json(newItem)
@@ -88,7 +90,17 @@ router.put('/:id', requireAuthWithCSRF, async (req, res) => {
     const { id } = req.params
     const updateData = req.body
 
-    const updatedItem = inMemoryStorage.updateMenuItem(parseInt(id), updateData)
+    // Set updatedAt timestamp
+    const dataWithTimestamp = {
+      ...updateData,
+      updatedAt: new Date()
+    }
+
+    const [updatedItem] = await db
+      .update(menuItems)
+      .set(dataWithTimestamp)
+      .where(eq(menuItems.id, parseInt(id)))
+      .returning()
     
     if (!updatedItem) {
       return res.status(404).json({ error: 'Menu item not found' })
@@ -106,9 +118,12 @@ router.put('/:id', requireAuthWithCSRF, async (req, res) => {
 router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
     const { id } = req.params
-    const deleted = inMemoryStorage.deleteMenuItem(parseInt(id))
+    const [deletedItem] = await db
+      .delete(menuItems)
+      .where(eq(menuItems.id, parseInt(id)))
+      .returning()
     
-    if (!deleted) {
+    if (!deletedItem) {
       return res.status(404).json({ error: 'Menu item not found' })
     }
 

@@ -1,0 +1,226 @@
+Paste to Replit Agent. Execute in order. No omissions.
+
+⸻
+
+La Cantina — End-to-End Functional Audit (Both Domains)
+
+Targets:
+	•	https://la-cantina.replit.app
+	•	https://servepos.online
+
+Artifacts to return after each section:
+	•	exact commands run
+	•	screenshots of UI steps
+	•	server logs (JSON)
+	•	DB diffs (before/after row counts)
+	•	timings (ms) and headers
+
+0) Preflight
+	•	Confirm Node 20+, NODE_ENV=production, secrets loaded.
+	•	curl -sS <host>/api/health must return {"status":"ok"}.
+	•	curl -sS <host>/api/ready must return 200 and include db:"ok" (and storage:"ok" when storage wired).
+
+1) Routing & Navigation (public)
+	•	Hit /, /en, /de, /menu, /gallery, /events, /contact, /reservations.
+	•	Validate no 404s, no client-only empty shells; HTML contains content server-rendered (view-source has menu items, headings).
+	•	Check 404 page at /this-should-404 shows custom 404.
+	•	Check 500 page by forcing a controlled error route (temporary).
+
+Acceptance
+	•	All routes SSR; links work; back/forward maintain correct locale.
+
+2) Locale/i18n correctness
+	•	Toggle /en ↔ /de for every page.
+	•	No mixed language strings; dates/numbers formatted per locale.
+	•	Persist locale across navigation and page reload.
+	•	Query param ?lang= does not override path incorrectly.
+
+Acceptance
+	•	Zero hardcoded strings outside translation files.
+
+3) SEO & discoverability
+	•	/robots.txt exists and lists sitemap.
+	•	/sitemap.xml includes all public routes.
+	•	<head> has title/description/OG/Twitter tags per page; canonical set to primary domain.
+	•	Social card preview fetch (e.g., curl for og:image status 200).
+
+Commands
+
+curl -sS <host>/robots.txt
+curl -sS <host>/sitemap.xml | xmllint --noout - 2>/dev/null || true
+curl -sSI <host> | egrep -i 'content-type|cache-control'
+
+4) Menu (public)
+	•	Menu list renders with categories, prices, images, alt text.
+	•	Prices show correct currency; long names wrap; special chars render.
+	•	Filtering/search (if present) returns expected items; empty state visible.
+	•	Images lazy-load; srcset/dimensions set; no layout shift.
+
+Acceptance
+	•	No broken images; no console errors; CLS low.
+
+5) Gallery (public)
+	•	Thumbnails grid; click opens modal/lightbox; keyboard esc closes.
+	•	Pagination or infinite scroll works; empty state defined.
+
+Acceptance
+	•	All images have alt text; taboo formats blocked (no SVG).
+
+6) Events & Bookings (public)
+	•	Events list shows upcoming/past separation; detail page renders.
+	•	Book button opens booking form; validation on required fields; success path stores record; confirmation UI shown; duplicate submission prevented.
+
+DB Verification
+	•	events and event_bookings row counts increment/decrement as expected.
+
+7) Table Reservations (public)
+	•	Form validation: date/time in opening hours, party size bounds, phone/email format.
+	•	Successful reservation writes DB; user sees success state; blocked duplicate within configurable window.
+
+DB Verification
+	•	reservations gains row; statuses default to pending.
+
+8) Contact & Feedback (public)
+	•	Submit contact form and feedback/review form with valid/invalid data.
+	•	Spam controls present (rate limit, CSRF token); error messages specific.
+
+Acceptance
+	•	4xx with JSON body on invalid; 200 on valid; DB rows reflect.
+
+9) Google Reviews (server-side)
+	•	/api/reviews uses GOOGLE_PLACES_API_KEY + GOOGLE_PLACE_ID.
+	•	Response cached 6h; fields sanitized (author_name, rating, text, time).
+	•	Reviews rendered into SSR HTML on the page.
+
+Commands
+
+time curl -sS <host>/api/reviews | head
+
+	•	Second call noticeably faster or shows cache header.
+
+10) Instagram embeds (if enabled)
+	•	oEmbed server-side for configured post URLs; no client-side CORS failures.
+	•	Cache 24h; graceful fallback if a post is removed.
+
+11) Admin Authentication
+	•	/admin redirects to login when unauthenticated.
+	•	Login with ADMIN_PASSWORD issues httpOnly, secure, SameSite=Lax JWT cookie.
+	•	Refresh flow rotates token; logout clears cookie.
+
+Negative
+	•	Wrong password → lockout after threshold; 429 returned; logs show attempt count.
+
+12) Admin — Menu CRUD
+	•	Create menu item with image (jpeg/png/webp ≤2MB). Verify:
+	•	server rejects oversized/malformed MIME
+	•	stored image converted to WebP, EXIF stripped
+	•	Edit name/price/category/image.
+	•	Delete item; image object deleted from storage.
+
+DB/Storage
+	•	menu row added/updated/deleted as expected.
+	•	Storage object count changes accordingly.
+
+13) Admin — Gallery CRUD
+	•	Upload image with alt; verify validations; delete removes DB row and object.
+
+14) Admin — Events CRUD + Booking lifecycle
+	•	Create event (with cover), edit fields, delete.
+	•	Create booking tied to event; update status (confirmed/cancelled); delete booking; delete event with existing bookings should be blocked or cascade per spec (confirm behavior).
+
+15) Admin — Reservations lifecycle
+	•	List view filters by date/status; update status; add internal note; delete.
+	•	Attempt invalid state transitions blocked with 400.
+
+16) Admin — Feedback & Contacts
+	•	Paginated list; delete single/multi; confirm CSRF enforced; 401 when no auth.
+
+17) Data integrity & constraints
+	•	Verify Drizzle schema:
+	•	UUID PKs; FKs with ON DELETE SET NULL or RESTRICT per entity.
+	•	Non-nullables enforced; sane defaults.
+	•	Attempt to insert invalid foreign keys → DB rejects.
+
+Commands
+	•	Run targeted migration test; show drizzle-kit migration status output.
+
+18) File upload pipeline
+	•	Magic-byte sniff; deny SVG; cap dimensions; WebP conversion; random filenames table/uuid-hash.webp.
+	•	Serving URLs over HTTPS; Cache-Control set.
+
+19) Caching & performance
+	•	Static assets: Cache-Control: public, max-age=31536000, immutable.
+	•	API GETs: public, max-age=300, stale-while-revalidate=60.
+	•	Brotli/gzip enabled.
+	•	Lighthouse desktop: Perf ≥85, SEO ≥90; Mobile Perf ≥70 as baseline.
+	•	Time-to-first-byte < 400ms P95 for SSR pages.
+
+Commands
+
+curl -sI <host>/_next/static/... # or built assets
+
+20) Accessibility (a11y)
+	•	Run axe or Lighthouse a11y: contrast, labels, focus order, skip-links.
+	•	Keyboard-only navigation across modals/forms.
+
+Acceptance
+	•	No critical a11y violations.
+
+21) Security validations (functional level)
+	•	CSRF: cross-site POST to any mutation returns 403.
+	•	CORS: preflight only allows primary origin; credentials disabled unless needed.
+	•	Rate limiting: auth + mutations 10 req/5m/IP; global 100 req/5m/IP → 429 beyond.
+	•	AuthZ: all /api/* mutations 401/403 when no/invalid JWT.
+	•	Input validation: Zod strict; unknown keys rejected; length/format bounds enforced.
+	•	Error responses: generic; include traceId only; stack traces never in response.
+
+22) Headers & policies
+	•	HSTS, CSP (nonce-based), X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, COOP/COEP/CORP applied.
+	•	Verify no CSP violations in browser console.
+
+Commands
+
+curl -sI <host> | egrep -i "strict-transport-security|content-security-policy|x-frame-options|x-content-type-options|referrer-policy|permissions-policy|cross-origin"
+
+23) Observability
+	•	JSON log lines with time, level, reqId, userId, method, path, status, latencyMs.
+	•	/api/version returns {git, builtAt}.
+	•	Error path prints user-facing traceId; server logs correlate that id.
+
+24) Backups & recovery (DB + storage)
+	•	Confirm Neon automated backups; document restore steps.
+	•	Storage: list bucket lifecycle rules; confirm ability to restore deleted images (soft-delete window if configured).
+
+25) Deployment/Domain checks
+	•	One canonical domain; others 301.
+	•	TLS valid chain; DNSSEC enabled (if using Cloudflare).
+	•	HTTP→HTTPS 301; www/apex normalize.
+
+26) Automated smoke script
+
+Run and paste outputs:
+
+set -e
+for host in https://la-cantina.replit.app https://servepos.online; do
+  echo "== $host HEADERS =="
+  curl -sI "$host" | sed -n '1,200p'
+  echo "== HEALTH =="; curl -s "$host/api/health" || true
+  echo "== READY ==";  curl -s "$host/api/ready" || true
+  echo "== VERSION ==";curl -s "$host/api/version" || true
+  echo "== ROBOTS =="; curl -s "$host/robots.txt" | head -n 10 || true
+  echo "== SITEMAP =="; curl -s "$host/sitemap.xml" | head -n 20 || true
+done
+
+27) Manual abuse tests
+	•	Rapid login attempts → lockout + 429.
+	•	Payloads with HTML/JS in text fields → stored/returned safely escaped.
+	•	Oversized JSON/multipart bodies → 413 with error JSON.
+	•	Attempt SSRF (blocked); attempt path traversal on uploads (blocked).
+	•	SQLi strings in every input do not change behavior.
+
+Return a single audit report per host with:
+	•	pass/fail per check
+	•	bug list with severity (Critical/Major/Minor)
+	•	reproduction steps
+	•	logs, screenshots, DB before/after counts
+	•	fixes applied or patch diff references

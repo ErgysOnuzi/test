@@ -1,17 +1,66 @@
 import express from 'express'
-import { inMemoryStorage } from '../inMemoryStorage'
+import { db } from '../db'
+import { events, eventBookings } from '../../shared/schema'
+import { eq, desc } from 'drizzle-orm'
 
 const router = express.Router()
 
 // Import admin authentication middleware
 import { requireAuth, requireAuthWithCSRF } from './admin'
 
+// Helper function to convert database event to API format
+function eventToApiFormat(dbEvent: any) {
+  return {
+    id: dbEvent.id,
+    title_de: dbEvent.titleDe || '',
+    title_en: dbEvent.titleEn || '',
+    description_de: dbEvent.descriptionDe || '',
+    description_en: dbEvent.descriptionEn || '',
+    event_date: dbEvent.date || '',
+    price: dbEvent.price || 0,
+    max_attendees: dbEvent.capacity || 10,
+    current_attendees: dbEvent.currentBookings || 0,
+    created_at: dbEvent.createdAt?.toISOString() || new Date().toISOString()
+  }
+}
+
+// Helper function to convert API format to database format
+function apiToDbFormat(apiData: any) {
+  return {
+    titleDe: apiData.title_de,
+    titleEn: apiData.title_en,
+    descriptionDe: apiData.description_de || '',
+    descriptionEn: apiData.description_en || '',
+    date: apiData.event_date,
+    price: apiData.price,
+    capacity: apiData.max_attendees,
+    currentBookings: apiData.current_attendees || 0
+  }
+}
+
+// Helper function to convert database booking to API format
+function bookingToApiFormat(dbBooking: any) {
+  return {
+    id: dbBooking.id,
+    eventId: dbBooking.eventId,
+    name: dbBooking.name,
+    email: dbBooking.email,
+    phone: dbBooking.phone,
+    guests: dbBooking.guests,
+    specialRequests: dbBooking.specialRequests || '',
+    totalAmount: dbBooking.totalPrice,
+    status: dbBooking.status,
+    created_at: dbBooking.createdAt?.toISOString() || new Date().toISOString()
+  }
+}
+
 // GET /api/events - Get all events
 router.get('/', async (req, res) => {
   try {
-    const events = inMemoryStorage.getAllEvents()
-    console.log(`🎉 Fetched ${events.length} events`)
-    return res.json(events)
+    const dbEvents = await db.select().from(events).orderBy(desc(events.createdAt))
+    const apiEvents = dbEvents.map(eventToApiFormat)
+    console.log(`🎉 Fetched ${apiEvents.length} events`)
+    return res.json(apiEvents)
   } catch (error) {
     console.error('Error fetching events:', error)
     return res.status(500).json({ error: 'Failed to fetch events' })
@@ -22,13 +71,14 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const event = inMemoryStorage.getEventById(parseInt(id!))
+    const [dbEvent] = await db.select().from(events).where(eq(events.id, parseInt(id!)))
     
-    if (!event) {
+    if (!dbEvent) {
       return res.status(404).json({ error: 'Event not found' })
     }
 
-    return res.json(event)
+    const apiEvent = eventToApiFormat(dbEvent)
+    return res.json(apiEvent)
   } catch (error) {
     console.error('Error fetching event:', error)
     return res.status(500).json({ error: 'Failed to fetch event' })
@@ -53,7 +103,7 @@ router.post('/', requireAuthWithCSRF, async (req, res) => {
       return res.status(400).json({ error: 'German title, English title, and event date are required' })
     }
 
-    const newEvent = inMemoryStorage.createEvent({
+    const dbData = apiToDbFormat({
       title_de,
       title_en,
       description_de,
@@ -61,9 +111,11 @@ router.post('/', requireAuthWithCSRF, async (req, res) => {
       event_date,
       price: parseFloat(price),
       max_attendees: parseInt(max_attendees),
-      current_attendees: parseInt(current_attendees),
-      created_at: new Date().toISOString()
+      current_attendees: parseInt(current_attendees)
     })
+
+    const [newDbEvent] = await db.insert(events).values(dbData).returning()
+    const newEvent = eventToApiFormat(newDbEvent)
 
     console.log(`🎉 Created event: ${newEvent.title_en}`)
     return res.status(201).json(newEvent)
@@ -79,12 +131,27 @@ router.put('/:id', requireAuthWithCSRF, async (req, res) => {
     const { id } = req.params
     const updateData = req.body
 
-    const updatedEvent = inMemoryStorage.updateEvent(parseInt(id!), updateData)
-    
-    if (!updatedEvent) {
+    // Check if event exists
+    const [existingEvent] = await db.select().from(events).where(eq(events.id, parseInt(id!)))
+    if (!existingEvent) {
       return res.status(404).json({ error: 'Event not found' })
     }
 
+    // Convert API format to database format for updating
+    const dbUpdateData = apiToDbFormat(updateData)
+    
+    // Remove undefined values
+    const cleanedData = Object.fromEntries(
+      Object.entries(dbUpdateData).filter(([, value]) => value !== undefined)
+    )
+
+    const [updatedDbEvent] = await db
+      .update(events)
+      .set({ ...cleanedData, updatedAt: new Date() })
+      .where(eq(events.id, parseInt(id!)))
+      .returning()
+
+    const updatedEvent = eventToApiFormat(updatedDbEvent)
     console.log(`🎉 Updated event: ${updatedEvent.title_en}`)
     return res.json(updatedEvent)
   } catch (error) {
@@ -105,13 +172,13 @@ router.post('/:id/book', async (req, res) => {
     }
 
     // Get the event to check availability
-    const event = inMemoryStorage.getEventById(parseInt(id!))
+    const [event] = await db.select().from(events).where(eq(events.id, parseInt(id!)))
     if (!event) {
       return res.status(404).json({ error: 'Event not found' })
     }
 
     // Check availability
-    const availableSpots = event.max_attendees - event.current_attendees
+    const availableSpots = (event.capacity || 10) - (event.currentBookings || 0)
     if (guests > availableSpots) {
       return res.status(400).json({ 
         error: `Only ${availableSpots} spots available, but ${guests} requested` 
@@ -119,22 +186,22 @@ router.post('/:id/book', async (req, res) => {
     }
 
     // Create booking as PENDING - admin will confirm
-    const booking = inMemoryStorage.createEventBooking({
+    const [newDbBooking] = await db.insert(eventBookings).values({
       eventId: parseInt(id),
       name,
       email,
       phone,
       guests: parseInt(guests),
       specialRequests: specialRequests || '',
-      totalAmount: event.price * parseInt(guests),
-      status: 'pending',
-      created_at: new Date().toISOString()
-    })
+      totalPrice: (event.price || 0) * parseInt(guests),
+      status: 'pending'
+    }).returning()
 
     // DO NOT update event capacity yet - wait for admin confirmation
     // Capacity will be updated when admin confirms the booking
 
-    console.log(`🎉 Event booking created: ${name} for ${guests} guests at ${event.title_en}`)
+    const booking = bookingToApiFormat(newDbBooking)
+    console.log(`🎉 Event booking created: ${name} for ${guests} guests at ${event.titleEn}`)
     
     return res.status(201).json({
       success: true,
@@ -152,11 +219,18 @@ router.post('/:id/book', async (req, res) => {
 router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
     const { id } = req.params
-    const deleted = inMemoryStorage.deleteEvent(parseInt(id!))
     
-    if (!deleted) {
+    // Check if event exists
+    const [existingEvent] = await db.select().from(events).where(eq(events.id, parseInt(id!)))
+    if (!existingEvent) {
       return res.status(404).json({ error: 'Event not found' })
     }
+
+    // Delete related bookings first
+    await db.delete(eventBookings).where(eq(eventBookings.eventId, parseInt(id!)))
+    
+    // Delete the event
+    await db.delete(events).where(eq(events.id, parseInt(id!)))
 
     console.log(`🎉 Deleted event ID: ${id}`)
     return res.json({ message: 'Event deleted successfully' })

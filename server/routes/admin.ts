@@ -1,6 +1,9 @@
 import express from 'express'
 import { createHash, randomBytes } from 'crypto'
 import jwt from 'jsonwebtoken'
+import { db } from '../db'
+import { events, eventBookings } from '../../shared/schema'
+import { eq, desc } from 'drizzle-orm'
 
 const router = express.Router()
 
@@ -41,6 +44,22 @@ const generateCSRFToken = (): { token: string; secret: string } => {
   const hmac = createHash('sha256').update(secret + nonce).digest('hex')
   const token = `${nonce}.${hmac}`
   return { token, secret }
+}
+
+// Helper function to convert database booking to API format
+function bookingToApiFormat(dbBooking: any) {
+  return {
+    id: dbBooking.id,
+    eventId: dbBooking.eventId,
+    name: dbBooking.name,
+    email: dbBooking.email,
+    phone: dbBooking.phone,
+    guests: dbBooking.guests,
+    specialRequests: dbBooking.specialRequests || '',
+    totalAmount: dbBooking.totalPrice, // API uses totalAmount, DB uses totalPrice
+    status: dbBooking.status,
+    created_at: dbBooking.createdAt?.toISOString() || new Date().toISOString()
+  }
 }
 
 // CSRF token validation middleware
@@ -324,10 +343,10 @@ router.get('/csrf', async (req, res) => {
 // GET /api/admin/bookings - Get all event bookings (admin only)
 router.get('/bookings', requireAuth, async (req, res) => {
   try {
-    const { inMemoryStorage } = await import('../inMemoryStorage')
-    const bookings = inMemoryStorage.getAllEventBookings()
-    console.log(`📊 Admin fetched ${bookings.length} event bookings`)
-    res.json(bookings)
+    const dbBookings = await db.select().from(eventBookings).orderBy(desc(eventBookings.createdAt))
+    const apiBookings = dbBookings.map(bookingToApiFormat)
+    console.log(`📊 Admin fetched ${apiBookings.length} event bookings`)
+    res.json(apiBookings)
   } catch (error) {
     console.error('Error fetching bookings:', error)
     res.status(500).json({ error: 'Failed to fetch bookings' })
@@ -344,8 +363,8 @@ router.patch('/bookings/:id/status', requireAuthWithCSRF, async (req, res) => {
       return res.status(400).json({ error: 'Invalid status. Must be confirmed, cancelled, or pending' })
     }
 
-    const { inMemoryStorage } = await import('../inMemoryStorage')
-    const booking = inMemoryStorage.getEventBookingById(parseInt(id))
+    // Get the booking from database
+    const [booking] = await db.select().from(eventBookings).where(eq(eventBookings.id, parseInt(id)))
     
     if (!booking) {
       return res.status(404).json({ error: 'Booking not found' })
@@ -353,45 +372,62 @@ router.patch('/bookings/:id/status', requireAuthWithCSRF, async (req, res) => {
 
     const previousStatus = booking.status
     
-    // Update booking status
-    const updatedBooking = inMemoryStorage.updateEventBooking(parseInt(id), { status })
+    // Get the related event
+    const [event] = await db.select().from(events).where(eq(events.id, booking.eventId))
+    if (!event) {
+      return res.status(404).json({ error: 'Associated event not found' })
+    }
+
+    let capacityChange = 0
     
-    if (!updatedBooking) {
+    // Calculate capacity change based on status transition
+    if (previousStatus === 'confirmed' && status === 'cancelled') {
+      // Freeing up spots
+      capacityChange = -booking.guests
+    } else if ((previousStatus === 'cancelled' || previousStatus === 'pending') && status === 'confirmed') {
+      // CRITICAL: Check capacity before confirming
+      const availableSpots = (event.capacity || 10) - (event.currentBookings || 0)
+      if (booking.guests > availableSpots) {
+        return res.status(400).json({ 
+          error: `Cannot confirm booking: Only ${availableSpots} spots available, but ${booking.guests} requested` 
+        })
+      }
+      // Taking up spots
+      capacityChange = booking.guests
+    } else if (previousStatus === 'pending' && status === 'cancelled') {
+      // Cancelling pending booking - no capacity change needed (wasn't counted)
+      capacityChange = 0
+    }
+
+    // Update booking status
+    const [updatedDbBooking] = await db
+      .update(eventBookings)
+      .set({ 
+        status, 
+        updatedAt: new Date() 
+      })
+      .where(eq(eventBookings.id, parseInt(id)))
+      .returning()
+    
+    if (!updatedDbBooking) {
       return res.status(500).json({ error: 'Failed to update booking' })
     }
 
-    // Handle capacity adjustments when status changes
-    const event = inMemoryStorage.getEventById(booking.eventId)
-    if (event) {
-      let capacityChange = 0
-      
-      // Calculate capacity change based on status transition
-      if (previousStatus === 'confirmed' && status === 'cancelled') {
-        // Freeing up spots
-        capacityChange = -booking.guests
-      } else if ((previousStatus === 'cancelled' || previousStatus === 'pending') && status === 'confirmed') {
-        // CRITICAL: Check capacity before confirming
-        const availableSpots = event.max_attendees - event.current_attendees
-        if (booking.guests > availableSpots) {
-          return res.status(400).json({ 
-            error: `Cannot confirm booking: Only ${availableSpots} spots available, but ${booking.guests} requested` 
-          })
-        }
-        // Taking up spots
-        capacityChange = booking.guests
-      } else if (previousStatus === 'pending' && status === 'cancelled') {
-        // Cancelling pending booking - no capacity change needed (wasn't counted)
-        capacityChange = 0
-      }
-      
-      if (capacityChange !== 0) {
-        const newAttendeeCount = Math.max(0, event.current_attendees + capacityChange)
-        inMemoryStorage.updateEvent(booking.eventId, { 
-          current_attendees: newAttendeeCount 
+    // Update event capacity if needed
+    if (capacityChange !== 0) {
+      const newAttendeeCount = Math.max(0, (event.currentBookings || 0) + capacityChange)
+      await db
+        .update(events)
+        .set({ 
+          currentBookings: newAttendeeCount,
+          updatedAt: new Date() 
         })
-        console.log(`📊 Updated event ${booking.eventId} capacity: ${capacityChange > 0 ? '+' : ''}${capacityChange} guests (${event.current_attendees} → ${newAttendeeCount})`)
-      }
+        .where(eq(events.id, booking.eventId))
+      
+      console.log(`📊 Updated event ${booking.eventId} capacity: ${capacityChange > 0 ? '+' : ''}${capacityChange} guests (${event.currentBookings || 0} → ${newAttendeeCount})`)
     }
+
+    const updatedBooking = bookingToApiFormat(updatedDbBooking)
 
     console.log(`📝 Admin updated booking ${id}: ${previousStatus} → ${status}`)
     res.json({
@@ -409,30 +445,32 @@ router.patch('/bookings/:id/status', requireAuthWithCSRF, async (req, res) => {
 router.delete('/bookings/:id', requireAuthWithCSRF, async (req, res) => {
   try {
     const { id } = req.params
-    const { inMemoryStorage } = await import('../inMemoryStorage')
     
-    const booking = inMemoryStorage.getEventBookingById(parseInt(id))
+    // Get the booking from database
+    const [booking] = await db.select().from(eventBookings).where(eq(eventBookings.id, parseInt(id)))
     if (!booking) {
       return res.status(404).json({ error: 'Booking not found' })
     }
 
     // Adjust event capacity if booking was confirmed
     if (booking.status === 'confirmed') {
-      const event = inMemoryStorage.getEventById(booking.eventId)
+      const [event] = await db.select().from(events).where(eq(events.id, booking.eventId))
       if (event) {
-        const newAttendeeCount = Math.max(0, event.current_attendees - booking.guests)
-        inMemoryStorage.updateEvent(booking.eventId, { 
-          current_attendees: newAttendeeCount 
-        })
-        console.log(`📊 Freed ${booking.guests} spots from event ${booking.eventId} (${event.current_attendees} → ${newAttendeeCount})`)
+        const newAttendeeCount = Math.max(0, (event.currentBookings || 0) - booking.guests)
+        await db
+          .update(events)
+          .set({ 
+            currentBookings: newAttendeeCount,
+            updatedAt: new Date() 
+          })
+          .where(eq(events.id, booking.eventId))
+        
+        console.log(`📊 Freed ${booking.guests} spots from event ${booking.eventId} (${event.currentBookings || 0} → ${newAttendeeCount})`)
       }
     }
 
-    // Delete the booking
-    const deleted = inMemoryStorage.deleteEventBooking(parseInt(id))
-    if (!deleted) {
-      return res.status(500).json({ error: 'Failed to delete booking' })
-    }
+    // Delete the booking from database
+    await db.delete(eventBookings).where(eq(eventBookings.id, parseInt(id)))
 
     console.log(`🗑️ Admin deleted booking ${id} for ${booking.name}`)
     res.json({
