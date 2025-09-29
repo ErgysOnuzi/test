@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
   try {
     const events = inMemoryStorage.getAllEvents()
     console.log(`🎉 Fetched ${events.length} events`)
-    res.json(events)
+    return res.json(events)
   } catch (error) {
     console.error('Error fetching events:', error)
     return res.status(500).json({ error: 'Failed to fetch events' })
@@ -28,7 +28,7 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Event not found' })
     }
 
-    res.json(event)
+    return res.json(event)
   } catch (error) {
     console.error('Error fetching event:', error)
     return res.status(500).json({ error: 'Failed to fetch event' })
@@ -79,7 +79,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     const { id } = req.params
     const updateData = req.body
 
-    const updatedEvent = inMemoryStorage.updateEvent(parseInt(id), updateData)
+    const updatedEvent = inMemoryStorage.updateEvent(parseInt(id!), updateData)
     
     if (!updatedEvent) {
       return res.status(404).json({ error: 'Event not found' })

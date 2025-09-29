@@ -48,7 +48,7 @@ const getPostData = (url: string) => {
 
 export default function InstagramPage() {
   const [showAll, setShowAll] = useState(false)
-  const [selectedView, setSelectedView] = useState<'feed' | 'gallery'>('feed')
+  const [selectedView, setSelectedView] = useState<'feed' | 'gallery'>('gallery')
   
   const postsToShow = showAll ? IG_URLS : IG_URLS.slice(0, 6)
 

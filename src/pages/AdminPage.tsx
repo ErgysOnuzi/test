@@ -29,6 +29,10 @@ export default function AdminPage() {
   const [feedbackList, setFeedbackList] = useState<any[]>([])
   const [contactMessages, setContactMessages] = useState<any[]>([])
   const [eventBookings, setEventBookings] = useState<any[]>([])
+  const [showMenuModal, setShowMenuModal] = useState(false)
+  const [showGalleryModal, setShowGalleryModal] = useState(false)
+  const [showEventModal, setShowEventModal] = useState(false)
+  const [editingItem, setEditingItem] = useState<any>(null)
 
   // Check authentication using our new cookie-based system
   useEffect(() => {
@@ -293,7 +297,10 @@ export default function AdminPage() {
           <div>
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-3xl font-serif font-bold text-foreground">Menu Items</h2>
-              <button className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+              <button 
+                onClick={() => {setEditingItem(null); setShowMenuModal(true)}}
+                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+              >
                 Add New Item
               </button>
             </div>
@@ -316,6 +323,20 @@ export default function AdminPage() {
                       {item.category}
                     </span>
                   </div>
+                  <div className="flex justify-between items-center mt-4 pt-4 border-t">
+                    <button
+                      onClick={() => {setEditingItem(item); setShowMenuModal(true)}}
+                      className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deleteMenuItem(item.id)}
+                      className="text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -326,7 +347,10 @@ export default function AdminPage() {
           <div>
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-3xl font-serif font-bold text-foreground">Gallery Images</h2>
-              <button className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+              <button 
+                onClick={() => {setEditingItem(null); setShowGalleryModal(true)}}
+                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+              >
                 Upload Image
               </button>
             </div>
@@ -342,8 +366,22 @@ export default function AdminPage() {
                   <div className="p-4">
                     <h3 className="font-medium text-card-foreground mb-2">{image.title}</h3>
                     {image.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">{image.description}</p>
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{image.description}</p>
                     )}
+                    <div className="flex justify-between items-center">
+                      <button
+                        onClick={() => {setEditingItem(image); setShowGalleryModal(true)}}
+                        className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteGalleryImage(image.id)}
+                        className="text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -355,7 +393,10 @@ export default function AdminPage() {
           <div>
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-3xl font-serif font-bold text-foreground">Events Management</h2>
-              <button className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+              <button 
+                onClick={() => {setEditingItem(null); setShowEventModal(true)}}
+                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+              >
                 Create New Event
               </button>
             </div>
@@ -377,6 +418,20 @@ export default function AdminPage() {
                     <span className="text-muted-foreground">
                       {event.current_attendees}/{event.max_attendees} attendees
                     </span>
+                  </div>
+                  <div className="flex justify-between items-center mt-4 pt-4 border-t">
+                    <button
+                      onClick={() => {setEditingItem(event); setShowEventModal(true)}}
+                      className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deleteEvent(event.id)}
+                      className="text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               ))}
