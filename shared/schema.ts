@@ -116,6 +116,7 @@ export const contactMessages = pgTable('contact_messages', {
   message: text('message').notNull(),
   status: text('status').default('new'), // new, read, replied, archived
   priority: text('priority').default('normal'), // low, normal, high
+  reply: text('reply'), // Admin reply to the message
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
