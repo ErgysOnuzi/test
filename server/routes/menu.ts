@@ -3,6 +3,9 @@ import { inMemoryStorage } from '../inMemoryStorage'
 
 const router = express.Router()
 
+// Import admin authentication middleware
+import { requireAuth } from './admin'
+
 // GET /api/menu - Get all menu items
 router.get('/', async (req, res) => {
   try {
@@ -33,7 +36,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // POST /api/menu - Create new menu item
-router.post('/', async (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   try {
     const {
       title,
@@ -80,7 +83,7 @@ router.post('/', async (req, res) => {
 })
 
 // PUT /api/menu/:id - Update menu item
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params
     const updateData = req.body
@@ -100,7 +103,7 @@ router.put('/:id', async (req, res) => {
 })
 
 // DELETE /api/menu/:id - Delete menu item
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params
     const deleted = inMemoryStorage.deleteMenuItem(parseInt(id))

@@ -45,13 +45,26 @@ interface Event {
   created_at: string
 }
 
+interface Feedback {
+  id: number
+  name: string
+  email: string
+  rating: number
+  experience: string
+  suggestions: string
+  approved: boolean
+  created_at: string
+}
+
 class InMemoryStorage {
   private menuItems: MenuItem[] = []
   private galleryItems: GalleryItem[] = []
   private events: Event[] = []
+  private feedback: Feedback[] = []
   private nextMenuId = 1
   private nextGalleryId = 1
   private nextEventId = 1
+  private nextFeedbackId = 1
 
   constructor() {
     this.initializeData()
@@ -348,6 +361,40 @@ class InMemoryStorage {
     if (index === -1) return false
     
     this.events.splice(index, 1)
+    return true
+  }
+
+  // Feedback operations
+  getAllFeedback(): Feedback[] {
+    return this.feedback
+  }
+
+  getFeedbackById(id: number): Feedback | undefined {
+    return this.feedback.find(feedback => feedback.id === id)
+  }
+
+  createFeedback(data: Omit<Feedback, 'id'>): Feedback {
+    const newFeedback: Feedback = {
+      id: this.nextFeedbackId++,
+      ...data
+    }
+    this.feedback.push(newFeedback)
+    return newFeedback
+  }
+
+  updateFeedback(id: number, data: Partial<Feedback>): Feedback | null {
+    const index = this.feedback.findIndex(feedback => feedback.id === id)
+    if (index === -1) return null
+    
+    this.feedback[index] = { ...this.feedback[index], ...data, id }
+    return this.feedback[index]
+  }
+
+  deleteFeedback(id: number): boolean {
+    const index = this.feedback.findIndex(feedback => feedback.id === id)
+    if (index === -1) return false
+    
+    this.feedback.splice(index, 1)
     return true
   }
 }

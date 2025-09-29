@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useAuth } from '@/hooks/useAuth'
+import { adminAuth } from '@/lib/adminAuth'
 
 interface MenuItem {
   id: number
@@ -18,28 +18,64 @@ interface GalleryImage {
 }
 
 export default function AdminPage() {
-  const { user, isAuthenticated, isLoading } = useAuth()
-  const [activeTab, setActiveTab] = useState<'menu' | 'gallery' | 'reservations'>('menu')
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [user, setUser] = useState<any>(null)
+  const [activeTab, setActiveTab] = useState<'menu' | 'gallery' | 'events' | 'reservations' | 'feedback' | 'contact'>('menu')
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([])
+  const [events, setEvents] = useState<any[]>([])
+  const [reservations, setReservations] = useState<any[]>([])
+  const [feedbackList, setFeedbackList] = useState<any[]>([])
+  const [contactMessages, setContactMessages] = useState<any[]>([])
 
-  // Handle authentication redirect more gracefully
+  // Check authentication using our new cookie-based system
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      // Use a more gentle redirect approach
-      setTimeout(() => {
-        window.location.href = "/api/login"
-      }, 1000)
-      return
+    const checkAuth = async () => {
+      try {
+        const authenticated = await adminAuth.checkAuth()
+        if (authenticated) {
+          // Get user info from session endpoint  
+          const response = await fetch('/api/admin/session', {
+            credentials: 'include'
+          })
+          if (response.ok) {
+            const data = await response.json()
+            setUser(data.user)
+            setIsAuthenticated(true)
+          } else {
+            setIsAuthenticated(false)
+          }
+        } else {
+          setIsAuthenticated(false)
+        }
+      } catch (error) {
+        console.error('Auth check error:', error)
+        setIsAuthenticated(false)
+      } finally {
+        setIsLoading(false)
+      }
     }
-  }, [isAuthenticated, isLoading])
+
+    checkAuth()
+  }, [])
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchMenuItems()
       fetchGalleryImages()
+      fetchEvents()
+      fetchReservations()
+      fetchFeedback()
+      fetchContactMessages()
     }
   }, [isAuthenticated])
+
+  // Handle logout
+  const handleLogout = async () => {
+    await adminAuth.logout()
+    window.location.href = '/de/admin/login'
+  }
 
   const fetchMenuItems = async () => {
     try {
@@ -58,6 +94,46 @@ export default function AdminPage() {
       setGalleryImages(data)
     } catch (error) {
       console.error('Failed to fetch gallery images:', error)
+    }
+  }
+
+  const fetchEvents = async () => {
+    try {
+      const response = await fetch('/api/events')
+      const data = await response.json()
+      setEvents(data)
+    } catch (error) {
+      console.error('Failed to fetch events:', error)
+    }
+  }
+
+  const fetchReservations = async () => {
+    try {
+      const response = await fetch('/api/reservations')
+      const data = await response.json()
+      setReservations(data)
+    } catch (error) {
+      console.error('Failed to fetch reservations:', error)
+    }
+  }
+
+  const fetchFeedback = async () => {
+    try {
+      const response = await fetch('/api/feedback')
+      const data = await response.json()
+      setFeedbackList(data)
+    } catch (error) {
+      console.error('Failed to fetch feedback:', error)
+    }
+  }
+
+  const fetchContactMessages = async () => {
+    try {
+      const response = await fetch('/api/contact')
+      const data = await response.json()
+      setContactMessages(data)
+    } catch (error) {
+      console.error('Failed to fetch contact messages:', error)
     }
   }
 
@@ -103,12 +179,12 @@ export default function AdminPage() {
                 </span>
               )}
             </div>
-            <a
-              href="/api/logout"
+            <button
+              onClick={handleLogout}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Log Out
-            </a>
+            </button>
           </div>
         </div>
       </header>
@@ -120,7 +196,10 @@ export default function AdminPage() {
             {[
               { id: 'menu', label: 'Menu Management', icon: '🍝' },
               { id: 'gallery', label: 'Gallery Management', icon: '📸' },
+              { id: 'events', label: 'Events Management', icon: '🎉' },
               { id: 'reservations', label: 'Reservations', icon: '📅' },
+              { id: 'feedback', label: 'Feedback & Reviews', icon: '⭐' },
+              { id: 'contact', label: 'Contact Messages', icon: '📧' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -203,11 +282,207 @@ export default function AdminPage() {
           </div>
         )}
 
+        {activeTab === 'events' && (
+          <div>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl font-serif font-bold text-foreground">Events Management</h2>
+              <button className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+                Create New Event
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {events.slice(0, 12).map((event) => (
+                <div key={event.id} className="bg-card rounded-lg border p-6 hover:shadow-lg transition-shadow">
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="font-serif font-semibold text-lg text-card-foreground">{event.title_en}</h3>
+                    <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                      €{event.price}
+                    </span>
+                  </div>
+                  <p className="text-muted-foreground text-sm mb-4 line-clamp-2">{event.description_en}</p>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-primary font-medium">
+                      {new Date(event.event_date).toLocaleDateString()}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {event.current_attendees}/{event.max_attendees} attendees
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {activeTab === 'reservations' && (
           <div>
-            <h2 className="text-3xl font-serif font-bold text-foreground mb-8">Reservations</h2>
-            <div className="bg-card rounded-lg border p-8 text-center">
-              <p className="text-muted-foreground">Reservation management coming soon...</p>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl font-serif font-bold text-foreground">Reservations Management</h2>
+              <div className="flex space-x-4">
+                <select className="border border-muted-foreground/20 rounded-lg px-3 py-2 text-sm">
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="bg-card rounded-lg border overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="text-left p-4 font-medium text-foreground">Guest</th>
+                      <th className="text-left p-4 font-medium text-foreground">Date & Time</th>
+                      <th className="text-left p-4 font-medium text-foreground">Guests</th>
+                      <th className="text-left p-4 font-medium text-foreground">Status</th>
+                      <th className="text-left p-4 font-medium text-foreground">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reservations.slice(0, 10).map((reservation) => (
+                      <tr key={reservation.id} className="border-t hover:bg-muted/20">
+                        <td className="p-4">
+                          <div>
+                            <div className="font-medium text-foreground">{reservation.name}</div>
+                            <div className="text-sm text-muted-foreground">{reservation.email}</div>
+                            <div className="text-sm text-muted-foreground">{reservation.phone}</div>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="text-sm">
+                            <div className="font-medium">{reservation.date}</div>
+                            <div className="text-muted-foreground">{reservation.time}</div>
+                          </div>
+                        </td>
+                        <td className="p-4 text-sm">{reservation.guests}</td>
+                        <td className="p-4">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            reservation.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                            reservation.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {reservation.status}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex space-x-2">
+                            <button className="text-primary hover:text-primary/80 text-sm font-medium">
+                              Edit
+                            </button>
+                            <button className="text-red-600 hover:text-red-500 text-sm font-medium">
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'feedback' && (
+          <div>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl font-serif font-bold text-foreground">Feedback & Reviews</h2>
+              <div className="flex space-x-4">
+                <select className="border border-muted-foreground/20 rounded-lg px-3 py-2 text-sm">
+                  <option value="all">All Ratings</option>
+                  <option value="5">5 Stars</option>
+                  <option value="4">4 Stars</option>
+                  <option value="3">3 Stars</option>
+                  <option value="2">2 Stars</option>
+                  <option value="1">1 Star</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {feedbackList.slice(0, 12).map((feedback) => (
+                <div key={feedback.id} className="bg-card rounded-lg border p-6 hover:shadow-lg transition-shadow">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="font-medium text-card-foreground">{feedback.name}</h3>
+                      <p className="text-sm text-muted-foreground">{feedback.email}</p>
+                    </div>
+                    <div className="flex text-yellow-400">
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i} className={i < feedback.rating ? 'text-yellow-400' : 'text-gray-300'}>
+                          ⭐
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{feedback.experience}</p>
+                  {feedback.suggestions && (
+                    <p className="text-muted-foreground text-xs mb-4 line-clamp-2">
+                      <strong>Suggestions:</strong> {feedback.suggestions}
+                    </p>
+                  )}
+                  <div className="flex justify-between items-center text-xs text-muted-foreground">
+                    <span>{new Date(feedback.created_at).toLocaleDateString()}</span>
+                    <div className="flex space-x-2">
+                      <button className="text-green-600 hover:text-green-500 font-medium">
+                        Approve
+                      </button>
+                      <button className="text-red-600 hover:text-red-500 font-medium">
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'contact' && (
+          <div>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl font-serif font-bold text-foreground">Contact Messages</h2>
+              <div className="flex space-x-4">
+                <select className="border border-muted-foreground/20 rounded-lg px-3 py-2 text-sm">
+                  <option value="all">All Messages</option>
+                  <option value="unread">Unread</option>
+                  <option value="replied">Replied</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              {contactMessages.slice(0, 10).map((message) => (
+                <div key={message.id} className="bg-card rounded-lg border p-6 hover:shadow-lg transition-shadow">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="font-medium text-card-foreground">{message.name}</h3>
+                      <p className="text-sm text-muted-foreground">{message.email}</p>
+                      <p className="text-sm font-medium text-foreground mt-1">{message.subject}</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(message.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{message.message}</p>
+                  <div className="flex justify-between items-center">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      New
+                    </span>
+                    <div className="flex space-x-2">
+                      <button className="text-primary hover:text-primary/80 text-sm font-medium">
+                        Reply
+                      </button>
+                      <button className="text-red-600 hover:text-red-500 text-sm font-medium">
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}

@@ -15,6 +15,7 @@ import BlogPage from '@/pages/BlogPage'
 import InstagramPage from '@/pages/InstagramPage'
 import AdminPage from '@/pages/AdminPage'
 import AdminLoginPage from '@/pages/AdminLoginPage'
+import AdminTestPage from '@/pages/AdminTestPage'
 import NotFoundPage from '@/pages/NotFoundPage'
 
 function App() {
@@ -45,6 +46,7 @@ function App() {
         {/* Admin routes within locale */}
         <Route path="admin" element={<Navigate to="admin/login" replace />} />
         <Route path="admin/login" element={<AdminLoginPage />} />
+        <Route path="admin/test" element={<AdminTestPage />} />
         <Route path="admin/*" element={<AdminPage />} />
       </Route>
       

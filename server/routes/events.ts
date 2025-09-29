@@ -3,6 +3,9 @@ import { inMemoryStorage } from '../inMemoryStorage'
 
 const router = express.Router()
 
+// Import admin authentication middleware
+import { requireAuth } from './admin'
+
 // GET /api/events - Get all events
 router.get('/', async (req, res) => {
   try {
@@ -33,7 +36,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // POST /api/events - Create new event
-router.post('/', async (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   try {
     const {
       title_de,
@@ -71,7 +74,7 @@ router.post('/', async (req, res) => {
 })
 
 // PUT /api/events/:id - Update event
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params
     const updateData = req.body
@@ -91,7 +94,7 @@ router.put('/:id', async (req, res) => {
 })
 
 // DELETE /api/events/:id - Delete event
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params
     const deleted = inMemoryStorage.deleteEvent(parseInt(id))

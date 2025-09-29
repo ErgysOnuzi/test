@@ -3,6 +3,9 @@ import db, { schema } from '../../src/lib/db'
 
 const router = express.Router()
 
+// Import admin authentication middleware
+import { requireAuth } from './admin'
+
 // POST /api/contact - Submit contact form
 router.post('/', async (req, res) => {
   try {
@@ -38,7 +41,7 @@ router.post('/', async (req, res) => {
 })
 
 // GET /api/contact - Get all contact submissions (admin)
-router.get('/', async (req, res) => {
+router.get('/', requireAuth, async (req, res) => {
   try {
     const submissions = await db.select().from(schema.contactMessages)
     

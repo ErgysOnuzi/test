@@ -12,6 +12,7 @@ import galleryRoutes from './routes/gallery'
 import reservationRoutes from './routes/reservations'
 import eventRoutes from './routes/events'
 import contactRoutes from './routes/contact'
+import feedbackRoutes from './routes/feedback'
 import adminRoutes from './routes/admin'
 
 // Load environment variables
@@ -69,6 +70,7 @@ function initializeServer() {
   app.use('/api/reservations', reservationRoutes)
   app.use('/api/events', eventRoutes)
   app.use('/api/contact', contactRoutes)
+  app.use('/api/feedback', feedbackRoutes)
   app.use('/api/admin', adminRoutes)
 
   // Serve React app for all non-API routes (SPA fallback)

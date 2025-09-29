@@ -236,4 +236,7 @@ setInterval(() => {
   }
 }, 60 * 60 * 1000) // Run every hour
 
+// Export the authentication middleware for use in other routes
+export { requireAuth }
+
 export default router

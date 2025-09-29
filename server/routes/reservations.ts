@@ -4,6 +4,9 @@ import db, { schema } from '../../src/lib/db'
 
 const router = express.Router()
 
+// Import admin authentication middleware
+import { requireAuth } from './admin'
+
 // POST /api/reservations - Create new reservation
 router.post('/', async (req, res) => {
   try {
@@ -59,7 +62,7 @@ router.post('/', async (req, res) => {
 })
 
 // GET /api/reservations - Get all reservations (admin)
-router.get('/', async (req, res) => {
+router.get('/', requireAuth, async (req, res) => {
   try {
     const allReservations = await db.select().from(schema.reservations)
     
