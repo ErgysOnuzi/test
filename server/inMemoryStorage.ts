@@ -469,8 +469,8 @@ class InMemoryStorage {
     const index = this.feedback.findIndex((f) => f.id === id)
     if (index === -1) return null
 
-    this.feedback[index] = { ...this.feedback[index], ...data, id }
-    return this.feedback[index]
+    this.feedback[index] = { ...this.feedback[index], ...data, id } as Feedback
+    return this.feedback[index] || null
   }
 
   deleteFeedback(id: number): boolean {
@@ -510,8 +510,8 @@ class InMemoryStorage {
     const index = this.eventBookings.findIndex((b) => b.id === id)
     if (index === -1) return null
 
-    this.eventBookings[index] = { ...this.eventBookings[index], ...data, id }
-    return this.eventBookings[index]
+    this.eventBookings[index] = { ...this.eventBookings[index], ...data, id } as EventBooking
+    return this.eventBookings[index] || null
   }
 
   deleteEventBooking(id: number): boolean {

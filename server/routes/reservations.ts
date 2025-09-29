@@ -168,7 +168,7 @@ router.delete('/:id', async (req, res) => {
     }
 
     console.log(`🗑️ Deleted reservation: ${deletedReservation.name}`)
-    res.json({
+    return res.json({
       success: true,
       message: 'Reservation deleted successfully'
     })
