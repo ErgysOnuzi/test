@@ -111,10 +111,10 @@ export default function SimpleLayout() {
                 aria-hidden="true"
               />
               
-              {/* Navigation Panel */}
+              {/* Navigation Panel with Scrolling */}
               <div 
-                className={`absolute top-full right-0 z-50 bg-background border border-border/50 shadow-xl rounded-lg min-w-64 max-w-sm w-full sm:w-auto ${
-                  // Mobile: Full width panel
+                className={`absolute top-full right-0 z-50 bg-background border border-border/50 shadow-xl rounded-lg min-w-64 max-w-sm w-full sm:w-auto max-h-[80vh] ${
+                  // Mobile: Full width panel with height limit
                   'sm:max-w-sm'
                 }`}
                 role="menu"
@@ -125,7 +125,8 @@ export default function SimpleLayout() {
                   }
                 }}
               >
-                <div className='p-4'>
+                {/* Scrollable Content Area */}
+                <div className='p-4 overflow-y-auto max-h-[70vh]'>
                   <div className="grid gap-2">
                     {navigation.map((item) => (
                       <Link
@@ -142,19 +143,19 @@ export default function SimpleLayout() {
                         {item.name}
                       </Link>
                     ))}
-                    
-                    {/* Reservation CTA in Menu */}
-                    <div className="pt-2 mt-2 border-t border-border/50">
-                      <Link 
-                        to={`/${currentLocale}/reservations`}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-3 rounded-lg font-medium transition-colors">
-                          {isGerman ? 'Tisch Reservieren' : 'Make Reservation'}
-                        </button>
-                      </Link>
-                    </div>
                   </div>
+                </div>
+                
+                {/* Fixed CTA at Bottom */}
+                <div className="p-4 border-t border-border/50 bg-background/95 backdrop-blur-sm rounded-b-lg">
+                  <Link 
+                    to={`/${currentLocale}/reservations`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-3 rounded-lg font-medium transition-colors">
+                      {isGerman ? 'Tisch Reservieren' : 'Make Reservation'}
+                    </button>
+                  </Link>
                 </div>
               </div>
             </>
