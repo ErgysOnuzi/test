@@ -56,15 +56,30 @@ interface Feedback {
   created_at: string
 }
 
+interface EventBooking {
+  id: number
+  eventId: number
+  name: string
+  email: string
+  phone: string
+  guests: number
+  specialRequests: string
+  totalAmount: number
+  status: 'confirmed' | 'cancelled' | 'pending'
+  created_at: string
+}
+
 class InMemoryStorage {
   private menuItems: MenuItem[] = []
   private galleryItems: GalleryItem[] = []
   private events: Event[] = []
   private feedback: Feedback[] = []
+  private eventBookings: EventBooking[] = []
   private nextMenuId = 1
   private nextGalleryId = 1
   private nextEventId = 1
   private nextFeedbackId = 1
+  private nextBookingId = 1
 
   constructor() {
     this.initializeData()
@@ -396,6 +411,58 @@ class InMemoryStorage {
     
     this.feedback.splice(index, 1)
     return true
+  }
+
+  // Event Booking operations
+  getAllEventBookings(): EventBooking[] {
+    return this.eventBookings
+  }
+
+  getEventBookingById(id: number): EventBooking | undefined {
+    return this.eventBookings.find(booking => booking.id === id)
+  }
+
+  getBookingsForEvent(eventId: number): EventBooking[] {
+    return this.eventBookings.filter(booking => booking.eventId === eventId)
+  }
+
+  createEventBooking(data: Omit<EventBooking, 'id'>): EventBooking {
+    const newBooking: EventBooking = {
+      id: this.nextBookingId++,
+      ...data
+    }
+    this.eventBookings.push(newBooking)
+    return newBooking
+  }
+
+  updateEventBooking(id: number, data: Partial<EventBooking>): EventBooking | null {
+    const index = this.eventBookings.findIndex(booking => booking.id === id)
+    if (index === -1) return null
+    
+    this.eventBookings[index] = { ...this.eventBookings[index], ...data, id }
+    return this.eventBookings[index]
+  }
+
+  deleteEventBooking(id: number): boolean {
+    const index = this.eventBookings.findIndex(booking => booking.id === id)
+    if (index === -1) return false
+    
+    this.eventBookings.splice(index, 1)
+    return true
+  }
+
+  // Helper method to get booking statistics for events
+  getEventBookingStats(eventId: number) {
+    const bookings = this.getBookingsForEvent(eventId)
+    const totalGuests = bookings.reduce((sum, booking) => sum + booking.guests, 0)
+    const totalRevenue = bookings.reduce((sum, booking) => sum + booking.totalAmount, 0)
+    
+    return {
+      totalBookings: bookings.length,
+      totalGuests,
+      totalRevenue,
+      confirmedBookings: bookings.filter(b => b.status === 'confirmed').length
+    }
   }
 }
 

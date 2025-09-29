@@ -21,13 +21,14 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
-  const [activeTab, setActiveTab] = useState<'menu' | 'gallery' | 'events' | 'reservations' | 'feedback' | 'contact'>('menu')
+  const [activeTab, setActiveTab] = useState<'menu' | 'gallery' | 'events' | 'bookings' | 'reservations' | 'feedback' | 'contact'>('menu')
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([])
   const [events, setEvents] = useState<any[]>([])
   const [reservations, setReservations] = useState<any[]>([])
   const [feedbackList, setFeedbackList] = useState<any[]>([])
   const [contactMessages, setContactMessages] = useState<any[]>([])
+  const [eventBookings, setEventBookings] = useState<any[]>([])
 
   // Check authentication using our new cookie-based system
   useEffect(() => {
@@ -65,6 +66,7 @@ export default function AdminPage() {
       fetchMenuItems()
       fetchGalleryImages()
       fetchEvents()
+      fetchEventBookings()
       fetchReservations()
       fetchFeedback()
       fetchContactMessages()
@@ -107,6 +109,18 @@ export default function AdminPage() {
     }
   }
 
+  const fetchEventBookings = async () => {
+    try {
+      const response = await fetch('/api/admin/bookings', {
+        credentials: 'include'
+      })
+      const data = await response.json()
+      setEventBookings(data)
+    } catch (error) {
+      console.error('Failed to fetch event bookings:', error)
+    }
+  }
+
   const fetchReservations = async () => {
     try {
       const response = await fetch('/api/reservations')
@@ -134,6 +148,60 @@ export default function AdminPage() {
       setContactMessages(data)
     } catch (error) {
       console.error('Failed to fetch contact messages:', error)
+    }
+  }
+
+  const updateBookingStatus = async (bookingId: number, status: 'confirmed' | 'cancelled' | 'pending') => {
+    try {
+      const response = await fetch(`/api/admin/bookings/${bookingId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ status })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to update booking status')
+      }
+
+      // Refresh bookings and events to show updated data
+      await fetchEventBookings()
+      await fetchEvents()
+      
+      console.log(`Booking ${bookingId} status updated to ${status}`)
+    } catch (error) {
+      console.error('Error updating booking status:', error)
+      alert(`Failed to update booking: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  const deleteBooking = async (bookingId: number) => {
+    if (!confirm('Are you sure you want to delete this booking? This action cannot be undone.')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/bookings/${bookingId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to delete booking')
+      }
+
+      // Refresh bookings and events to show updated data
+      await fetchEventBookings()
+      await fetchEvents()
+      
+      console.log(`Booking ${bookingId} deleted successfully`)
+    } catch (error) {
+      console.error('Error deleting booking:', error)
+      alert(`Failed to delete booking: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -197,6 +265,7 @@ export default function AdminPage() {
               { id: 'menu', label: 'Menu Management', icon: '🍝' },
               { id: 'gallery', label: 'Gallery Management', icon: '📸' },
               { id: 'events', label: 'Events Management', icon: '🎉' },
+              { id: 'bookings', label: 'Event Bookings', icon: '🎫' },
               { id: 'reservations', label: 'Reservations', icon: '📅' },
               { id: 'feedback', label: 'Feedback & Reviews', icon: '⭐' },
               { id: 'contact', label: 'Contact Messages', icon: '📧' },
@@ -312,6 +381,115 @@ export default function AdminPage() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {activeTab === 'bookings' && (
+          <div>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl font-serif font-bold text-foreground">Event Bookings Management</h2>
+              <div className="text-sm text-muted-foreground">
+                Total Bookings: {eventBookings.length}
+              </div>
+            </div>
+            
+            {eventBookings.length === 0 ? (
+              <div className="text-center py-12 bg-card rounded-lg border border-dashed">
+                <div className="text-6xl mb-4">🎫</div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">No Event Bookings Yet</h3>
+                <p className="text-muted-foreground">Event bookings will appear here once customers start registering for events.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-6">
+                {eventBookings.map((booking) => {
+                  const event = events.find(e => e.id === booking.eventId)
+                  return (
+                    <div key={booking.id} className="bg-card p-6 rounded-lg border">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-xl font-semibold text-foreground mb-1">
+                            {event ? event.title_en : `Event ID: ${booking.eventId}`}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            Booking #{booking.id} • {new Date(booking.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className={`px-3 py-1 text-sm rounded-full ${
+                            booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                            booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                          </span>
+                          <span className="text-lg font-bold text-primary">
+                            €{booking.totalAmount}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <p className="font-medium text-foreground">Customer Details</p>
+                          <p className="text-muted-foreground">{booking.name}</p>
+                          <p className="text-muted-foreground">{booking.email}</p>
+                          <p className="text-muted-foreground">{booking.phone}</p>
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">Booking Details</p>
+                          <p className="text-muted-foreground">Guests: {booking.guests}</p>
+                          <p className="text-muted-foreground">
+                            Event: {event ? new Date(event.event_date).toLocaleDateString() : 'Unknown'}
+                          </p>
+                          <p className="text-muted-foreground">
+                            Per person: €{event ? event.price : booking.totalAmount / booking.guests}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">Special Requests</p>
+                          <p className="text-muted-foreground">
+                            {booking.specialRequests || 'None'}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {booking.status === 'pending' && (
+                        <div className="mt-4 flex space-x-2">
+                          <button 
+                            onClick={() => updateBookingStatus(booking.id, 'confirmed')}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                          >
+                            Confirm Booking
+                          </button>
+                          <button 
+                            onClick={() => updateBookingStatus(booking.id, 'cancelled')}
+                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                          >
+                            Cancel Booking
+                          </button>
+                        </div>
+                      )}
+                      {booking.status === 'confirmed' && (
+                        <div className="mt-4 flex space-x-2">
+                          <button 
+                            onClick={() => updateBookingStatus(booking.id, 'cancelled')}
+                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                          >
+                            Cancel Booking
+                          </button>
+                          <button 
+                            onClick={() => deleteBooking(booking.id)}
+                            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
+                          >
+                            Delete Booking
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         )}
 

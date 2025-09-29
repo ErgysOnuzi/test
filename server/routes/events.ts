@@ -93,6 +93,61 @@ router.put('/:id', requireAuth, async (req, res) => {
   }
 })
 
+// POST /api/events/:id/book - Book event (public endpoint)
+router.post('/:id/book', async (req, res) => {
+  try {
+    const { id } = req.params
+    const { name, email, phone, guests, specialRequests } = req.body
+
+    // Validate required fields
+    if (!name || !email || !phone || !guests) {
+      return res.status(400).json({ error: 'Name, email, phone, and number of guests are required' })
+    }
+
+    // Get the event to check availability
+    const event = inMemoryStorage.getEventById(parseInt(id))
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' })
+    }
+
+    // Check availability
+    const availableSpots = event.max_attendees - event.current_attendees
+    if (guests > availableSpots) {
+      return res.status(400).json({ 
+        error: `Only ${availableSpots} spots available, but ${guests} requested` 
+      })
+    }
+
+    // Create booking as PENDING - admin will confirm
+    const booking = inMemoryStorage.createEventBooking({
+      eventId: parseInt(id),
+      name,
+      email,
+      phone,
+      guests: parseInt(guests),
+      specialRequests: specialRequests || '',
+      totalAmount: event.price * parseInt(guests),
+      status: 'pending',
+      created_at: new Date().toISOString()
+    })
+
+    // DO NOT update event capacity yet - wait for admin confirmation
+    // Capacity will be updated when admin confirms the booking
+
+    console.log(`🎉 Event booking created: ${name} for ${guests} guests at ${event.title_en}`)
+    
+    res.status(201).json({
+      success: true,
+      booking,
+      message: 'Booking submitted successfully! Your reservation is pending confirmation by our staff. You will receive a confirmation email shortly.',
+      status: 'pending'
+    })
+  } catch (error) {
+    console.error('Error creating event booking:', error)
+    return res.status(500).json({ error: 'Failed to create booking' })
+  }
+})
+
 // DELETE /api/events/:id - Delete event
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
