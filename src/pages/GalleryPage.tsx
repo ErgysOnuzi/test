@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
+import { useParams } from 'react-router-dom'
+import { useTranslation } from '../i18n/translations'
 
 interface GalleryImage {
   id: number
@@ -18,6 +20,8 @@ const CACHE_KEY = 'la-cantina-gallery-cache'
 const CACHE_DURATION = 24 * 60 * 60 * 1000 // 24 hours
 
 export default function GalleryPage() {
+  const { locale = 'de' } = useParams<{ locale: string }>()
+  const { t } = useTranslation(locale as 'de' | 'en')
   const [images, setImages] = useState<GalleryImage[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [cachedImages, setCachedImages] = useState<Map<number, string>>(new Map())
@@ -134,22 +138,29 @@ export default function GalleryPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="text-center mb-16">
         <h1 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-6">
-          Gallery
+          {t('pages.gallery.title')}
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Experience the atmosphere of La Cantina Berlin
+          {locale === 'de' 
+            ? 'Erleben Sie die Atmosphäre von La Cantina Berlin'
+            : 'Experience the atmosphere of La Cantina Berlin'
+          }
         </p>
       </div>
       
       {isLoading ? (
-        <p className="text-center text-muted-foreground">Loading gallery...</p>
+        <p className="text-center text-muted-foreground">{t('pages.gallery.loading')}</p>
       ) : images.length === 0 ? (
         <div className="text-center py-16">
           <div className="bg-card rounded-lg border p-8">
-            <h3 className="text-xl font-serif font-medium text-card-foreground mb-4">Gallery Coming Soon</h3>
+            <h3 className="text-xl font-serif font-medium text-card-foreground mb-4">
+              {locale === 'de' ? 'Galerie kommt bald' : 'Gallery Coming Soon'}
+            </h3>
             <p className="text-muted-foreground">
-              We're preparing beautiful photos of our restaurant atmosphere, delicious dishes, and authentic Italian dining experience. 
-              Please check back soon to see our gallery!
+              {locale === 'de' 
+                ? 'Wir bereiten wunderschöne Fotos unserer Restaurantatmosphäre, köstlichen Gerichte und authentischen italienischen Speiseerlebnis vor. Schauen Sie bald wieder vorbei!'
+                : 'We\'re preparing beautiful photos of our restaurant atmosphere, delicious dishes, and authentic Italian dining experience. Please check back soon to see our gallery!'
+              }
             </p>
           </div>
         </div>
@@ -181,14 +192,17 @@ export default function GalleryPage() {
       <div className="mt-16 text-center">
         <div className="bg-card rounded-lg p-6 border mb-6">
           <p className="text-muted-foreground mb-4">
-            Showing {Math.min(images.length, showAll ? images.length : 30)} of {images.length} images
+            {locale === 'de' 
+              ? `Zeige ${Math.min(images.length, showAll ? images.length : 30)} von ${images.length} Bildern`
+              : `Showing ${Math.min(images.length, showAll ? images.length : 30)} of ${images.length} images`
+            }
           </p>
           {!showAll && images.length > 30 && (
             <button
               onClick={() => setShowAll(true)}
               className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg font-medium transition-colors duration-200 shadow-sm hover:shadow-md"
             >
-              Show All {images.length} Photos
+              {locale === 'de' ? `Alle ${images.length} Fotos anzeigen` : `Show All ${images.length} Photos`}
               <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
@@ -199,7 +213,7 @@ export default function GalleryPage() {
               onClick={() => setShowAll(false)}
               className="inline-flex items-center px-6 py-3 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-lg font-medium transition-colors duration-200 shadow-sm hover:shadow-md"
             >
-              Show Less
+              {locale === 'de' ? 'Weniger anzeigen' : 'Show Less'}
               <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
               </svg>
