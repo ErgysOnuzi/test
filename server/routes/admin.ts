@@ -335,7 +335,7 @@ router.get('/bookings', requireAuth, async (req, res) => {
 })
 
 // PATCH /api/admin/bookings/:id/status - Update booking status (admin only)
-router.patch('/bookings/:id/status', requireAuth, async (req, res) => {
+router.patch('/bookings/:id/status', requireAuthWithCSRF, async (req, res) => {
   try {
     const { id } = req.params
     const { status } = req.body // 'confirmed', 'cancelled', 'pending'
@@ -406,7 +406,7 @@ router.patch('/bookings/:id/status', requireAuth, async (req, res) => {
 })
 
 // DELETE /api/admin/bookings/:id - Cancel booking and adjust capacity (admin only)
-router.delete('/bookings/:id', requireAuth, async (req, res) => {
+router.delete('/bookings/:id', requireAuthWithCSRF, async (req, res) => {
   try {
     const { id } = req.params
     const { inMemoryStorage } = await import('../inMemoryStorage')
@@ -458,6 +458,6 @@ setInterval(() => {
 }, 60 * 60 * 1000) // Run every hour
 
 // Export the authentication middleware for use in other routes
-export { requireAuth }
+export { requireAuth, requireAuthWithCSRF }
 
 export default router

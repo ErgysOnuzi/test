@@ -4,7 +4,7 @@ import { inMemoryStorage } from '../inMemoryStorage'
 const router = express.Router()
 
 // Import admin authentication middleware
-import { requireAuth } from './admin'
+import { requireAuth, requireAuthWithCSRF } from './admin'
 
 // GET /api/gallery - Get all gallery images
 router.get('/', async (req, res) => {
@@ -36,7 +36,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // POST /api/gallery - Upload new gallery image
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', requireAuthWithCSRF, async (req, res) => {
   try {
     const {
       imageUrl,
@@ -71,7 +71,7 @@ router.post('/', requireAuth, async (req, res) => {
 })
 
 // PUT /api/gallery/:id - Update gallery image
-router.put('/:id', requireAuth, async (req, res) => {
+router.put('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
     const { id } = req.params
     const updateData = req.body
@@ -91,7 +91,7 @@ router.put('/:id', requireAuth, async (req, res) => {
 })
 
 // DELETE /api/gallery/:id - Delete gallery image
-router.delete('/:id', requireAuth, async (req, res) => {
+router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
     const { id } = req.params
     const deleted = inMemoryStorage.deleteGalleryItem(parseInt(id))
@@ -109,7 +109,7 @@ router.delete('/:id', requireAuth, async (req, res) => {
 })
 
 // PATCH /api/gallery/:id/toggle - Toggle gallery image visibility
-router.patch('/:id/toggle', requireAuth, async (req, res) => {
+router.patch('/:id/toggle', requireAuthWithCSRF, async (req, res) => {
   try {
     const { id } = req.params
     const image = inMemoryStorage.getGalleryItemById(parseInt(id))

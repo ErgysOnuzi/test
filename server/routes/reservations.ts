@@ -6,7 +6,7 @@ import * as schema from '../../shared/schema'
 const router = express.Router()
 
 // Import admin authentication middleware
-import { requireAuth } from './admin'
+import { requireAuth, requireAuthWithCSRF } from './admin'
 
 // POST /api/reservations - Create new reservation
 router.post('/', async (req, res) => {
@@ -93,7 +93,7 @@ router.get('/', requireAuth, async (req, res) => {
 })
 
 // PUT /api/reservations/:id - Update reservation (admin)
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
     const { id } = req.params
     const {
@@ -154,7 +154,7 @@ router.put('/:id', async (req, res) => {
 })
 
 // DELETE /api/reservations/:id - Delete reservation (admin)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
     const { id } = req.params
     
@@ -179,7 +179,7 @@ router.delete('/:id', async (req, res) => {
 })
 
 // PATCH /api/reservations/:id/status - Update reservation status (admin)
-router.patch('/:id/status', async (req, res) => {
+router.patch('/:id/status', requireAuthWithCSRF, async (req, res) => {
   try {
     const { id } = req.params
     const { status } = req.body
