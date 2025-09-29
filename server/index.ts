@@ -19,6 +19,7 @@ import feedbackRoutes from './routes/feedback'
 import adminRoutes from './routes/admin'
 import uploadRoutes from './routes/upload'
 import googleReviewsRoutes from './routes/google-reviews'
+import instagramRoutes from './routes/instagram'
 // Security middleware imports
 import { 
   generalRateLimit, 
@@ -166,6 +167,7 @@ function initializeServer() {
   app.use('/api/reviews', apiRateLimit, googleReviewsRoutes)
   // Backward compatibility for frontend
   app.use('/api/google-reviews', apiRateLimit, googleReviewsRoutes)
+  app.use('/api/instagram', apiRateLimit, instagramRoutes)
 
   // Serve uploaded images with proper caching
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), {

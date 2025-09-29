@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
+import { useTranslation } from '../i18n/translations'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
 
@@ -15,6 +17,8 @@ interface Event {
 }
 
 export default function EventsPage() {
+  const { locale = 'de' } = useParams<{ locale: string }>()
+  const { t } = useTranslation(locale as 'de' | 'en')
   const [events, setEvents] = useState<Event[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -63,14 +67,14 @@ export default function EventsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center">
           <h1 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-6">
-            Events
+            {t('pages.events.title')}
           </h1>
           <div className="flex items-center justify-center gap-2 text-muted-foreground">
             <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span>Loading events...</span>
+            <span>{t('pages.events.loading')}</span>
           </div>
         </div>
       </div>
@@ -82,14 +86,14 @@ export default function EventsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center">
           <h1 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-6">
-            Events
+            {t('pages.events.title')}
           </h1>
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
             <div className="flex items-center gap-2 text-red-800">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="font-medium">Error loading events: {error}</span>
+              <span className="font-medium">{t('pages.events.error')}: {error}</span>
             </div>
           </div>
         </div>
@@ -105,23 +109,23 @@ export default function EventsPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6">
-              Special Events
+              {locale === 'de' ? 'Besondere Veranstaltungen' : 'Special Events'}
             </h1>
             <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed">
-              Join us for exclusive culinary experiences and Italian cultural celebrations
+              {locale === 'de' ? 'Begleiten Sie uns bei exklusiven kulinarischen Erlebnissen und italienischen Kulturfesten' : 'Join us for exclusive culinary experiences and Italian cultural celebrations'}
             </p>
             <div className="flex flex-wrap justify-center gap-8 text-lg">
               <div className="flex items-center gap-2">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                <span>Limited Seating</span>
+                <span>{locale === 'de' ? 'Begrenzte Plätze' : 'Limited Seating'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                 </svg>
-                <span>Authentic Experiences</span>
+                <span>{locale === 'de' ? 'Authentische Erlebnisse' : 'Authentic Experiences'}</span>
               </div>
             </div>
           </div>
@@ -134,7 +138,7 @@ export default function EventsPage() {
             {/* Upcoming Events */}
             <div className="mb-16">
               <h2 className="text-3xl font-serif font-bold text-center text-foreground mb-12">
-                Upcoming Events
+                {locale === 'de' ? 'Bevorstehende Veranstaltungen' : 'Upcoming Events'}
               </h2>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {events.map((event) => {
@@ -154,7 +158,7 @@ export default function EventsPage() {
                           </div>
                           <div className="flex-1">
                             <h3 className="text-2xl font-serif font-bold text-card-foreground mb-2">
-                              {event.title_en}
+                              {locale === 'de' ? event.title_de : event.title_en}
                             </h3>
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                               <div className="flex items-center gap-1">
@@ -174,7 +178,7 @@ export default function EventsPage() {
                         </div>
                         
                         <p className="text-muted-foreground leading-relaxed mb-6">
-                          {event.description_en}
+                          {locale === 'de' ? event.description_de : event.description_en}
                         </p>
                         
                         <div className="space-y-6 mb-6">
@@ -182,14 +186,14 @@ export default function EventsPage() {
                             <div className="flex items-center gap-6">
                               <div className="text-center">
                                 <div className="text-2xl font-bold text-primary">€{event.price}</div>
-                                <div className="text-sm text-muted-foreground">per person</div>
+                                <div className="text-sm text-muted-foreground">{locale === 'de' ? 'pro Person' : 'per person'}</div>
                               </div>
                               <div className="text-center">
                                 <div className="text-lg font-semibold text-card-foreground">
-                                  {availableSpots} left
+                                  {availableSpots} {locale === 'de' ? 'verfügbar' : 'left'}
                                 </div>
                                 <div className="text-sm text-muted-foreground">
-                                  of {event.max_attendees} spots
+                                  {locale === 'de' ? `von ${event.max_attendees} Plätzen` : `of ${event.max_attendees} spots`}
                                 </div>
                               </div>
                             </div>
