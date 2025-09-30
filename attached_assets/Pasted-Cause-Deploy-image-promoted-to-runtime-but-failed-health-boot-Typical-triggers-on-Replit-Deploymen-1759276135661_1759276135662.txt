@@ -1,0 +1,126 @@
+Cause: Deploy image promoted to runtime but failed health/boot. Typical triggers on Replit Deployments: wrong start command, server not binding to `0.0.0.0`/`PORT`, missing env, build outputs not found, healthcheck path 404.
+
+Do this, in order:
+
+1. Start/Build commands
+
+* Deployment “Build” → `npm ci && npm run build`
+* Deployment “Run”   → `npm start`
+* Delete any `run = ["tsx", ...]`. No TS at runtime.
+
+2. Package.json
+
+```json
+{
+  "type": "module",
+  "engines": { "node": ">=20 <23" },
+  "scripts": {
+    "clean": "rimraf dist .vite .tsbuildinfo",
+    "build:client": "vite build",
+    "build:server": "tsc -p tsconfig.server.json",
+    "build": "npm run clean && npm run build:client && npm run build:server",
+    "start": "NODE_ENV=production node dist/server/index.js",
+    "dev": "vite"
+  }
+}
+```
+
+3. Server must bind correctly and serve a 200
+
+```ts
+// server/index.ts
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const clientDir = path.resolve(__dirname, "../client");
+
+// healthcheck
+app.get("/healthz", (_, res) => res.status(200).send("ok"));
+
+// static
+app.use(express.static(clientDir));
+
+// locale redirect so "/" is 200
+app.get("/", (_, res) => res.sendFile(path.join(clientDir, "index.html")));
+
+// catch-all SPA
+app.get("*", (_, res) => res.sendFile(path.join(clientDir, "index.html")));
+
+const port = Number(process.env.PORT || 3000);
+app.listen(port, "0.0.0.0", () => {});
+```
+
+4. Vite output path
+
+* `vite.config.ts` → `export default { build: { outDir: "dist/client" } }`
+
+5. TypeScript server config
+
+```json
+// tsconfig.server.json
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist/server",
+    "rootDir": "server",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ES2022",
+    "noEmit": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["server/**/*.ts"]
+}
+```
+
+6. Replit Deployment settings
+
+* Health check path: `/healthz`
+* Grace period: 60–120s
+* Auto expose port: enabled
+* Instance count: 1
+* Rollback on failed promotion: enabled
+
+7. Environment variables in Deployment
+
+* Set all required: `DATABASE_URL`, `SESSION_SECRET`, `JWT_SECRET`, any API keys your server reads at boot. Empty/missing vars crash boot and fail promotion.
+
+8. Lock dependencies
+
+* Keep dev tools only in devDependencies. Runtime deps only in `dependencies`.
+* Remove `tsx` entirely. Remove duplicate sections that list `tsx` twice.
+
+9. Build artifacts present
+
+* After `npm run build`, confirm in shell:
+
+  * `ls dist/server/index.js`
+  * `ls dist/client/index.html`
+
+10. Port and signals
+
+* Ensure no `process.exit(0)` or unhandled promise rejection on boot.
+* Avoid long migrations at boot; move them to a one-off script.
+
+11. Clear prior broken config
+
+* In Deployment “Config files”, remove stale `run = ["tsx", "server/index.ts"]` and any extra build/run arrays.
+* If using `.replit`/`replit.nix`, ensure they don’t override Deployment run.
+
+12. Redeploy
+
+```
+npm ci
+npm run build
+npm start   # local sanity
+# then Deploy → Publish
+```
+
+Expected result: healthcheck passes, promotion succeeds.

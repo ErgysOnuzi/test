@@ -109,8 +109,16 @@ app.use((req, res, next) => {
 // Serve static files from Vite build (production)
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-// Always use path relative to project root
-const distPath = path.join(__dirname, '../dist')
+// In production (compiled), server is at dist/server/index.js, client is at dist/client
+// In dev (tsx), server is at server/index.ts, client needs to be at dist/client
+const distPath = process.env.NODE_ENV === 'production'
+  ? path.join(__dirname, '../client')
+  : path.join(__dirname, '../dist/client')
+
+// Deployment health check endpoint (must be before other routes)
+app.get('/healthz', (_, res) => {
+  res.status(200).send('ok')
+})
 
 // SSR routes for SEO-critical pages MUST come before static file serving
 app.use(ssrRoutes)

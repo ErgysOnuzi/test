@@ -47,12 +47,20 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
+localPort = 8000
+externalPort = 8080
+
+[[ports]]
 localPort = 35423
 externalPort = 8000
 
 [[ports]]
 localPort = 35821
 externalPort = 3003
+
+[[ports]]
+localPort = 36253
+externalPort = 8008
 
 [[ports]]
 localPort = 39245
@@ -75,10 +83,6 @@ localPort = 43837
 externalPort = 6000
 
 [[ports]]
-localPort = 43885
-externalPort = 8008
-
-[[ports]]
 localPort = 43911
 externalPort = 4200
 
@@ -89,8 +93,8 @@ externalPort = 6800
 # Deployment Configuration
 [deployment]
 deploymentTarget = "autoscale"
-build = ["npm", "run", "build"]
-run = ["tsx", "server/index.ts"]
+build = ["npm", "ci", "&&", "npm", "run", "build"]
+run = ["npm", "start"]
 
 [deployment.env]
 NODE_ENV = "production"
