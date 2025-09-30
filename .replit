@@ -71,6 +71,10 @@ localPort = 41989
 externalPort = 3000
 
 [[ports]]
+localPort = 42643
+externalPort = 8008
+
+[[ports]]
 localPort = 43837
 externalPort = 6000
 
@@ -86,7 +90,7 @@ externalPort = 6800
 [deployment]
 deploymentTarget = "autoscale"
 build = ["npm", "run", "build"]
-run = ["node", "dist/server.mjs"]
+run = ["tsx", "server/index.ts"]
 
 [deployment.env]
 NODE_ENV = "production"

@@ -8,7 +8,7 @@
     "strict": false,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist-server",
+    "outDir": "./dist",
     "rootDir": ".",
     "declaration": false,
     "removeComments": true,

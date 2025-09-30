@@ -109,11 +109,8 @@ app.use((req, res, next) => {
 // Serve static files from Vite build (production)
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-// In production, server.mjs is in dist/, so __dirname IS the dist folder
-// In dev, server runs from server/, so we need ../dist
-const distPath = process.env.NODE_ENV === 'production' 
-  ? __dirname  // In production, server.mjs is in dist/ already
-  : path.join(__dirname, '../dist') // In dev, dist is one level up
+// Always use path relative to project root
+const distPath = path.join(__dirname, '../dist')
 
 // SSR routes for SEO-critical pages MUST come before static file serving
 app.use(ssrRoutes)
