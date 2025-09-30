@@ -2,26 +2,26 @@
 
 ## Current Status (September 30, 2025)
 
-**🎉 NEXT.JS 15 TRANSFORMATION COMPLETE** - Successfully migrated from React/Vite/Express to Next.js 15:
-- ✅ Next.js 15 with App Router running on port 5000 (zero compilation errors)
-- ✅ SQLite database successfully initialized with sample menu data
-- ✅ Bilingual support (German/English) using next-intl properly configured
+**✅ REACT/VITE/EXPRESS ARCHITECTURE RESTORED** - Successfully maintained original architecture:
+- ✅ React 18 with Vite for frontend (port 5000)
+- ✅ Express server for backend API (port 3001)
+- ✅ PostgreSQL database with 123 menu items preserved
+- ✅ Bilingual support (German/English) using react-i18next
 - ✅ Homepage rendering correctly with terracotta color scheme
-- ✅ Menu page with category navigation and API integration functional
-- ✅ All async params properly awaited (Next.js 15 requirement)
-- ✅ Server and Client Components correctly separated
+- ✅ All pages functional: Menu, Gallery, Events, Reservations, Contact
+- ✅ Google Reviews integration configured (requires valid API keys)
 
-**Recent Major Transformation (September 30):**
-- Migrated entire application from React/Vite/Express stack to Next.js 15
-- Converted PostgreSQL database to SQLite with better-sqlite3
-- Implemented proper Next.js 15 async params pattern
-- Set up next-intl for internationalization with German/English support
-- Created proper App Router structure with [locale] routing
-- Fixed all hydration and compilation issues
+**Recent Deployment Fixes (September 30):**
+- Fixed ESM/CommonJS compatibility issues for production deployment
+- Changed build to use ESM format with `--packages=external` flag
+- Updated server.mjs to handle import.meta.url correctly in production
+- Fixed distPath calculation for both development and production environments
+- Added error handling for missing dist directory during deployment
+- Verified production build starts successfully on Node 20
 
 ## Overview
 
-La Cantina Berlin is a full-stack restaurant website built with Next.js 15. It's designed for an authentic Italian restaurant in Berlin, featuring a sophisticated UI with warm terracotta and cream color schemes. The application provides a complete restaurant management system including menu display, reservations, gallery, events, and contact functionality.
+La Cantina Berlin is a full-stack restaurant website built with React, Vite, and Express. It's designed for an authentic Italian restaurant in Berlin, featuring a sophisticated UI with warm terracotta and cream color schemes. The application provides a complete restaurant management system including menu display, reservations, gallery, events, and contact functionality.
 
 **IMPORTANT**: All fake/mock data has been removed from the website. Components now return empty arrays or hide themselves when no real data is available, ensuring only authentic business information is displayed.
 
@@ -32,26 +32,27 @@ Preferred communication style: Simple, everyday language.
 ## System Architecture
 
 ### Frontend Architecture
-- **Framework**: Next.js 15 with App Router and React Server Components
-- **Routing**: File-based routing with [locale] dynamic segments for internationalization
-- **Internationalization**: next-intl for bilingual German/English support
+- **Framework**: React 18 with Vite for build tooling and hot reload
+- **Routing**: React Router DOM for client-side routing
+- **Internationalization**: react-i18next for bilingual German/English support
 - **State Management**: React hooks (useState, useEffect) for client-side state
 - **UI Framework**: Custom component library with Tailwind CSS
 - **Styling**: Tailwind CSS with custom terracotta/cream color scheme and Google Fonts
+- **Development Server**: Vite dev server on port 5000
 
 ### Backend Architecture
-- **Runtime**: Next.js 15 API Routes (App Router)
-- **Database**: SQLite with better-sqlite3 driver
-- **ORM**: Drizzle ORM for type-safe database operations
-- **API Structure**: RESTful API routes in `/app/api/` directory
-- **Development**: Next.js built-in dev server with hot reload
+- **Runtime**: Node.js 20 with Express 5
+- **Database**: PostgreSQL (Neon-backed) via Drizzle ORM
+- **API Structure**: RESTful API routes in `/server/routes/` directory
+- **Security**: Helmet, rate limiting, input sanitization, CORS configuration
+- **Development**: tsx for TypeScript execution on port 3001
+- **Production**: esbuild bundle as ESM module (server.mjs)
 
 ### Database Architecture
-- **Database**: SQLite (data.db file) with better-sqlite3
-- **ORM**: Drizzle ORM with SQLite adapter
-- **Schema Location**: `src/lib/schema.ts`
-- **Initialization**: Database tables auto-created on startup
-- **Sample Data**: 4 menu items (Vitello Tonnato, Pizza Margherita, Pizza Diavola, Spaghetti Carbonara)
+- **Database**: PostgreSQL with Drizzle ORM
+- **Schema Location**: `shared/schema.ts`
+- **Menu Items**: 123 authentic Italian dishes with bilingual content
+- **Tables**: menu_items, gallery_images, events, reservations, contacts, feedback, admin_users
 
 ### Design System
 - **Typography**: 
@@ -73,10 +74,16 @@ Preferred communication style: Simple, everyday language.
 
 ### Internationalization (i18n)
 - **Supported Locales**: German (de) - default, English (en)
-- **Implementation**: next-intl with App Router
-- **Translation Files**: `/messages/de.json` and `/messages/en.json`
-- **Routing**: `[locale]` dynamic segment for language switching
+- **Implementation**: react-i18next with language detection
+- **Translation Files**: `public/locales/de/` and `public/locales/en/`
 - **URL Structure**: `/de/menu`, `/en/menu`, etc.
+
+### Google Reviews Integration
+- **Service**: Google Places API for fetching real restaurant reviews
+- **Configuration**: Requires `GOOGLE_PLACES_API_KEY` and `GOOGLE_PLACE_ID` environment variables
+- **Caching**: 6-hour cache to reduce API calls
+- **Security**: Rate limiting, input sanitization, error handling
+- **Current Status**: API keys need to be properly configured in Google Cloud Console with Places API enabled
 
 ## Project Structure
 

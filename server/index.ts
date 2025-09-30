@@ -107,15 +107,19 @@ app.use((req, res, next) => {
 })
 
 // Serve static files from Vite build (production)
-const __filename = import.meta?.url ? fileURLToPath(import.meta.url) : process.cwd() + '/server/index.ts'
+const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const distPath = path.join(__dirname, '../dist')
+// In production, server.mjs is in dist/, so __dirname IS the dist folder
+// In dev, server runs from server/, so we need ../dist
+const distPath = process.env.NODE_ENV === 'production' 
+  ? __dirname  // In production, server.mjs is in dist/ already
+  : path.join(__dirname, '../dist') // In dev, dist is one level up
 
 // SSR routes for SEO-critical pages MUST come before static file serving
 app.use(ssrRoutes)
 
 // Setup routes without database-dependent authentication
-function initializeServer() {
+async function initializeServer() {
   // Disabled old auth system - using token-based auth instead
   // await setupAuth(app)
 
@@ -181,32 +185,49 @@ function initializeServer() {
   }))
 
   // Static file serving comes AFTER SSR routes and API routes
-  app.use(express.static(distPath, {
-    maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0,
-    etag: false,
-    lastModified: false
-  }))
+  // Check if dist directory exists before serving static files
+  const fs = await import('fs')
+  const distExists = fs.existsSync(distPath)
+  
+  if (distExists) {
+    app.use(express.static(distPath, {
+      maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0,
+      etag: false,
+      lastModified: false
+    }))
 
-  // Serve React app for all non-API routes (SPA fallback)
-  app.use((req, res, next) => {
-    // Skip API routes and static files
-    if (req.path.startsWith('/api/') || req.path === '/health') {
-      return next()
-    }
-    
-    // If it's a static file request that wasn't found, 404
-    if (req.path.includes('.')) {
-      return res.status(404).send('Not found')
-    }
-    
-    // Serve React app for all other routes
-    res.sendFile(path.join(distPath, 'index.html'), (err) => {
-      if (err) {
-        console.error('Error serving index.html:', err)
-        res.status(500).send('Server error')
+    // Serve React app for all non-API routes (SPA fallback)
+    app.use((req, res, next) => {
+      // Skip API routes and static files
+      if (req.path.startsWith('/api/') || req.path === '/health') {
+        return next()
       }
+      
+      // If it's a static file request that wasn't found, 404
+      if (req.path.includes('.')) {
+        return res.status(404).send('Not found')
+      }
+      
+      // Serve React app for all other routes
+      res.sendFile(path.join(distPath, 'index.html'), (err) => {
+        if (err) {
+          console.error('Error serving index.html:', err)
+          res.status(500).send('Server error')
+        }
+      })
     })
-  })
+  } else {
+    console.warn(`⚠️ Warning: Frontend dist directory not found at ${distPath}`)
+    console.warn(`⚠️ API routes will work, but frontend will not be served`)
+    
+    // Serve a basic message for non-API routes when dist is missing
+    app.use((req, res, next) => {
+      if (req.path.startsWith('/api/') || req.path === '/health') {
+        return next()
+      }
+      res.status(503).send('Frontend not available - build required')
+    })
+  }
 
   // Error handling middleware (must be last)
   app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -244,6 +265,9 @@ function initializeServer() {
 }
 
 // Initialize server
-initializeServer()
+initializeServer().catch((error) => {
+  console.error('❌ Failed to initialize server:', error)
+  process.exit(1)
+})
 
 export default app
