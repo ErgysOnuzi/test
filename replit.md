@@ -12,12 +12,13 @@
 - ✅ Google Reviews integration configured (requires valid API keys)
 
 **Recent Deployment Fixes (September 30):**
-- ✅ Resolved production dependency issues by using tsx to run TypeScript directly
-- ✅ Build command simplified to only build frontend with Vite
-- ✅ Production start uses `tsx server/index.ts` ensuring all node_modules are available
-- ✅ Fixed distPath calculation to work correctly in all environments
-- ✅ Deployment configured for autoscale with proper build and run commands
-- ✅ Verified production server starts successfully and serves built frontend
+- ✅ Resolved production dependency issues by using tsx as a runtime dependency
+- ✅ Build command only builds frontend with Vite (no server compilation needed)
+- ✅ Production start uses `NODE_ENV=production tsx server/index.ts`
+- ✅ tsx remains in dependencies ensuring TypeScript runs directly in production
+- ✅ Deployment configured for autoscale (build: vite, run: tsx)
+- ✅ Verified production server correctly binds to PORT environment variable
+- ✅ All node_modules available at runtime without bundling complexity
 
 ## Overview
 

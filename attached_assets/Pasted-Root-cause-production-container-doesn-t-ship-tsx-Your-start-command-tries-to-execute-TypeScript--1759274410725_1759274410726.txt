@@ -1,0 +1,131 @@
+Root cause: production container doesn’t ship `tsx`. Your start command tries to execute TypeScript directly. Fix by compiling server TS → JS during build and starting with Node, or explicitly bundling `tsx` as a runtime dep. Prefer compile.
+
+### Fix (compile TS → JS; no `tsx` in prod)
+
+1. **package.json** — remove `tsx` from `dependencies` and `devDependencies`. Replace scripts:
+
+```json
+{
+  "type": "module",
+  "scripts": {
+    "clean": "rimraf dist .vite .tsbuildinfo",
+    "build:client": "vite build",
+    "build:server": "tsc -p tsconfig.server.json",
+    "build": "npm run clean && npm run build:client && npm run build:server",
+    "start": "NODE_ENV=production node dist/server/index.js",
+    "dev": "vite"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.4",
+    "tailwindcss": "^3.5.4",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.20",
+    "rimraf": "^6.0.1"
+  },
+  "dependencies": {
+    // keep only true runtime deps here (express, dotenv, drizzle-orm, pg, etc.)
+  }
+}
+```
+
+2. **tsconfig.server.json** — dedicated for server build:
+
+```json
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist/server",
+    "rootDir": "server",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ES2022",
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "noEmit": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": false
+  },
+  "include": ["server/**/*.ts"]
+}
+```
+
+3. **Server entry** — ensure imports are ESM-safe if `"type":"module"` is set. Example:
+
+```ts
+// server/index.ts
+import http from "http";
+// or: import express from "express";
+```
+
+Avoid `require` unless you set `"type":"commonjs"` and `module: "CommonJS"`.
+
+4. **Deployment commands** — use generic build/run, not `tsx`:
+
+```
+build = ["npm", "run", "build"]
+run   = ["npm", "start"]
+```
+
+Delete any of these from config:
+
+* `run = ["tsx", "server/index.ts"]`
+* `build = ["npm", "run", "build", "&&", "tsc", "--project", "tsconfig.server.json"]` (redundant once scripted)
+* `"start": "NODE_ENV=production tsx server/index.ts"`
+
+5. **If you must keep `tsx` (not recommended):**
+
+* Move `tsx` to **dependencies** and start with it:
+
+```json
+"dependencies": {
+  "tsx": "^4.19.2",
+  // ...
+},
+"scripts": {
+  "start": "NODE_ENV=production tsx server/index.ts"
+}
+```
+
+This increases cold-start time and couples prod to a dev runner.
+
+6. **Vite output + server static** (optional):
+
+* If server serves the client, point to Vite output:
+
+```ts
+// server/index.ts
+import express from "express";
+import path from "path";
+const app = express();
+app.use(express.static("dist/client"));
+app.get("*", (_, res) => res.sendFile(path.resolve("dist/client/index.html")));
+app.listen(process.env.PORT || 3000);
+```
+
+* Set Vite to build to `dist/client`:
+
+```json
+// vite.config.ts: export default { build: { outDir: "dist/client" } }
+```
+
+7. **Remove duplicate `tsx` blocks** you pasted. Keep a single `dependencies` and `devDependencies` section. The “Agent suggestions” duplicated them; that causes lockfile churn and resolver conflicts.
+
+8. **Re-run**:
+
+```
+npm ci
+npm run build
+npm start
+```
+
+9. **Sanity checks**:
+
+* `which node` in container resolves.
+* `node -e "require('fs');console.log('ok')"` prints `ok`.
+* `node dist/server/index.js` runs locally.
+* No `.ts` imports remain at runtime.
+
+Outcome: no `tsx` required in production; deployment uses Node on compiled JS.
