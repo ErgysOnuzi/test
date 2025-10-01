@@ -108,15 +108,15 @@ app.use((req, res, next) => {
 
 // Serve static files from Vite build (production)
 // In ESM (dev with tsx), use import.meta.url; in CJS (production build), __dirname exists
-// @ts-ignore - __dirname available in CJS build, import.meta in ESM
-const getDirname = () => {
+const getDirname = (): string => {
   try {
+    // @ts-ignore - __dirname available in CJS build
     return __dirname
   } catch {
     return path.dirname(fileURLToPath(import.meta.url))
   }
 }
-const __dirname = getDirname()
+const __dirname: string = getDirname()
 // In production (compiled), server is at dist/server/index.js, client is at dist/client
 // In dev (tsx), server is at server/index.ts, client needs to be at dist/client
 const distPath = process.env.NODE_ENV === 'production'
