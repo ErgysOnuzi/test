@@ -1,0 +1,24 @@
+The crash log shows Node v20 trying to load `/home/runner/workspace/dist/server/index.cjs` and failing on a `require()` at line 36 with `MODULE_NOT_FOUND`.  That means your runtime is executing a CommonJS build and there’s a missing module in your production install.  Two common causes in this situation:
+
+1. **The wrong entry point is referenced.**  Your tsc build emits `dist/server/index.js` (ESM), but your Replit config or `start` script is still pointing at `index.cjs`.  Node can’t find a `.cjs` file because it doesn’t exist.  Fix this by updating your deployment to run the compiled `.js` file, for example:
+
+   ```json
+   {
+     "scripts": {
+       "start": "NODE_ENV=production node dist/server/index.js",
+       "build": "npm run clean && npm run build:client && npm run build:server"
+     }
+   }
+   ```
+
+   In your deploy configuration, ensure `run = ["npm", "start"]`.  Delete any lines that reference `tsx server/index.ts` or `node dist/server/index.cjs`.
+
+2. **Missing production dependencies.**  Replit installs only packages listed in `"dependencies"` during deployment.  Any module imported by your server must be in `"dependencies"`, not `"devDependencies"`.  If `index.cjs` requires `express`, `dotenv`, `drizzle-orm`, `pg`, etc., but those packages are under `devDependencies`, they won’t be installed in the production container and the require will throw.  Move all runtime libraries from `devDependencies` to `dependencies` and keep only build tools (typescript, ts-node, vite, tailwindcss, autoprefixer, drizzle-kit, rimraf, etc.) in `devDependencies`.
+
+After making those changes:
+
+1. Clean and rebuild: `npm ci && npm run build`.
+2. Start locally with `npm start` to verify it runs without errors.
+3. Redeploy with `build = ["npm", "run", "build"]` and `run = ["npm", "start"]`.
+
+By pointing to the correct compiled file and ensuring all runtime modules are in `"dependencies"`, the `MODULE_NOT_FOUND` error will be resolved and the deployment will stop crashing.

@@ -6800,7 +6800,14 @@ app.use((req, res, next) => {
   res.set("Cache-Control", "no-cache");
   next();
 });
-var __dirname = typeof __dirname !== "undefined" ? __dirname : import_path2.default.dirname((0, import_url.fileURLToPath)(import_meta.url));
+var getDirname = () => {
+  try {
+    return __dirname;
+  } catch {
+    return import_path2.default.dirname((0, import_url.fileURLToPath)(import_meta.url));
+  }
+};
+var __dirname = getDirname();
 var distPath = process.env.NODE_ENV === "production" ? import_path2.default.join(__dirname, "../client") : import_path2.default.join(__dirname, "../dist/client");
 app.get("/healthz", (_, res) => {
   res.status(200).send("ok");
