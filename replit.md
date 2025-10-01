@@ -12,13 +12,13 @@
 - ✅ Google Reviews integration configured (requires valid API keys)
 
 **Recent Deployment Fixes (October 1):**
-- ✅ Fixed deployment crash loop by compiling TypeScript to CommonJS format (.cjs)
+- ✅ Fixed deployment crash loop by switching from CommonJS (.cjs) to ESM (.js) format
 - ✅ Build command: `npm ci && npm run build` (frontend + server)
-- ✅ Production start: `NODE_ENV=production node dist/server/index.cjs` (no tsx at runtime)
-- ✅ esbuild bundles server TypeScript with --packages=external (keeps node_modules external)
-- ✅ CommonJS format prevents "Dynamic require" errors from Express middleware
-- ✅ Development uses tsx with ESM, production uses Node.js with CommonJS
-- ✅ __dirname compatibility handled for both ESM (dev) and CJS (prod) environments
+- ✅ Production start: `NODE_ENV=production node dist/server/index.js` (no tsx at runtime)
+- ✅ esbuild transpiles TypeScript to ESM with --packages=external (keeps node_modules external)
+- ✅ ESM format matches package.json "type": "module" setting
+- ✅ __dirname resolved using import.meta.url for ESM compatibility
+- ✅ Express v5.1.0 properly listed in dependencies for production runtime
 
 ## Overview
 
@@ -47,7 +47,7 @@ Preferred communication style: Simple, everyday language.
 - **API Structure**: RESTful API routes in `/server/routes/` directory
 - **Security**: Helmet, rate limiting, input sanitization, CORS configuration
 - **Development**: tsx for TypeScript execution on port 3001
-- **Production**: esbuild compiles TypeScript to CommonJS (dist/server/index.cjs)
+- **Production**: esbuild transpiles TypeScript to ESM (dist/server/index.js)
 
 ### Database Architecture
 - **Database**: PostgreSQL with Drizzle ORM
