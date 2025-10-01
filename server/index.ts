@@ -4,7 +4,15 @@ import cookieParser from 'cookie-parser'
 import { config } from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
+
+// Load environment variables FIRST
+config()
+
+// Validate environment variables BEFORE importing services
 import { validateEnvironment } from './boot-guard'
+validateEnvironment()
+
+// Now safe to import services that may use environment variables
 import { db } from './db'
 // import { setupAuth, isAuthenticated } from './replitAuth' // Disabled - using token auth instead
 import { storage } from './storage'
@@ -32,12 +40,6 @@ import {
   securityLogger,
   corsConfig
 } from './middleware/security'
-
-// Load environment variables
-config()
-
-// Validate all required environment variables - exit with code 1 if any are missing
-validateEnvironment()
 
 const app = express()
 // Use port 3001 in development for API server, 5000 in production

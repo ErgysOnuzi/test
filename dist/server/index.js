@@ -13,15 +13,17 @@ import path2 from "path";
 import { fileURLToPath } from "url";
 
 // server/boot-guard.ts
-var REQUIRED_SECRETS = [
+var CRITICAL_SECRETS = [
+  "SESSION_SECRET",
+  "JWT_SECRET"
+];
+var OPTIONAL_SECRETS = [
   "DATABASE_URL",
   "PGHOST",
   "PGPORT",
   "PGUSER",
   "PGPASSWORD",
   "PGDATABASE",
-  "SESSION_SECRET",
-  "JWT_SECRET",
   "ADMIN_EMAIL",
   "ADMIN_USERNAME",
   "ADMIN_PASSWORD",
@@ -31,25 +33,40 @@ var REQUIRED_SECRETS = [
 ];
 function validateEnvironment() {
   console.log("\u{1F50D} Boot Guard: Validating environment variables...");
-  const missing = [];
+  const criticalMissing = [];
+  const optionalMissing = [];
   const present = [];
-  for (const secret of REQUIRED_SECRETS) {
+  for (const secret of CRITICAL_SECRETS) {
     if (!process.env[secret] || process.env[secret]?.trim() === "") {
-      missing.push(secret);
+      criticalMissing.push(secret);
     } else {
       present.push(secret);
     }
   }
-  console.log(`\u2705 Present (${present.length}/${REQUIRED_SECRETS.length}):`, present.join(", "));
-  if (missing.length > 0) {
-    console.error("\u274C Boot Guard: Missing required environment variables:");
-    missing.forEach((secret) => {
+  for (const secret of OPTIONAL_SECRETS) {
+    if (!process.env[secret] || process.env[secret]?.trim() === "") {
+      optionalMissing.push(secret);
+    } else {
+      present.push(secret);
+    }
+  }
+  const totalSecrets = CRITICAL_SECRETS.length + OPTIONAL_SECRETS.length;
+  console.log(`\u2705 Present (${present.length}/${totalSecrets}):`, present.join(", "));
+  if (criticalMissing.length > 0) {
+    console.error("\u274C Boot Guard: Missing CRITICAL environment variables:");
+    criticalMissing.forEach((secret) => {
       console.error(`   - ${secret}`);
     });
     console.error("\n\u{1F6A8} Exiting with code 1. Please add missing secrets to Replit Secrets.");
     process.exit(1);
   }
-  console.log("\u2705 Boot Guard: All required environment variables are present");
+  if (optionalMissing.length > 0) {
+    console.warn("\u26A0\uFE0F  Boot Guard: Missing optional environment variables (some features may be limited):");
+    optionalMissing.forEach((secret) => {
+      console.warn(`   - ${secret}`);
+    });
+  }
+  console.log("\u2705 Boot Guard: All critical environment variables are present");
 }
 
 // server/db.ts

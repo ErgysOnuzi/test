@@ -19,6 +19,7 @@
 - ✅ ESM format matches package.json "type": "module" setting
 - ✅ __dirname resolved using import.meta.url for ESM compatibility
 - ✅ Express v5.1.0 properly listed in dependencies for production runtime
+- ✅ Relaxed boot guard: Only SESSION_SECRET and JWT_SECRET are critical (server won't crash if DB/API keys missing)
 
 ## Overview
 
