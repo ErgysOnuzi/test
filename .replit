@@ -101,7 +101,7 @@ externalPort = 6800
 # Deployment Configuration
 [deployment]
 deploymentTarget = "autoscale"
-build = ["npm", "ci", "&&", "npm", "run", "build"]
+build = ["npm", "install", "&&", "npm", "run", "build"]
 run = ["npm", "start"]
 
 [deployment.env]
