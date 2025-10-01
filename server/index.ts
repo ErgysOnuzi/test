@@ -3,7 +3,6 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import { config } from 'dotenv'
 import path from 'path'
-import { fileURLToPath } from 'url'
 
 // Load environment variables FIRST
 config()
@@ -109,15 +108,9 @@ app.use((req, res, next) => {
 })
 
 // Serve static files from Vite build (production)
-// Get the directory of this file using import.meta.url (works in both ESM dev and prod)
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-// In production (compiled), server is at dist/server/index.js, client is at dist/client
-// In dev (tsx), server is at server/index.ts, client needs to be at dist/client
-const distPath = process.env.NODE_ENV === 'production'
-  ? path.join(__dirname, '../client')
-  : path.join(__dirname, '../dist/client')
+// Use process.cwd() which works in both ESM (development) and CJS (production)
+const rootDir = process.cwd()
+const distPath = path.join(rootDir, 'dist/client')
 
 // Deployment health check endpoint (must be before other routes)
 app.get('/healthz', (_, res) => {

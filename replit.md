@@ -12,13 +12,14 @@
 - ✅ Google Reviews integration configured (requires valid API keys)
 
 **Recent Deployment Fixes (October 1):**
-- ✅ Fixed deployment crash loop by switching from CommonJS (.cjs) to ESM (.js) format
-- ✅ Build command: `npm ci && npm run build` (frontend + server)
-- ✅ Production start: `NODE_ENV=production node dist/server/index.js` (no tsx at runtime)
-- ✅ esbuild transpiles TypeScript to ESM with --packages=external (keeps node_modules external)
-- ✅ ESM format matches package.json "type": "module" setting
-- ✅ __dirname resolved using import.meta.url for ESM compatibility
-- ✅ Express v5.1.0 properly listed in dependencies for production runtime
+- ✅ Fixed "Cannot find package 'express'" deployment crash with hybrid bundling approach
+- ✅ Build command: `npm install && npm run build` (installs dependencies + builds bundle)
+- ✅ Production start: `NODE_ENV=production node dist/server/index.cjs`
+- ✅ Hybrid bundling: esbuild bundles JS dependencies (Express, etc.) but keeps native modules external
+- ✅ Native modules (sharp, better-sqlite3, @neondatabase/serverless) loaded from node_modules at runtime
+- ✅ CommonJS format (--format=cjs --target=node20) avoids ESM "Dynamic require" errors  
+- ✅ Path resolution uses process.cwd() (works in both ESM dev and CJS production)
+- ✅ Result: 6.9MB bundle + node_modules for native dependencies
 - ✅ Relaxed boot guard: Only SESSION_SECRET and JWT_SECRET are critical (server won't crash if DB/API keys missing)
 
 ## Overview
@@ -48,7 +49,7 @@ Preferred communication style: Simple, everyday language.
 - **API Structure**: RESTful API routes in `/server/routes/` directory
 - **Security**: Helmet, rate limiting, input sanitization, CORS configuration
 - **Development**: tsx for TypeScript execution on port 3001
-- **Production**: esbuild transpiles TypeScript to ESM (dist/server/index.js)
+- **Production**: Hybrid bundling - esbuild creates 6.9MB CommonJS bundle with JS dependencies, native modules (sharp, better-sqlite3) external in node_modules
 
 ### Database Architecture
 - **Database**: PostgreSQL with Drizzle ORM
