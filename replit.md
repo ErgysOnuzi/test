@@ -11,14 +11,14 @@
 - ✅ All pages functional: Menu, Gallery, Events, Reservations, Contact
 - ✅ Google Reviews integration configured (requires valid API keys)
 
-**Recent Deployment Fixes (September 30):**
-- ✅ Resolved production dependency issues by using tsx as a runtime dependency
-- ✅ Build command only builds frontend with Vite (no server compilation needed)
-- ✅ Production start uses `NODE_ENV=production tsx server/index.ts`
-- ✅ tsx remains in dependencies ensuring TypeScript runs directly in production
-- ✅ Deployment configured for autoscale (build: vite, run: tsx)
-- ✅ Verified production server correctly binds to PORT environment variable
-- ✅ All node_modules available at runtime without bundling complexity
+**Recent Deployment Fixes (October 1):**
+- ✅ Fixed deployment crash loop by compiling TypeScript to CommonJS format (.cjs)
+- ✅ Build command: `npm ci && npm run build` (frontend + server)
+- ✅ Production start: `NODE_ENV=production node dist/server/index.cjs` (no tsx at runtime)
+- ✅ esbuild bundles server TypeScript with --packages=external (keeps node_modules external)
+- ✅ CommonJS format prevents "Dynamic require" errors from Express middleware
+- ✅ Development uses tsx with ESM, production uses Node.js with CommonJS
+- ✅ __dirname compatibility handled for both ESM (dev) and CJS (prod) environments
 
 ## Overview
 
@@ -47,7 +47,7 @@ Preferred communication style: Simple, everyday language.
 - **API Structure**: RESTful API routes in `/server/routes/` directory
 - **Security**: Helmet, rate limiting, input sanitization, CORS configuration
 - **Development**: tsx for TypeScript execution on port 3001
-- **Production**: esbuild bundle as ESM module (server.mjs)
+- **Production**: esbuild compiles TypeScript to CommonJS (dist/server/index.cjs)
 
 ### Database Architecture
 - **Database**: PostgreSQL with Drizzle ORM

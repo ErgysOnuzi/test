@@ -59,10 +59,6 @@ localPort = 35821
 externalPort = 3003
 
 [[ports]]
-localPort = 36253
-externalPort = 8008
-
-[[ports]]
 localPort = 39245
 externalPort = 3002
 
@@ -89,6 +85,10 @@ externalPort = 4200
 [[ports]]
 localPort = 44639
 externalPort = 6800
+
+[[ports]]
+localPort = 45299
+externalPort = 8008
 
 # Deployment Configuration
 [deployment]
