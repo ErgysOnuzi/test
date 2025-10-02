@@ -11,7 +11,7 @@
     "dev:server": "NODE_ENV=development tsx server/index.ts",
     "dev:client": "vite --port 5000 --host 0.0.0.0",
     "build:client": "vite build",
-    "build:server": "esbuild server/index.ts --bundle --platform=node --outfile=dist/server/index.cjs --format=cjs --target=node20 --external:sharp --external:better-sqlite3 --external:@neondatabase/serverless --sourcemap",
+    "build:server": "esbuild server/index.ts --bundle --platform=node --outfile=dist/server/index.cjs --format=cjs --target=node20 --external:sharp --external:better-sqlite3 --sourcemap --banner:js=\"try{require('node:buffer')}catch{};\"",
     "build": "npm run build:client && npm run build:server",
     "start": "NODE_ENV=production node dist/server/index.cjs",
     "preview": "vite preview --port 5000 --host 0.0.0.0",
@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
-    "@neondatabase/serverless": "^0.10.4",
+    "@neondatabase/serverless": "^1.0.2",
     "@next/bundle-analyzer": "^15.5.4",
     "@octokit/rest": "^22.0.0",
     "@radix-ui/react-aspect-ratio": "^1.1.3",

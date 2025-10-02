@@ -1,8 +1,8 @@
-import { drizzle } from 'drizzle-orm/neon-serverless';
+import { neon } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-http';
 import * as schema from '../shared/schema';
 
-// Database connection - initialized asynchronously to support ESM-only packages in CJS bundle
-let pool: any;
+// Database connection using Neon HTTP client (no websockets, works in bundled CJS)
 let db: any;
 
 async function initializeDatabase() {
@@ -16,14 +16,9 @@ async function initializeDatabase() {
     );
   }
 
-  // Dynamic import for ESM-only package (works in both ESM dev and CJS production)
-  const { Pool, neonConfig } = await import('@neondatabase/serverless');
-  const ws = await import('ws');
-  
-  neonConfig.webSocketConstructor = ws.default;
-  
-  pool = new Pool({ connectionString: process.env.DATABASE_URL });
-  db = drizzle({ client: pool, schema });
+  // HTTP client - no websockets needed, can be bundled
+  const sql = neon(process.env.DATABASE_URL);
+  db = drizzle(sql, { schema });
   
   return db;
 }
@@ -35,4 +30,4 @@ export { initializeDatabase };
 export const dbPromise = initializeDatabase();
 
 // Synchronous access (will throw if called before initialization)
-export { db, pool };
+export { db };
