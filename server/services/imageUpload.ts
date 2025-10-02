@@ -1,9 +1,22 @@
 import fs from 'fs/promises'
 import path from 'path'
 import crypto from 'crypto'
-import sharp from 'sharp'
 import multer from 'multer'
 import { Request, Response, NextFunction } from 'express'
+
+// Lazy load sharp only when needed (may not be available in deployment)
+let sharp: any = null
+async function getSharp() {
+  if (!sharp) {
+    try {
+      sharp = (await import('sharp')).default
+    } catch (error) {
+      console.warn('⚠️ Sharp module not available - image processing disabled')
+      throw new Error('Image processing is not available in this environment')
+    }
+  }
+  return sharp
+}
 
 // Image upload configuration
 export const IMAGE_CONFIG = {
@@ -83,7 +96,8 @@ export class ImageValidator {
 
     // Additional sharp validation (will throw if corrupted)
     try {
-      const metadata = await sharp(file.buffer).metadata()
+      const sharpLib = await getSharp()
+      const metadata = await sharpLib(file.buffer).metadata()
       
       // Check dimensions
       if (metadata.width && metadata.width > IMAGE_CONFIG.maxWidth) {
@@ -122,7 +136,8 @@ export class ImageProcessor {
     const filepath = path.join(IMAGE_CONFIG.uploadDir, filename)
 
     // Process image: convert to WebP, strip EXIF, optimize
-    const processedBuffer = await sharp(file.buffer)
+    const sharpLib = await getSharp()
+    const processedBuffer = await sharpLib(file.buffer)
       .webp({ 
         quality: IMAGE_CONFIG.quality,
         effort: 4, // Better compression
@@ -135,7 +150,7 @@ export class ImageProcessor {
       .toBuffer()
 
     // Get processed image metadata
-    const metadata = await sharp(processedBuffer).metadata()
+    const metadata = await sharpLib(processedBuffer).metadata()
 
     // Save processed image
     await fs.writeFile(filepath, processedBuffer)

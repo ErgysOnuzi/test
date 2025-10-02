@@ -12,13 +12,14 @@
 - ✅ Google Reviews integration configured (requires valid API keys)
 
 **Recent Deployment Fixes (October 2):**
-- ✅ Fixed "Cannot find module '@neondatabase/serverless'" deployment crash
-- ✅ Switched to Neon HTTP client (drizzle-orm/neon-http) - no websockets, fully bundleable
+- ✅ Fixed "Cannot find module" deployment crashes
+- ✅ Switched to Neon HTTP client (drizzle-orm/neon-http) - no websockets, fully bundleable  
 - ✅ Database connection now bundles directly into CJS without requiring node_modules at runtime
-- ✅ Build command: `npm install && npm run build` (frontend + server)
+- ✅ Made sharp (image processing) lazy-loaded and optional
+- ✅ Build command: `npm install && npm run build` (ensures all dependencies available)
 - ✅ Production start: `NODE_ENV=production node dist/server/index.cjs`
-- ✅ Full bundling: esbuild bundles ALL JS dependencies (Express, Neon, etc.) into single 7.0MB file
-- ✅ External modules: Only native binaries (sharp, better-sqlite3) need node_modules
+- ✅ Hybrid bundling: esbuild bundles ALL JS dependencies (Express, Neon, etc.) - 7.0MB file
+- ✅ External modules: Only native binaries (sharp, better-sqlite3) loaded from node_modules when available
 - ✅ CommonJS format (--format=cjs --target=node20) works in Replit autoscale containers
 - ✅ Path resolution uses process.cwd() (works in both ESM dev and CJS production)
 - ✅ Relaxed boot guard: Only SESSION_SECRET and JWT_SECRET are critical (server won't crash if DB/API keys missing)
