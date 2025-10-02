@@ -1,0 +1,322 @@
+Replit Agent Task: Full Site Audit + Hardening + E2E
+
+Project URL: https://la-cantina.replit.app
+Admin URL: https://la-cantina.replit.app/en/admin/login
+
+Objectives
+	•	Black-box test every public route and API.
+	•	Enforce security headers, caching, i18n canonicals, robots/sitemap.
+	•	SSR baseline for admin login (no blank HTML if JS is disabled).
+	•	Lock admin APIs, add rate limiting, CSRF, and error model.
+	•	Add healthcheck.
+	•	Add Playwright E2E covering all key flows.
+	•	Produce artifacts: test logs, Lighthouse JSON, and a PASS/FAIL checklist.
+
+Assumptions
+	•	Node app using either Next.js (App Router) or Vite/Express SPA. Detect and apply the correct branch below.
+
+	1.	Detect framework
+
+	•	If next.config.* present → Next.js branch.
+	•	Else if vite.config.* and express present → Vite/Express branch.
+
+	2.	Routing and HTTP status sweep
+Create scripts/probe.sh:
+
+#!/usr/bin/env bash
+set -euo pipefail
+BASE="https://la-cantina.replit.app"
+paths=( "/" "/en" "/de" "/menu" "/en/menu" "/reservations" "/en/reservations" "/contact" "/imprint" "/privacy" "/en/admin/login" "/not-a-real-route" )
+for p in "${paths[@]}"; do
+  code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE$p")
+  echo "$code  $BASE$p"
+done
+
+Run and store output:
+
+chmod +x scripts/probe.sh && ./scripts/probe.sh | tee artifacts/probe.txt
+
+	3.	Security headers
+Next.js branch — add to next.config.mjs:
+
+export default {
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains; preload" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "geolocation=(), camera=(), microphone=(), payment=()" },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+          { key: "Cross-Origin-Embedder-Policy", value: "require-corp" },
+          {
+            key: "Content-Security-Policy",
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://*.googletagmanager.com https://*.vercel-insights.com; connect-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'"
+          },
+        ],
+      },
+      {
+        source: "/_next/static/(.*)",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        source: "/(en|de)?",
+        headers: [{ key: "Cache-Control", value: "no-store" }],
+      },
+    ];
+  },
+};
+
+Vite/Express branch — in server.js:
+
+import express from "express";
+import helmet from "helmet";
+const app = express();
+app.set("trust proxy", true);
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: false,
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "*.googletagmanager.com", "*.vercel-insights.com"],
+      connectSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      frameAncestors: ["'none'"],
+    },
+  },
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  crossOriginOpenerPolicy: { policy: "same-origin" },
+  crossOriginEmbedderPolicy: true,
+  hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+}));
+app.use((req,res,next)=>{ res.setHeader("X-Content-Type-Options","nosniff"); next(); });
+
+// Static cache for assets
+app.use("/assets", (req,res,next)=>{ res.set("Cache-Control","public, max-age=31536000, immutable"); next(); });
+
+	4.	robots + sitemap + canonicals + hreflang
+Add /public/robots.txt:
+
+User-agent: *
+Allow: /
+Sitemap: https://la-cantina.replit.app/sitemap.xml
+
+Implement sitemap if missing: Next.js → package next-sitemap. Add next-sitemap.config.js:
+
+module.exports = {
+  siteUrl: "https://la-cantina.replit.app",
+  generateRobotsTxt: true,
+  alternateRefs: [
+    { href: "https://la-cantina.replit.app/", hreflang: "de" },
+    { href: "https://la-cantina.replit.app/en", hreflang: "en" },
+    { href: "https://la-cantina.replit.app/", hreflang: "x-default" },
+  ],
+};
+
+Run npx next-sitemap.
+
+Ensure each page sets <link rel="canonical"> and alternate hreflang for / (de), /en (en), and x-default.
+	5.	Admin login SSR baseline
+Next.js App Router — replace blank JS-only login with SSR shell:
+app/en/admin/login/page.tsx:
+
+export default function AdminLogin() {
+  return (
+    <main>
+      <h1>Admin Login</h1>
+      <form method="POST" action="/api/admin/login">
+        <input type="hidden" name="csrf" value="__INJECTED_TOKEN__" />
+        <label htmlFor="email">Email</label>
+        <input id="email" name="email" type="email" required autoComplete="username" />
+        <label htmlFor="password">Password</label>
+        <input id="password" name="password" type="password" required autoComplete="current-password" />
+        <button type="submit">Sign in</button>
+      </form>
+      <noscript>Enable JavaScript for enhanced validation.</noscript>
+    </main>
+  );
+}
+
+Ensure server injects a real CSRF token (see step 6).
+
+Express SSR fallback — serve minimal HTML with the same <form> if using SPA.
+	6.	Auth hardening
+
+	•	Sessions in HTTP-only cookies: Secure; HttpOnly; SameSite=Strict. Do not store JWT in localStorage.
+	•	CSRF:
+	•	Add csurf (Express) or implement double-submit cookie. Validate on all POST/PUT/PATCH/DELETE.
+	•	Rate limit login:
+
+import rateLimit from "express-rate-limit";
+const loginLimiter = rateLimit({ windowMs: 10*60*1000, max: 10, standardHeaders: true, legacyHeaders: false });
+app.post("/api/admin/login", loginLimiter, handler);
+
+	•	Rotate session ID after login/logout.
+	•	Return generic errors; never leak “user not found”.
+
+	7.	API error model and CORS
+Unified error responses:
+
+return res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Invalid input", fields: { email: "invalid" } } });
+
+CORS:
+	•	If APIs are not public, remove Access-Control-Allow-Origin: *. Allow only https://la-cantina.replit.app.
+
+	8.	Healthcheck
+/api/health returns:
+
+{ "status":"ok", "ts": 0, "commit": "<short_sha>" }
+
+	9.	CRUD lockdown and probes
+Create scripts/api-probe.sh:
+
+#!/usr/bin/env bash
+set -euo pipefail
+BASE="https://la-cantina.replit.app"
+declare -a endpoints=(
+  "/api/menu"
+  "/api/reservations"
+  "/api/opening-hours"
+  "/api/gallery"
+  "/api/pages"
+  "/api/translations"
+)
+for ep in "${endpoints[@]}"; do
+  echo "GET $ep => $(curl -s -o /dev/null -w "%{http_code}" "$BASE$ep")"
+  echo "POST $ep => $(curl -s -o /dev/null -w "%{http_code}" -X POST -H 'content-type: application/json' -d '{}' "$BASE$ep")"
+done
+
+Run and store:
+
+chmod +x scripts/api-probe.sh && ./scripts/api-probe.sh | tee artifacts/api-probe.txt
+
+Expected: GET 200/401/403 depending on design; POST 401/403 for unauthenticated.
+	10.	Playwright E2E
+Install:
+
+npm i -D @playwright/test
+npx playwright install --with-deps
+
+Add playwright.config.ts:
+
+import { defineConfig } from "@playwright/test";
+export default defineConfig({
+  use: { baseURL: "https://la-cantina.replit.app", trace: "on-first-retry" },
+  reporter: [["list"], ["html", { outputFolder: "artifacts/playwright-report" }]],
+});
+
+tests/public.spec.ts:
+
+import { test, expect } from "@playwright/test";
+
+test("home renders and has locale toggle", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+  await expect(page.locator("html")).toHaveAttribute("lang", /(de|en)/);
+  await expect(page.getByText(/DE|EN/)).toBeVisible();
+});
+
+test("english home CTAs", async ({ page }) => {
+  await page.goto("/en", { waitUntil: "networkidle" });
+  await expect(page.getByRole("link", { name: /Make Reservation|Reserve/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /View Menu|Menu/i })).toBeVisible();
+});
+
+test("admin login SSR baseline", async ({ page }) => {
+  await page.goto("/en/admin/login", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("form")).toBeVisible();
+  await expect(page.getByLabel(/Email/i)).toBeVisible();
+  await expect(page.getByLabel(/Password/i)).toBeVisible();
+});
+
+Add script:
+
+"scripts": {
+  "test:e2e": "playwright test --reporter=list,html"
+}
+
+Run:
+
+npm run test:e2e || true
+
+Save report in artifacts/playwright-report.
+	11.	Lighthouse run (headless)
+
+npm i -D lighthouse
+npx lighthouse https://la-cantina.replit.app --output=json --output-path=artifacts/lh.json --quiet --chrome-flags="--headless=new --no-sandbox"
+
+Targets: LCP ≤ 2.5s, CLS ≤ 0.05, TBT ≤ 200ms. Store JSON.
+	12.	Accessibility check
+Add axe-core check via Playwright quick assertion:
+
+import AxeBuilder from '@axe-core/playwright';
+test('a11y: home', async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+  const results = await new AxeBuilder({ page }).analyze();
+  require('fs').writeFileSync('artifacts/axe-home.json', JSON.stringify(results,null,2));
+  expect(results.violations).toEqual([]);
+});
+
+Install: npm i -D @axe-core/playwright
+	13.	Image/asset optimization
+
+	•	Ensure all images have width/height and loading="lazy" decoding="async".
+	•	For Next.js, use next/image with sizes and set images: { remotePatterns: [] } or domains: [] in next.config.mjs.
+	•	Preload critical fonts:
+
+<link rel="preload" as="font" type="font/woff2" href="/fonts/YourFont.woff2" crossorigin>
+
+	14.	Error pages
+
+	•	Provide custom 404 and 500 pages with correct status codes.
+	•	No stack traces in client responses.
+
+	15.	Supply chain & build hygiene
+
+	•	Pin Node version in package.json "engines": { "node": ">=20 <21" }.
+	•	Use lockfile; run npm ci.
+	•	npm audit --omit=dev and save report to artifacts/audit.txt.
+	•	Single start command binds $PORT. If Express, app.set('trust proxy', true).
+
+	16.	PASS/FAIL checklist
+Create artifacts/checklist.md with these items and mark them programmatically:
+
+	•	All key routes return 200 on hard refresh.
+	•	Security headers present and correct.
+	•	Admin login renders SSR form baseline.
+	•	APIs reject unauthenticated CUD with 401/403.
+	•	robots.txt and sitemap.xml valid.
+	•	Canonical + hreflang tags correct.
+	•	LCP/CLS/TBT within targets (attach Lighthouse JSON).
+	•	Axe violations = 0 on / and /en.
+	•	Healthcheck responds with status ok.
+	•	No stack traces or ORM errors exposed.
+
+	17.	Output
+
+	•	Upload artifacts/ directory containing:
+	•	probe.txt, api-probe.txt
+	•	playwright-report/ HTML
+	•	lh.json
+	•	axe-*.json
+	•	audit.txt
+	•	checklist.md
+
+Fixes to implement immediately if failing
+	•	If /en/admin/login returns blank HTML without JS → implement SSR page as in step 5.
+	•	If deep links 404 in SPA → add wildcard fallback (Vite) or ensure Next server is used (not static export).
+	•	If CSP blocks required analytics → explicitly allow only necessary domains; do not use *.
+	•	If any API exposes stack traces → wrap handlers with try/catch and return unified error model.
+
+Run the sequence now:
+
+mkdir -p artifacts scripts
+scripts/probe.sh && scripts/api-probe.sh
+npm run test:e2e || true
+npx lighthouse https://la-cantina.replit.app --output=json --output-path=artifacts/lh.json --quiet --chrome-flags="--headless=new --no-sandbox" || true
+npm audit --omit=dev | tee artifacts/audit.txt || true
+
+Deliver the artifacts directory and checklist marked with PASS/FAIL for each item.
