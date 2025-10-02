@@ -219,7 +219,7 @@ function generateHTML(options: HTMLOptions): string {
           "value": true
         }
       ],
-      ...(reviewsData && reviewsData.place_info?.rating > 0 && {
+      ...(reviewsData && reviewsData.place_info && reviewsData.place_info.rating > 0 && {
         "aggregateRating": {
           "@type": "AggregateRating",
           "ratingValue": reviewsData.place_info.rating,

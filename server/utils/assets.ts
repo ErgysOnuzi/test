@@ -43,13 +43,14 @@ export function getProductionAssets(): Assets {
       throw new Error('JS asset not found in build')
     }
     
-    cachedAssets = {
+    const assets: Assets = {
       js: jsMatch[1],
       css: cssMatch ? cssMatch[1] : ''
     }
     
-    console.log('📦 Production assets loaded:', cachedAssets)
-    return cachedAssets
+    cachedAssets = assets
+    console.log('📦 Production assets loaded:', assets)
+    return assets
   } catch (error) {
     console.error('❌ CRITICAL: Failed to load production assets:', error)
     // In production, this should fail visibly

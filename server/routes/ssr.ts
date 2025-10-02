@@ -46,7 +46,7 @@ router.get(['/', '/de', '/en'], async (req, res) => {
     const html = renderPage({
       url,
       locale,
-      reviewsData, // Pass reviews data for SSR
+      reviewsData: reviewsData || undefined, // Pass reviews data for SSR
       seoTitle,
       seoDescription,
       ogImage: '/og.jpg'
