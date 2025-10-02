@@ -1,0 +1,92 @@
+Agent task. Fix crash loop by removing the ESM-only Neon driver and using the CJS-compatible client. Keep CommonJS build (dist/server/index.cjs) and make runtime resolvable.
+	1.	Dependencies
+
+	•	Replace @neondatabase/serverless with CJS client and ensure express is a prod dep.
+
+npm rm @neondatabase/serverless
+npm i --save @neondatabase/client express
+rm -rf node_modules package-lock.json
+npm ci
+
+	2.	package.json (enforce CJS start + build)
+
+	•	Ensure:
+
+{
+  "name": "rest-express",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "build": "tsc -p tsconfig.json || true",
+    "start": "NODE_ENV=production node dist/server/index.cjs"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "@neondatabase/client": "^0.10.0"
+  },
+  "engines": { "node": ">=20" }
+}
+
+	3.	Server code changes (source, not only dist)
+
+	•	In the source server file that compiles to dist/server/index.cjs, replace any Neon import with CJS:
+
+// src/server/index.js or index.ts (the file that generates dist/server/index.cjs)
+const express = require('express');
+const { neon } = require('@neondatabase/client');
+
+if (!process.env.DATABASE_URL) {
+  console.error('DATABASE_URL missing');
+  process.exit(1);
+}
+const sql = neon(process.env.DATABASE_URL);
+
+const app = express();
+app.get('/health', (_req, res) => res.send('ok'));
+app.get('/db-ping', async (_req, res) => {
+  try { await sql`SELECT 1`; res.send('db ok'); } 
+  catch (e) { console.error(e); res.status(500).send('db fail'); }
+});
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log('Node', process.version, 'env', process.env.NODE_ENV, 'port', port);
+});
+
+	•	Rebuild to refresh dist/:
+
+npm run build
+
+	4.	Replit run command
+
+	•	.replit must run npm start from the app folder. If the project root contains package.json:
+
+run = "npm start"
+
+	•	If the app lives in a subfolder (e.g., apps/api):
+
+run = "cd apps/api && npm start"
+
+	5.	Sanity checks before starting
+
+node -e "console.log(require.resolve('@neondatabase/client'))"
+test -f dist/server/index.cjs && echo ok-dist
+
+	6.	Start and verify
+
+npm start
+# then open /health and /db-ping
+
+	7.	Remove dead ESM paths to prevent regression
+
+	•	Delete any import { neon } from '@neondatabase/serverless' in the repo.
+	•	Ensure bundler/tsconfig does not output .js ESM for the server entry; keep .cjs or "type":"commonjs".
+
+	8.	If monorepo or separate build container
+
+	•	Run all install/build steps in the same directory that produces dist/server/index.cjs.
+	•	If a prelaunch step copies artifacts to /home/runner/workspace, ensure node_modules exist there or that you deploy with npm ci in that path.
+
+	9.	Optional: if you insist on using @neondatabase/serverless
+
+	•	Switch to ESM end-to-end: "type":"module", compile to dist/server/index.js ESM, and use import { neon } from '@neondatabase/serverless'. Do not boot .cjs. This path is slower to implement here; prefer steps 1–6.
