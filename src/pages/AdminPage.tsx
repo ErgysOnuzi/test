@@ -157,7 +157,9 @@ export default function AdminPage() {
 
   const fetchReservations = async () => {
     try {
-      const response = await fetch('/api/reservations')
+      const response = await fetch('/api/reservations', {
+        credentials: 'include'
+      })
       const data = await response.json()
       setReservations(data)
     } catch (error) {
@@ -167,7 +169,9 @@ export default function AdminPage() {
 
   const fetchFeedback = async () => {
     try {
-      const response = await fetch('/api/feedback')
+      const response = await fetch('/api/feedback', {
+        credentials: 'include'
+      })
       const data = await response.json()
       setFeedbackList(data)
     } catch (error) {
@@ -177,7 +181,9 @@ export default function AdminPage() {
 
   const fetchContactMessages = async () => {
     try {
-      const response = await fetch('/api/contact')
+      const response = await fetch('/api/contact', {
+        credentials: 'include'
+      })
       const data = await response.json()
       setContactMessages(data)
     } catch (error) {
