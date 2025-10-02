@@ -1,6 +1,6 @@
 # La Cantina Berlin Restaurant Website
 
-## Current Status (September 30, 2025)
+## Current Status (October 2, 2025)
 
 **✅ REACT/VITE/EXPRESS ARCHITECTURE RESTORED** - Successfully maintained original architecture:
 - ✅ React 18 with Vite for frontend (port 5000)
@@ -10,6 +10,7 @@
 - ✅ Homepage rendering correctly with terracotta color scheme
 - ✅ All pages functional: Menu, Gallery, Events, Reservations, Contact
 - ✅ Google Reviews integration configured (requires valid API keys)
+- ✅ **Admin Panel fully functional** - Cookie-based authentication with CSRF protection
 
 **Recent Deployment Fixes (October 2):**
 - ✅ Fixed "Cannot find module" deployment crashes
@@ -23,6 +24,7 @@
 - ✅ CommonJS format (--format=cjs --target=node20) works in Replit autoscale containers
 - ✅ Path resolution uses process.cwd() (works in both ESM dev and CJS production)
 - ✅ Relaxed boot guard: Only SESSION_SECRET and JWT_SECRET are critical (server won't crash if DB/API keys missing)
+- ✅ Admin authentication fixed: All API calls now include credentials for session management
 
 ## Overview
 
@@ -89,6 +91,21 @@ Preferred communication style: Simple, everyday language.
 - **Caching**: 6-hour cache to reduce API calls
 - **Security**: Rate limiting, input sanitization, error handling
 - **Current Status**: API keys need to be properly configured in Google Cloud Console with Places API enabled
+
+### Admin Panel Authentication
+- **Login URL**: `/de/admin/login` (German) or `/en/admin/login` (English)
+- **Dashboard URL**: `/de/admin/dashboard` (German) or `/en/admin/dashboard` (English)
+- **Authentication Method**: Cookie-based sessions with JWT tokens (2-hour expiry)
+- **CSRF Protection**: CSRF tokens required for all state-changing operations
+- **Credentials**: Stored in Replit Secrets (ADMIN_EMAIL, ADMIN_USERNAME, ADMIN_PASSWORD)
+- **Features**: 
+  - Menu management (CRUD operations)
+  - Event bookings management
+  - Reservations management
+  - Feedback/reviews moderation
+  - Contact messages management
+  - Gallery image management
+- **Session Security**: HttpOnly cookies, secure in production, SameSite protection
 
 ## Project Structure
 
