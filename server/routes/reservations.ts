@@ -1,6 +1,6 @@
 import express from 'express'
 import { eq } from 'drizzle-orm'
-import { db } from '../db'
+import { dbPromise } from '../db'
 import * as schema from '../../shared/schema'
 import { validateReservation, handleValidationErrors } from '../middleware/validation'
 
@@ -12,6 +12,7 @@ import { requireAuth, requireAuthWithCSRF } from './admin'
 // POST /api/reservations - Create new reservation with validation
 router.post('/', validateReservation, handleValidationErrors, async (req, res) => {
   try {
+    const db = await dbPromise
     const {
       name,
       email,
@@ -70,6 +71,7 @@ router.post('/', validateReservation, handleValidationErrors, async (req, res) =
 // GET /api/reservations - Get all reservations (admin)
 router.get('/', requireAuth, async (req, res) => {
   try {
+    const db = await dbPromise
     const allReservations = await db.select().from(schema.reservations)
     
     const transformedReservations = allReservations.map((reservation: any) => ({
@@ -96,6 +98,7 @@ router.get('/', requireAuth, async (req, res) => {
 // PUT /api/reservations/:id - Update reservation (admin)
 router.put('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     const {
       name,
@@ -157,6 +160,7 @@ router.put('/:id', requireAuthWithCSRF, async (req, res) => {
 // DELETE /api/reservations/:id - Delete reservation (admin)
 router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     
     const [deletedReservation] = await db
@@ -182,6 +186,7 @@ router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
 // PATCH /api/reservations/:id/status - Update reservation status (admin)
 router.patch('/:id/status', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     const { status } = req.body
 

@@ -1,5 +1,5 @@
 import express from 'express'
-import { db } from '../db'
+import { dbPromise } from '../db'
 import { gallery } from '../../shared/schema'
 import { eq } from 'drizzle-orm'
 
@@ -11,6 +11,7 @@ import { requireAuth, requireAuthWithCSRF } from './admin'
 // GET /api/gallery - Get all gallery images
 router.get('/', async (req, res) => {
   try {
+    const db = await dbPromise
     const images = await db.select().from(gallery).where(eq(gallery.isActive, true))
     
     // Transform to match expected API format
@@ -37,6 +38,7 @@ router.get('/', async (req, res) => {
 // GET /api/gallery/:id - Get specific gallery image
 router.get('/:id', async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     const images = await db.select().from(gallery).where(eq(gallery.id, parseInt(id)))
     
@@ -68,6 +70,7 @@ router.get('/:id', async (req, res) => {
 // POST /api/gallery - Upload new gallery image
 router.post('/', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const {
       imageUrl,
       description = '',
@@ -116,6 +119,7 @@ router.post('/', requireAuthWithCSRF, async (req, res) => {
 // PUT /api/gallery/:id - Update gallery image
 router.put('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     const {
       imageUrl,
@@ -170,6 +174,7 @@ router.put('/:id', requireAuthWithCSRF, async (req, res) => {
 // DELETE /api/gallery/:id - Delete gallery image
 router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     const deleteResult = await db.delete(gallery)
       .where(eq(gallery.id, parseInt(id)))
@@ -190,6 +195,7 @@ router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
 // PATCH /api/gallery/:id/toggle - Toggle gallery image visibility
 router.patch('/:id/toggle', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     
     // First get the current state

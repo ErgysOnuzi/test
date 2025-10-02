@@ -1,5 +1,5 @@
 import express from 'express'
-import { db } from '../db'
+import { dbPromise } from '../db'
 import { events, eventBookings } from '../../shared/schema'
 import { eq, desc } from 'drizzle-orm'
 import { validateEventBooking, handleValidationErrors } from '../middleware/validation'
@@ -58,6 +58,7 @@ function bookingToApiFormat(dbBooking: any) {
 // GET /api/events - Get all events
 router.get('/', async (req, res) => {
   try {
+    const db = await dbPromise
     const dbEvents = await db.select().from(events).orderBy(desc(events.createdAt))
     const apiEvents = dbEvents.map(eventToApiFormat)
     console.log(`🎉 Fetched ${apiEvents.length} events`)
@@ -71,6 +72,7 @@ router.get('/', async (req, res) => {
 // GET /api/events/:id - Get specific event
 router.get('/:id', async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     const [dbEvent] = await db.select().from(events).where(eq(events.id, parseInt(id!)))
     
@@ -89,6 +91,7 @@ router.get('/:id', async (req, res) => {
 // POST /api/events - Create new event
 router.post('/', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const {
       title_de,
       title_en,
@@ -129,6 +132,7 @@ router.post('/', requireAuthWithCSRF, async (req, res) => {
 // PUT /api/events/:id - Update event
 router.put('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     const updateData = req.body
 
@@ -164,6 +168,7 @@ router.put('/:id', requireAuthWithCSRF, async (req, res) => {
 // POST /api/events/:id/book - Book event with validation
 router.post('/:id/book', validateEventBooking, handleValidationErrors, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     const { name, email, phone, guests, specialRequests } = req.body
 
@@ -219,6 +224,7 @@ router.post('/:id/book', validateEventBooking, handleValidationErrors, async (re
 // DELETE /api/events/:id - Delete event
 router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     
     // Check if event exists

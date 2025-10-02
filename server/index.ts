@@ -12,7 +12,7 @@ import { validateEnvironment } from './boot-guard'
 validateEnvironment()
 
 // Now safe to import services that may use environment variables
-import { db } from './db'
+import { initializeDatabase, dbPromise } from './db'
 // import { setupAuth, isAuthenticated } from './replitAuth' // Disabled - using token auth instead
 import { storage } from './storage'
 import healthRoutes from './routes/health'
@@ -122,6 +122,9 @@ app.use(ssrRoutes)
 
 // Setup routes without database-dependent authentication
 async function initializeServer() {
+  // Initialize database connection (handles ESM-only packages in CJS)
+  const db = await initializeDatabase()
+  
   // Disabled old auth system - using token-based auth instead
   // await setupAuth(app)
 

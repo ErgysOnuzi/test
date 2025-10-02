@@ -11,15 +11,16 @@
 - ✅ All pages functional: Menu, Gallery, Events, Reservations, Contact
 - ✅ Google Reviews integration configured (requires valid API keys)
 
-**Recent Deployment Fixes (October 1):**
-- ✅ Fixed "Cannot find package 'express'" deployment crash with hybrid bundling approach
+**Recent Deployment Fixes (October 2):**
+- ✅ Fixed "Cannot find module '@neondatabase/serverless'" error with dynamic import pattern
+- ✅ Database connection uses dynamic import() to load ESM-only packages in CJS bundle
 - ✅ Build command: `npm install && npm run build` (installs dependencies + builds bundle)
 - ✅ Production start: `NODE_ENV=production node dist/server/index.cjs`
-- ✅ Hybrid bundling: esbuild bundles JS dependencies (Express, etc.) but keeps native modules external
-- ✅ Native modules (sharp, better-sqlite3, @neondatabase/serverless) loaded from node_modules at runtime
-- ✅ CommonJS format (--format=cjs --target=node20) avoids ESM "Dynamic require" errors  
+- ✅ Hybrid bundling: esbuild bundles JS dependencies (Express, etc.) but externalizes native/ESM modules
+- ✅ External modules: @neondatabase/serverless (ESM-only), sharp, better-sqlite3 (native binaries)
+- ✅ CommonJS format (--format=cjs --target=node20) with async dynamic imports for ESM packages
 - ✅ Path resolution uses process.cwd() (works in both ESM dev and CJS production)
-- ✅ Result: 6.9MB bundle + node_modules for native dependencies
+- ✅ Result: 6.9MB bundle + node_modules for external dependencies
 - ✅ Relaxed boot guard: Only SESSION_SECRET and JWT_SECRET are critical (server won't crash if DB/API keys missing)
 
 ## Overview

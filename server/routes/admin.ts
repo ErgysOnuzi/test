@@ -1,7 +1,7 @@
 import express from 'express'
 import { createHash, randomBytes } from 'crypto'
 import jwt from 'jsonwebtoken'
-import { db } from '../db'
+import { dbPromise } from '../db'
 import { events, eventBookings } from '../../shared/schema'
 import { eq, desc } from 'drizzle-orm'
 import { validateAdminLogin, handleValidationErrors } from '../middleware/validation'
@@ -121,6 +121,7 @@ const requireAuthWithCSRF = [requireAuth, validateCSRF]
 // POST /api/admin/login - Admin login with validation
 router.post('/login', validateAdminLogin, handleValidationErrors, async (req, res) => {
   try {
+    const db = await dbPromise
     const { identifier, password } = req.body
 
     // Hash the provided password and validate credentials
@@ -193,6 +194,7 @@ router.post('/login', validateAdminLogin, handleValidationErrors, async (req, re
 // POST /api/admin/logout - Admin logout
 router.post('/logout', async (req, res) => {
   try {
+    const db = await dbPromise
     const sessionCookie = req.cookies?.['la_cantina_admin_session']
     
     if (sessionCookie) {
@@ -223,6 +225,7 @@ router.post('/logout', async (req, res) => {
 // GET /api/admin/session - Check admin session
 router.get('/session', async (req, res) => {
   try {
+    const db = await dbPromise
     const sessionCookie = req.cookies?.['la_cantina_admin_session']
     
     if (!sessionCookie) {
@@ -261,6 +264,7 @@ router.get('/session', async (req, res) => {
 // POST /api/admin/refresh - Refresh session token
 router.post('/refresh', async (req, res) => {
   try {
+    const db = await dbPromise
     const sessionCookie = req.cookies?.['la_cantina_admin_session']
     
     if (!sessionCookie) {
@@ -324,6 +328,7 @@ router.post('/refresh', async (req, res) => {
 // GET /api/admin/csrf - Get CSRF token
 router.get('/csrf', async (req, res) => {
   try {
+    const db = await dbPromise
     const { token: csrfToken, secret: csrfSecret } = generateCSRFToken()
     
     // Set CSRF secret cookie
@@ -344,6 +349,7 @@ router.get('/csrf', async (req, res) => {
 // GET /api/admin/bookings - Get all event bookings (admin only)
 router.get('/bookings', requireAuth, async (req, res) => {
   try {
+    const db = await dbPromise
     const dbBookings = await db.select().from(eventBookings).orderBy(desc(eventBookings.createdAt))
     const apiBookings = dbBookings.map(bookingToApiFormat)
     console.log(`📊 Admin fetched ${apiBookings.length} event bookings`)
@@ -357,6 +363,7 @@ router.get('/bookings', requireAuth, async (req, res) => {
 // PATCH /api/admin/bookings/:id/status - Update booking status (admin only)
 router.patch('/bookings/:id/status', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     const { status } = req.body // 'confirmed', 'cancelled', 'pending'
 
@@ -445,6 +452,7 @@ router.patch('/bookings/:id/status', requireAuthWithCSRF, async (req, res) => {
 // DELETE /api/admin/bookings/:id - Cancel booking and adjust capacity (admin only)
 router.delete('/bookings/:id', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     
     // Get the booking from database

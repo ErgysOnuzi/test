@@ -1,5 +1,5 @@
 import express from 'express'
-import { db } from '../db'
+import { dbPromise } from '../db'
 import { sql } from 'drizzle-orm'
 
 const router = express.Router()
@@ -14,6 +14,7 @@ router.get('/ready', async (req, res) => {
   const readiness: { db: string; storage?: string; error?: string } = { db: 'fail' }
   
   try {
+    const db = await dbPromise
     // Test database connection
     await db.execute(sql`SELECT 1`)
     readiness.db = 'ok'

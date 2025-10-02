@@ -1,5 +1,5 @@
 import express from 'express'
-import { db } from '../db'
+import { dbPromise } from '../db'
 import { menuItems } from '../../shared/schema'
 import { eq, sql } from 'drizzle-orm'
 
@@ -11,6 +11,7 @@ import { requireAuth, requireAuthWithCSRF } from './admin'
 // GET /api/menu - Get all menu items
 router.get('/', async (req, res) => {
   try {
+    const db = await dbPromise
     const items = await db.select().from(menuItems)
     console.log(`📋 Fetched ${items.length} menu items`)
     res.json(items)
@@ -23,6 +24,7 @@ router.get('/', async (req, res) => {
 // GET /api/menu/:id - Get specific menu item
 router.get('/:id', async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     const [item] = await db.select().from(menuItems).where(eq(menuItems.id, parseInt(id)))
     
@@ -40,6 +42,7 @@ router.get('/:id', async (req, res) => {
 // POST /api/menu - Create new menu item
 router.post('/', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const {
       title,
       description,
@@ -87,6 +90,7 @@ router.post('/', requireAuthWithCSRF, async (req, res) => {
 // PUT /api/menu/:id - Update menu item
 router.put('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     const updateData = req.body
 
@@ -117,6 +121,7 @@ router.put('/:id', requireAuthWithCSRF, async (req, res) => {
 // DELETE /api/menu/:id - Delete menu item
 router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     const [deletedItem] = await db
       .delete(menuItems)

@@ -1,5 +1,5 @@
 import express from 'express'
-import { db } from '../db'
+import { dbPromise } from '../db'
 import { feedbacks } from '../../shared/schema'
 import { eq, desc } from 'drizzle-orm'
 import { validateFeedback, handleValidationErrors } from '../middleware/validation'
@@ -12,6 +12,7 @@ import { requireAuth, requireAuthWithCSRF } from './admin'
 // GET /api/feedback - Get all feedback submissions (admin)
 router.get('/', requireAuth, async (req, res) => {
   try {
+    const db = await dbPromise
     const feedback = await db.select().from(feedbacks).orderBy(desc(feedbacks.createdAt))
     console.log(`⭐ Fetched ${feedback.length} feedback submissions`)
     res.json(feedback)
@@ -24,6 +25,7 @@ router.get('/', requireAuth, async (req, res) => {
 // GET /api/feedback/:id - Get specific feedback
 router.get('/:id', async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     const [feedback] = await db.select().from(feedbacks).where(eq(feedbacks.id, parseInt(id)))
     
@@ -41,6 +43,7 @@ router.get('/:id', async (req, res) => {
 // POST /api/feedback - Submit new feedback with validation
 router.post('/', validateFeedback, handleValidationErrors, async (req, res) => {
   try {
+    const db = await dbPromise
     const {
       name,
       email,
@@ -77,6 +80,7 @@ router.post('/', validateFeedback, handleValidationErrors, async (req, res) => {
 // PUT /api/feedback/:id - Update feedback (admin) with CSRF protection
 router.put('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     const updateData = req.body
 
@@ -100,6 +104,7 @@ router.put('/:id', requireAuthWithCSRF, async (req, res) => {
 // DELETE /api/feedback/:id - Delete feedback (admin) with CSRF protection
 router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     const [deletedFeedback] = await db.delete(feedbacks)
       .where(eq(feedbacks.id, parseInt(id)))
@@ -120,6 +125,7 @@ router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
 // PATCH /api/feedback/:id/approve - Approve/reject feedback (admin) with CSRF protection
 router.patch('/:id/approve', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     const { approved } = req.body
 

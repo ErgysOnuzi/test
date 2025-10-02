@@ -1,0 +1,126 @@
+Errors:
+	1.	Cannot find module 'express'
+Cause: express not installed in production, or listed under devDependencies instead of dependencies, or node_modules not present at runtime.
+	2.	Cannot find module '@neondatabase/serverless'
+Causes (one or more):
+
+	•	Package not installed or incorrectly placed under devDependencies.
+	•	You compile to CommonJS (index.cjs) and try to require() an ESM-only package. @neondatabase/serverless is ESM; CJS require() will fail unless you use dynamic import() or switch the runtime to ESM.
+
+	3.	Crash loop
+Cause: process exits on startup due to module load errors; host restarts repeatedly.
+
+Fixes (apply all):
+
+A) Dependencies must be in dependencies and installed in the deployed environment
+	•	Move to production deps:
+
+// package.json (relevant part)
+{
+  "type": "module", // if going ESM; see option B for CJS
+  "dependencies": {
+    "express": "^4.19.2",
+    "@neondatabase/serverless": "^0.10.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",       // or your bundler
+    "start": "NODE_ENV=production node dist/server/index.js" // ESM path; see B/C
+  },
+  "engines": { "node": ">=20.0.0" }
+}
+
+	•	Install for production:
+
+rm -rf node_modules package-lock.json
+npm ci
+
+If your deploy step omits dev dependencies, ensure both express and @neondatabase/serverless are under "dependencies".
+
+B) Choose ONE module format and make code match it
+
+Option 1 — ESM everywhere (recommended; simplest with Neon):
+	•	Keep "type": "module" in package.json.
+	•	Build output as ESM (.js), not .cjs. Configure your bundler/tsconfig:
+	•	tsconfig.json: "module": "ESNext", "moduleResolution": "Bundler" | "NodeNext".
+	•	Bundler (tsup/esbuild/webpack): output format esm.
+	•	Import correctly:
+
+// src/server/index.ts
+import express from 'express';
+import { neon } from '@neondatabase/serverless';
+
+const app = express();
+const sql = neon(process.env.DATABASE_URL!);
+
+app.get('/health', (_req, res) => res.send('ok'));
+
+app.listen(process.env.PORT || 3000);
+
+	•	Start script: node dist/server/index.js.
+
+Option 2 — Stay in CJS (keep .cjs output):
+	•	Keep "type": "commonjs" or remove "type".
+	•	Use dynamic import for Neon (because it’s ESM):
+
+// dist/server/index.cjs or src/server/index.js (CJS)
+const express = require('express');
+
+async function main() {
+  const { neon } = await import('@neondatabase/serverless');
+  const sql = neon(process.env.DATABASE_URL);
+
+  const app = express();
+  app.get('/health', (_req, res) => res.send('ok'));
+  app.listen(process.env.PORT || 3000);
+}
+
+main().catch(err => {
+  console.error(err);
+  process.exit(1);
+});
+
+	•	Start script: node dist/server/index.cjs.
+
+Option 3 — CJS with Neon’s Node client (avoid ESM import in CJS):
+	•	Replace serverless driver with CJS-friendly client:
+
+npm i @neondatabase/client
+npm rm @neondatabase/serverless
+
+// CJS
+const express = require('express');
+const { neon } = require('@neondatabase/client');
+const sql = neon(process.env.DATABASE_URL);
+
+	•	Keep .cjs start script.
+
+C) Ensure the deploy actually installs modules
+	•	If the platform builds in CI, use:
+
+npm ci --omit=dev=false   # to include all deps if your build step needs them
+npm ci --omit=dev         # only if all runtime deps are in "dependencies"
+
+	•	Verify node_modules/express and node_modules/@neondatabase/* exist in the runtime container.
+
+D) Sanity checks to stop the crash loop
+	•	Add a /health route (shown above).
+	•	Log on startup:
+
+console.log('Node', process.version, 'env', process.env.NODE_ENV);
+
+	•	Fail fast if DATABASE_URL is missing:
+
+if (!process.env.DATABASE_URL) {
+  console.error('DATABASE_URL missing');
+  process.exit(1);
+}
+
+E) Common Replit specifics (if applicable)
+	•	Ensure the Run command uses your start script, not nodemon or vite.
+	•	If using Nix, pin Node 20 and ensure it’s available.
+	•	Do not rely on dev deps at runtime; move anything required at boot to dependencies.
+
+Summary mapping error → fix:
+	•	Cannot find module 'express' → move express to "dependencies", run npm ci, ensure deploy installs prod deps.
+	•	Cannot find module '@neondatabase/serverless' → install it in "dependencies" and align module format: ESM build (Option 1) or dynamic import in CJS (Option 2) or swap to @neondatabase/client for CJS (Option 3).
+	•	Crash loop → fix imports, add health route, check env, verify npm ci ran, then restart.

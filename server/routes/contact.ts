@@ -1,6 +1,6 @@
 import express from 'express'
 import { eq } from 'drizzle-orm'
-import { db } from '../db'
+import { dbPromise } from '../db'
 import * as schema from '../../shared/schema'
 import { validateContactForm, handleValidationErrors } from '../middleware/validation'
 
@@ -12,6 +12,7 @@ import { requireAuth, requireAuthWithCSRF } from './admin'
 // POST /api/contact - Submit contact form with validation
 router.post('/', validateContactForm, handleValidationErrors, async (req, res) => {
   try {
+    const db = await dbPromise
     const {
       name,
       email,
@@ -50,6 +51,7 @@ router.post('/', validateContactForm, handleValidationErrors, async (req, res) =
 // GET /api/contact - Get all contact submissions (admin)
 router.get('/', requireAuth, async (req, res) => {
   try {
+    const db = await dbPromise
     const submissions = await db.select().from(schema.contactMessages)
     
     console.log(`📧 Fetched ${submissions.length} contact submissions`)
@@ -63,6 +65,7 @@ router.get('/', requireAuth, async (req, res) => {
 // GET /api/contact/:id - Get specific contact submission (admin)
 router.get('/:id', requireAuth, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     const [submission] = await db.select().from(schema.contactMessages)
       .where(eq(schema.contactMessages.id, parseInt(id)))
@@ -81,6 +84,7 @@ router.get('/:id', requireAuth, async (req, res) => {
 // PATCH /api/contact/:id/status - Update contact submission status (admin)
 router.patch('/:id/status', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     const { status, reply } = req.body // 'pending', 'read', 'replied', 'resolved'
 
@@ -116,6 +120,7 @@ router.patch('/:id/status', requireAuthWithCSRF, async (req, res) => {
 // DELETE /api/contact/:id - Delete contact submission (admin)
 router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
   try {
+    const db = await dbPromise
     const { id } = req.params
     
     const [deleted] = await db

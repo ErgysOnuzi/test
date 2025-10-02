@@ -1,7 +1,7 @@
 import express from 'express'
 import { renderPage } from '../ssr'
 import { GoogleReviewsService } from '../services/googleReviews'
-import { db } from '../db'
+import { dbPromise } from '../db'
 import { menuItems } from '../../shared/schema'
 
 const router = express.Router()
@@ -9,12 +9,14 @@ const router = express.Router()
 // SSR for landing page (home) with reviews for SEO
 router.get(['/', '/de', '/en'], async (req, res) => {
   try {
+    const db = await dbPromise
     const locale = req.path === '/en' ? 'en' : 'de'
     const url = req.path === '/' ? '/de' : req.path
     
     // Fetch reviews data for SEO
     let reviewsData = null
     try {
+    const db = await dbPromise
       reviewsData = await GoogleReviewsService.getReviews()
       console.log(`📊 SSR: Loaded ${reviewsData.reviews.length} reviews for SEO`)
     } catch (error) {
@@ -60,6 +62,7 @@ router.get(['/', '/de', '/en'], async (req, res) => {
 // SSR for menu page
 router.get(['/de/menu', '/en/menu'], async (req, res) => {
   try {
+    const db = await dbPromise
     const locale = req.path.startsWith('/en') ? 'en' : 'de'
     const menuItemsData = await db.select().from(menuItems)
     
