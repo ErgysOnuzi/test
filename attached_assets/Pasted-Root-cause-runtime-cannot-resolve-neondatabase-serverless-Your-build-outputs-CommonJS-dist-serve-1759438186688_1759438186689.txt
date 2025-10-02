@@ -1,0 +1,87 @@
+Root cause: runtime cannot resolve @neondatabase/serverless. Your build outputs CommonJS (dist/server/index.cjs) that does require('@neondatabase/serverless'). Two possibilities:
+	•	The package is not installed in production.
+	•	You’re on CJS and bundler emitted a require() for an ESM-only package. First symptom is MODULE_NOT_FOUND; after install, you’ll get ERR_REQUIRE_ESM unless you fix import style or switch to ESM.
+
+Fix now—choose one path and execute fully.
+
+Path A — stay CJS, keep .cjs
+	1.	Install proper deps:
+
+rm -rf node_modules package-lock.json
+npm i --save @neondatabase/serverless express
+
+	2.	Change the Neon import to dynamic ESM import in your server entry:
+
+// dist/server/index.cjs or src/server/index.js if you build to .cjs
+const express = require('express');
+
+async function main() {
+  const { neon } = await import('@neondatabase/serverless'); // ESM import
+  const sql = neon(process.env.DATABASE_URL);
+  const app = express();
+  app.get('/health', (_req, res) => res.send('ok'));
+  app.listen(process.env.PORT || 3000);
+}
+main().catch(err => { console.error(err); process.exit(1); });
+
+	3.	Ensure your bundler/transpiler does not rewrite the dynamic import into require(). If you’re using TypeScript, compile this file as plain JS without bundling or exclude it from transforms that CJS-ify imports.
+	4.	Start:
+
+npm run build
+NODE_ENV=production node dist/server/index.cjs
+
+Path B — switch to ESM end-to-end (recommended with @neondatabase/serverless)
+	1.	package.json:
+
+{
+  "type": "module",
+  "dependencies": {
+    "express": "^4.19.2",
+    "@neondatabase/serverless": "^0.10.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "NODE_ENV=production node dist/server/index.js"
+}
+
+	2.	TS config / bundler:
+
+	•	module: "ESNext" and moduleResolution: "NodeNext" (or use your bundler with ESM output).
+	•	Output file must be .js, not .cjs.
+
+	3.	Source imports:
+
+import express from 'express';
+import { neon } from '@neondatabase/serverless';
+
+const app = express();
+const sql = neon(process.env.DATABASE_URL!);
+app.get('/health', (_req, res) => res.send('ok'));
+app.listen(process.env.PORT || 3000);
+
+	4.	Reinstall clean:
+
+rm -rf node_modules package-lock.json
+npm ci
+npm run build
+npm start
+
+Path C — keep CJS and use the CJS-compatible Neon client
+	1.	Replace the package:
+
+npm rm @neondatabase/serverless
+npm i --save @neondatabase/client express
+
+	2.	Import stays CJS:
+
+const express = require('express');
+const { neon } = require('@neondatabase/client');
+const sql = neon(process.env.DATABASE_URL);
+
+	3.	Keep .cjs start.
+
+Hard checks to stop the loop:
+	•	Ensure @neondatabase/* appears under "dependencies" (not "devDependencies").
+	•	Verify install actually ran where package.json lives (ls node_modules/@neondatabase).
+	•	On Replit, set the Run command to your npm start and not to a dev launcher.
+	•	If you still see MODULE_NOT_FOUND, your install step didn’t execute or is running in a different working directory; purge and npm ci again.
