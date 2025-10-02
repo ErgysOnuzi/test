@@ -3,6 +3,7 @@ import { renderToString } from 'react-dom/server'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from '../src/App'
+import { getProductionAssets } from './utils/assets'
 
 interface SSROptions {
   url: string
@@ -87,6 +88,10 @@ interface HTMLOptions {
 
 function generateHTML(options: HTMLOptions): string {
   const { appHTML, dehydratedState, locale, seoTitle, seoDescription, ogImage, url, reviewsData } = options
+  
+  // Get production assets (JS and CSS)
+  const assets = getProductionAssets()
+  const isProduction = process.env.NODE_ENV === 'production'
   
   // Centralized site configuration
   const SITE_URL = 'https://lacantina-berlin.de'
@@ -261,13 +266,17 @@ function generateHTML(options: HTMLOptions): string {
       }
     }, null, 2)}
     </script>
+    ${isProduction && assets.css ? `<link rel="stylesheet" crossorigin href="${assets.css}">` : ''}
   </head>
   <body>
     <div id="root">${appHTML}</div>
     <script>
       window.__REACT_QUERY_STATE__ = ${dehydratedState};
     </script>
-    <script type="module" src="/src/main.tsx"></script>
+    ${isProduction 
+      ? `<script type="module" crossorigin src="${assets.js}"></script>` 
+      : `<script type="module" src="/src/main.tsx"></script>`
+    }
   </body>
 </html>`
 }
