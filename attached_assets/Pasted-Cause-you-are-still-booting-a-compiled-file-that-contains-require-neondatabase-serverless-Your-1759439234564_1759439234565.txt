@@ -1,0 +1,86 @@
+Cause: you are still booting a compiled file that contains require('@neondatabase/serverless'). Your dist/server/index.cjs was built before you changed deps. You must remove the ESM-only import from source, reinstall, rebuild, and ensure the runtime launches the new artifact. Do it exactly:
+
+Agent task — fix crash loop and Neon import
+	1.	Replace Neon driver with CJS-compatible client
+
+npm rm @neondatabase/serverless
+npm i --save @neondatabase/client express
+rm -rf node_modules package-lock.json
+npm ci
+
+	2.	Make runtime CJS explicit
+package.json minimal:
+
+{
+  "name": "rest-express",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "build": "tsc -p tsconfig.json || true",
+    "start": "NODE_ENV=production node dist/server/index.cjs"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "@neondatabase/client": "^0.10.0"
+  },
+  "engines": { "node": ">=20" }
+}
+
+	3.	Update server source to use the CJS client (not the serverless driver)
+Edit the actual source file that compiles into dist/server/index.cjs (e.g., src/server/index.ts or src/server/index.js):
+
+// CommonJS style
+const express = require('express');
+const { neon } = require('@neondatabase/client');
+
+if (!process.env.DATABASE_URL) {
+  console.error('DATABASE_URL missing');
+  process.exit(1);
+}
+const sql = neon(process.env.DATABASE_URL);
+
+const app = express();
+app.get('/health', (_req, res) => res.send('ok'));
+app.get('/db-ping', async (_req, res) => {
+  try { await sql`SELECT 1`; res.send('db ok'); }
+  catch (e) { console.error(e); res.status(500).send('db fail'); }
+});
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log('up on', port));
+
+Remove every occurrence of @neondatabase/serverless from the repo.
+	4.	Rebuild artifacts
+
+rm -rf dist
+npm run build
+
+	5.	Verify the compiled output no longer references serverless
+
+grep -R "@neondatabase/serverless" -n dist || echo "no serverless in dist"
+
+	6.	Force correct working directory and run command
+If project root contains package.json, set .replit:
+
+run = "npm start"
+
+If app lives in a subfolder, use:
+
+run = "cd path/to/app && npm start"
+
+	7.	Sanity checks before boot
+
+node -e "console.log(require.resolve('@neondatabase/client'))"
+test -f dist/server/index.cjs && echo ok-dist
+
+	8.	Start
+
+npm start
+
+If you cannot rebuild immediately, hot-patch the compiled file to stop the loop (temporary):
+
+# Comment out or replace the serverless require in dist (temporary emergency fix)
+sed -i "s/@neondatabase\/serverless/@neondatabase\/client/g" dist/server/index.cjs
+# If code relies on named import { neon }, ensure it matches the client API; otherwise adjust manually.
+
+Then perform steps 3–5 properly to make the change permanent.
