@@ -17,8 +17,8 @@ async function initializeDatabase() {
   }
 
   // HTTP client - no websockets needed, can be bundled
-  const sql = neon(process.env.DATABASE_URL);
-  db = drizzle(sql, { schema });
+  // Using simplified syntax: pass DATABASE_URL directly to drizzle()
+  db = drizzle(process.env.DATABASE_URL, { schema });
   
   return db;
 }
