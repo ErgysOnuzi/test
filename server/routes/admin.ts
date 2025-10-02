@@ -11,11 +11,18 @@ const router = express.Router()
 // Environment-based JWT secret - required for production
 const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-change-in-production'
 
-// Admin credentials from environment variables - secure for production
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'ergysonuzi12@gmail.com'
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'ergysonuzi'
+// Admin credentials from environment variables - MUST be set
+if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_USERNAME || !process.env.ADMIN_PASSWORD) {
+  console.error('⚠️  CRITICAL: ADMIN_EMAIL, ADMIN_USERNAME, and ADMIN_PASSWORD environment variables must be set for admin authentication')
+  console.error('⚠️  Admin login functionality will be disabled until credentials are configured')
+}
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || ''
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || ''
 // Hash the password from environment variable for security
-const ADMIN_PASSWORD_HASH = createHash('sha256').update(process.env.ADMIN_PASSWORD || 'Xharie123').digest('hex')
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD 
+  ? createHash('sha256').update(process.env.ADMIN_PASSWORD).digest('hex')
+  : ''
 
 
 // In-memory session storage (since database is not working)
@@ -123,6 +130,13 @@ router.post('/login', validateAdminLogin, handleValidationErrors, async (req, re
   try {
     const db = await dbPromise
     const { identifier, password } = req.body
+
+    // Check if admin credentials are configured
+    if (!ADMIN_EMAIL || !ADMIN_USERNAME || !ADMIN_PASSWORD_HASH) {
+      console.error('🚫 Admin login attempted but credentials not configured')
+      res.status(503).json({ error: 'Admin authentication not configured. Please contact system administrator.' })
+      return
+    }
 
     // Hash the provided password and validate credentials
     const passwordHash = createHash('sha256').update(password).digest('hex')
