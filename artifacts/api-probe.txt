@@ -1,0 +1,48 @@
+=== API Security Probe for https://la-cantina.replit.app ===
+Timestamp: 2025-10-03T15:46:23Z
+
+Testing unauthenticated access to protected endpoints...
+
+--- Testing: /api/menu ---
+GET  /api/menu => 200
+POST /api/menu => 401 (expected: 400/401/403)
+PUT  /api/menu/1 => 401 (expected: 401/403/404)
+DELETE /api/menu/1 => 401 (expected: 401/403/404)
+
+--- Testing: /api/reservations ---
+GET  /api/reservations => 401
+POST /api/reservations => 400 (expected: 400/401/403)
+PUT  /api/reservations/1 => 401 (expected: 401/403/404)
+DELETE /api/reservations/1 => 401 (expected: 401/403/404)
+
+--- Testing: /api/gallery ---
+GET  /api/gallery => 200
+POST /api/gallery => 401 (expected: 400/401/403)
+PUT  /api/gallery/1 => 401 (expected: 401/403/404)
+DELETE /api/gallery/1 => 401 (expected: 401/403/404)
+
+--- Testing: /api/events ---
+GET  /api/events => 200
+POST /api/events => 401 (expected: 400/401/403)
+PUT  /api/events/1 => 401 (expected: 401/403/404)
+DELETE /api/events/1 => 401 (expected: 401/403/404)
+
+--- Testing: /api/contact ---
+GET  /api/contact => 401
+POST /api/contact => 400 (expected: 400/401/403)
+PUT  /api/contact/1 => 404 (expected: 401/403/404)
+DELETE /api/contact/1 => 401 (expected: 401/403/404)
+
+--- Testing: /api/feedback ---
+GET  /api/feedback => 401
+POST /api/feedback => 400 (expected: 400/401/403)
+PUT  /api/feedback/1 => 401 (expected: 401/403/404)
+DELETE /api/feedback/1 => 401 (expected: 401/403/404)
+
+--- Testing: /api/admin/bookings ---
+GET  /api/admin/bookings => 401
+POST /api/admin/bookings => 404 (expected: 400/401/403)
+PUT  /api/admin/bookings/1 => 404 (expected: 401/403/404)
+DELETE /api/admin/bookings/1 => 401 (expected: 401/403/404)
+
+=== API Probe complete ===

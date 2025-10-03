@@ -1,0 +1,27 @@
+=== Route Probe for https://la-cantina.replit.app ===
+Timestamp: 2025-10-03T15:46:07Z
+
+200  https://la-cantina.replit.app/
+200  https://la-cantina.replit.app/en
+200  https://la-cantina.replit.app/de
+200  https://la-cantina.replit.app/menu
+200  https://la-cantina.replit.app/en/menu
+200  https://la-cantina.replit.app/reservations
+200  https://la-cantina.replit.app/en/reservations
+200  https://la-cantina.replit.app/contact
+200  https://la-cantina.replit.app/en/contact
+200  https://la-cantina.replit.app/feedback
+200  https://la-cantina.replit.app/en/feedback
+200  https://la-cantina.replit.app/gallery
+200  https://la-cantina.replit.app/en/gallery
+200  https://la-cantina.replit.app/events
+200  https://la-cantina.replit.app/en/events
+200  https://la-cantina.replit.app/en/admin/login
+200  https://la-cantina.replit.app/de/admin/login
+200  https://la-cantina.replit.app/not-a-real-route
+200  https://la-cantina.replit.app/api/health
+200  https://la-cantina.replit.app/api/ready
+200  https://la-cantina.replit.app/sitemap.xml
+200  https://la-cantina.replit.app/robots.txt
+
+=== Probe complete ===

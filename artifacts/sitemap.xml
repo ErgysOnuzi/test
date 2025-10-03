@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://lacantina-berlin.de/de</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://lacantina-berlin.de/en" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://lacantina-berlin.de/de" />
+    
+  </url>
+  <url>
+    <loc>https://lacantina-berlin.de/en</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    
+    <xhtml:link rel="alternate" hreflang="de" href="https://lacantina-berlin.de/de" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://lacantina-berlin.de/en" />
+  </url>
+  <url>
+    <loc>https://lacantina-berlin.de/de/menu</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://lacantina-berlin.de/en/menu" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://lacantina-berlin.de/de/menu" />
+    
+  </url>
+  <url>
+    <loc>https://lacantina-berlin.de/en/menu</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    
+    <xhtml:link rel="alternate" hreflang="de" href="https://lacantina-berlin.de/de/menu" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://lacantina-berlin.de/en/menu" />
+  </url>
+  <url>
+    <loc>https://lacantina-berlin.de/de/gallery</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://lacantina-berlin.de/en/gallery" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://lacantina-berlin.de/de/gallery" />
+    
+  </url>
+  <url>
+    <loc>https://lacantina-berlin.de/en/gallery</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    
+    <xhtml:link rel="alternate" hreflang="de" href="https://lacantina-berlin.de/de/gallery" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://lacantina-berlin.de/en/gallery" />
+  </url>
+  <url>
+    <loc>https://lacantina-berlin.de/de/events</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://lacantina-berlin.de/en/events" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://lacantina-berlin.de/de/events" />
+    
+  </url>
+  <url>
+    <loc>https://lacantina-berlin.de/en/events</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    
+    <xhtml:link rel="alternate" hreflang="de" href="https://lacantina-berlin.de/de/events" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://lacantina-berlin.de/en/events" />
+  </url>
+  <url>
+    <loc>https://lacantina-berlin.de/de/reservations</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://lacantina-berlin.de/en/reservations" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://lacantina-berlin.de/de/reservations" />
+    
+  </url>
+  <url>
+    <loc>https://lacantina-berlin.de/en/reservations</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    
+    <xhtml:link rel="alternate" hreflang="de" href="https://lacantina-berlin.de/de/reservations" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://lacantina-berlin.de/en/reservations" />
+  </url>
+  <url>
+    <loc>https://lacantina-berlin.de/de/contact</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://lacantina-berlin.de/en/contact" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://lacantina-berlin.de/de/contact" />
+    
+  </url>
+  <url>
+    <loc>https://lacantina-berlin.de/en/contact</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    
+    <xhtml:link rel="alternate" hreflang="de" href="https://lacantina-berlin.de/de/contact" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://lacantina-berlin.de/en/contact" />
+  </url>
+</urlset>
