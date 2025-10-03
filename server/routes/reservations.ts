@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Request, Response } from 'express'
 import { eq } from 'drizzle-orm'
 import { dbPromise } from '../db'
 import * as schema from '../../shared/schema'
@@ -10,7 +10,7 @@ const router = express.Router()
 import { requireAuth, requireAuthWithCSRF } from './admin'
 
 // POST /api/reservations - Create new reservation with validation
-router.post('/', validateReservation, handleValidationErrors, async (req, res) => {
+router.post('/', validateReservation, handleValidationErrors, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const {
@@ -96,10 +96,15 @@ router.get('/', requireAuth, async (req, res) => {
 })
 
 // PUT /api/reservations/:id - Update reservation (admin)
-router.put('/:id', requireAuthWithCSRF, async (req, res) => {
+router.put('/:id', requireAuthWithCSRF, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const { id } = req.params
+    
+    if (!id) {
+      return res.status(400).json({ error: 'ID is required' })
+    }
+    
     const {
       name,
       email,
@@ -158,10 +163,14 @@ router.put('/:id', requireAuthWithCSRF, async (req, res) => {
 })
 
 // DELETE /api/reservations/:id - Delete reservation (admin)
-router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
+router.delete('/:id', requireAuthWithCSRF, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const { id } = req.params
+    
+    if (!id) {
+      return res.status(400).json({ error: 'ID is required' })
+    }
     
     const [deletedReservation] = await db
       .delete(schema.reservations)
@@ -184,10 +193,15 @@ router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
 })
 
 // PATCH /api/reservations/:id/status - Update reservation status (admin)
-router.patch('/:id/status', requireAuthWithCSRF, async (req, res) => {
+router.patch('/:id/status', requireAuthWithCSRF, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const { id } = req.params
+    
+    if (!id) {
+      return res.status(400).json({ error: 'ID is required' })
+    }
+    
     const { status } = req.body
 
     if (!['pending', 'confirmed', 'cancelled', 'completed'].includes(status)) {

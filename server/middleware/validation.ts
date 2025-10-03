@@ -6,13 +6,13 @@ import { Request, Response, NextFunction } from 'express'
  */
 
 // Generic validation result handler
-export const handleValidationErrors = (req: Request, res: Response, next: NextFunction) => {
+export const handleValidationErrors = (req: Request, res: Response, next: NextFunction): void => {
   const errors = validationResult(req)
   
   if (!errors.isEmpty()) {
     console.warn(`❌ Validation errors for ${req.method} ${req.url}:`, errors.array())
     
-    return res.status(400).json({
+    res.status(400).json({
       success: false,
       error: 'Validation failed',
       details: errors.array().map(error => ({
@@ -21,6 +21,7 @@ export const handleValidationErrors = (req: Request, res: Response, next: NextFu
         value: error.type === 'field' ? error.value : undefined
       }))
     })
+    return
   }
   
   next()
@@ -42,7 +43,7 @@ export const commonValidations = {
     
   phone: body('phone')
     .optional()
-    .isMobilePhone('any')
+    .matches(/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\./0-9]{8,}$/)
     .withMessage('Please provide a valid phone number'),
     
   message: body('message')
@@ -145,13 +146,15 @@ export const validateFeedback: ValidationChain[] = [
     
   body('experience')
     .trim()
-    .isLength({ min: 20, max: 1000 })
-    .withMessage('Experience description must be between 20 and 1000 characters'),
+    .isLength({ min: 10, max: 1000 })
+    .withMessage('Experience description must be between 10 and 1000 characters'),
     
   body('visitDate')
+    .optional()
     .isISO8601()
     .toDate()
     .custom((value) => {
+      if (!value) return true
       const visitDate = new Date(value)
       const oneYearAgo = new Date()
       oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
@@ -167,8 +170,15 @@ export const validateFeedback: ValidationChain[] = [
     .withMessage('Please provide a valid visit date within the past year'),
     
   body('wouldRecommend')
+    .optional()
     .isBoolean()
     .withMessage('Please indicate whether you would recommend us'),
+    
+  body('suggestions')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Suggestions must not exceed 500 characters'),
 ]
 
 // File upload validation

@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Request, Response } from 'express'
 import { eq } from 'drizzle-orm'
 import { dbPromise } from '../db'
 import * as schema from '../../shared/schema'
@@ -10,7 +10,7 @@ const router = express.Router()
 import { requireAuth, requireAuthWithCSRF } from './admin'
 
 // POST /api/contact - Submit contact form with validation
-router.post('/', validateContactForm, handleValidationErrors, async (req, res) => {
+router.post('/', validateContactForm, handleValidationErrors, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const {
@@ -63,10 +63,13 @@ router.get('/', requireAuth, async (req, res) => {
 })
 
 // GET /api/contact/:id - Get specific contact submission (admin)
-router.get('/:id', requireAuth, async (req, res) => {
+router.get('/:id', requireAuth, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const { id } = req.params
+    if (!id) {
+      return res.status(400).json({ error: 'Contact ID is required' })
+    }
     const [submission] = await db.select().from(schema.contactMessages)
       .where(eq(schema.contactMessages.id, parseInt(id)))
     
@@ -82,10 +85,15 @@ router.get('/:id', requireAuth, async (req, res) => {
 })
 
 // PATCH /api/contact/:id/status - Update contact submission status (admin)
-router.patch('/:id/status', requireAuthWithCSRF, async (req, res) => {
+router.patch('/:id/status', requireAuthWithCSRF, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const { id } = req.params
+    
+    if (!id) {
+      return res.status(400).json({ error: 'ID is required' })
+    }
+    
     const { status, reply } = req.body // 'pending', 'read', 'replied', 'resolved'
 
     if (!['new', 'read', 'replied', 'archived'].includes(status)) {
@@ -118,10 +126,14 @@ router.patch('/:id/status', requireAuthWithCSRF, async (req, res) => {
 })
 
 // DELETE /api/contact/:id - Delete contact submission (admin)
-router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
+router.delete('/:id', requireAuthWithCSRF, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const { id } = req.params
+    
+    if (!id) {
+      return res.status(400).json({ error: 'ID is required' })
+    }
     
     const [deleted] = await db
       .delete(schema.contactMessages)

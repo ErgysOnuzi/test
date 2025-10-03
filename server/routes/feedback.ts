@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Request, Response } from 'express'
 import { dbPromise } from '../db'
 import { feedbacks } from '../../shared/schema'
 import { eq, desc } from 'drizzle-orm'
@@ -10,12 +10,12 @@ const router = express.Router()
 import { requireAuth, requireAuthWithCSRF } from './admin'
 
 // GET /api/feedback - Get all feedback submissions (admin)
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const feedback = await db.select().from(feedbacks).orderBy(desc(feedbacks.createdAt))
     console.log(`⭐ Fetched ${feedback.length} feedback submissions`)
-    res.json(feedback)
+    return res.json(feedback)
   } catch (error) {
     console.error('Error fetching feedback:', error)
     return res.status(500).json({ error: 'Failed to fetch feedback' })
@@ -23,17 +23,22 @@ router.get('/', requireAuth, async (req, res) => {
 })
 
 // GET /api/feedback/:id - Get specific feedback
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const { id } = req.params
+    
+    if (!id) {
+      return res.status(400).json({ error: 'ID is required' })
+    }
+    
     const [feedback] = await db.select().from(feedbacks).where(eq(feedbacks.id, parseInt(id)))
     
     if (!feedback) {
       return res.status(404).json({ error: 'Feedback not found' })
     }
 
-    res.json(feedback)
+    return res.json(feedback)
   } catch (error) {
     console.error('Error fetching feedback:', error)
     return res.status(500).json({ error: 'Failed to fetch feedback' })
@@ -41,7 +46,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // POST /api/feedback - Submit new feedback with validation
-router.post('/', validateFeedback, handleValidationErrors, async (req, res) => {
+router.post('/', validateFeedback, handleValidationErrors, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const {
@@ -66,7 +71,7 @@ router.post('/', validateFeedback, handleValidationErrors, async (req, res) => {
     }).returning()
 
     console.log(`⭐ New feedback submitted: ${newFeedback.name} (${newFeedback.rating} stars)`)
-    res.status(201).json({ 
+    return res.status(201).json({ 
       success: true, 
       feedback: newFeedback,
       message: 'Feedback submitted successfully'
@@ -78,10 +83,15 @@ router.post('/', validateFeedback, handleValidationErrors, async (req, res) => {
 })
 
 // PUT /api/feedback/:id - Update feedback (admin) with CSRF protection
-router.put('/:id', requireAuthWithCSRF, async (req, res) => {
+router.put('/:id', requireAuthWithCSRF, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const { id } = req.params
+    
+    if (!id) {
+      return res.status(400).json({ error: 'ID is required' })
+    }
+    
     const updateData = req.body
 
     const [updatedFeedback] = await db.update(feedbacks)
@@ -94,7 +104,7 @@ router.put('/:id', requireAuthWithCSRF, async (req, res) => {
     }
 
     console.log(`⭐ Updated feedback: ${updatedFeedback.name}`)
-    res.json(updatedFeedback)
+    return res.json(updatedFeedback)
   } catch (error) {
     console.error('Error updating feedback:', error)
     return res.status(500).json({ error: 'Failed to update feedback' })
@@ -102,10 +112,15 @@ router.put('/:id', requireAuthWithCSRF, async (req, res) => {
 })
 
 // DELETE /api/feedback/:id - Delete feedback (admin) with CSRF protection
-router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
+router.delete('/:id', requireAuthWithCSRF, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const { id } = req.params
+    
+    if (!id) {
+      return res.status(400).json({ error: 'ID is required' })
+    }
+    
     const [deletedFeedback] = await db.delete(feedbacks)
       .where(eq(feedbacks.id, parseInt(id)))
       .returning()
@@ -115,7 +130,7 @@ router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
     }
 
     console.log(`⭐ Deleted feedback: ${id}`)
-    res.json({ success: true, message: 'Feedback deleted successfully' })
+    return res.json({ success: true, message: 'Feedback deleted successfully' })
   } catch (error) {
     console.error('Error deleting feedback:', error)
     return res.status(500).json({ error: 'Failed to delete feedback' })
@@ -123,10 +138,15 @@ router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
 })
 
 // PATCH /api/feedback/:id/approve - Approve/reject feedback (admin) with CSRF protection
-router.patch('/:id/approve', requireAuthWithCSRF, async (req, res) => {
+router.patch('/:id/approve', requireAuthWithCSRF, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const { id } = req.params
+    
+    if (!id) {
+      return res.status(400).json({ error: 'ID is required' })
+    }
+    
     const { approved } = req.body
 
     const [updatedFeedback] = await db.update(feedbacks)
@@ -142,7 +162,7 @@ router.patch('/:id/approve', requireAuthWithCSRF, async (req, res) => {
     }
 
     console.log(`⭐ ${approved ? 'Approved' : 'Rejected'} feedback: ${updatedFeedback.name}`)
-    res.json(updatedFeedback)
+    return res.json(updatedFeedback)
   } catch (error) {
     console.error('Error updating feedback approval:', error)
     return res.status(500).json({ error: 'Failed to update feedback approval' })
