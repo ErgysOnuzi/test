@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Navigate } from 'react-router-dom'
 import { adminAuth } from '@/lib/adminAuth'
 import { useTranslation } from '../i18n/translations'
 import AdminOverview from '../components/admin/AdminOverview'
@@ -45,6 +45,29 @@ export default function AdminPage() {
       'menu.addNew': { de: 'Neuen Artikel hinzufügen', en: 'Add New Item' },
       'menu.available': { de: 'Verfügbar', en: 'Available' },
       'menu.unavailable': { de: 'Nicht verfügbar', en: 'Unavailable' },
+      'gallery.title': { de: 'Galerie', en: 'Gallery' },
+      'gallery.uploadImage': { de: 'Bild hochladen', en: 'Upload Image' },
+      'events.title': { de: 'Veranstaltungen', en: 'Events' },
+      'events.createNew': { de: 'Neue Veranstaltung', en: 'Create New Event' },
+      'events.attendees': { de: 'Teilnehmer', en: 'Attendees' },
+      'bookings.title': { de: 'Buchungen', en: 'Event Bookings' },
+      'bookings.totalBookings': { de: 'Gesamtbuchungen', en: 'Total Bookings' },
+      'bookings.noBookings': { de: 'Keine Buchungen', en: 'No Bookings Yet' },
+      'bookings.noBookingsDesc': { de: 'Noch keine Veranstaltungsbuchungen vorhanden.', en: 'No event bookings have been made yet.' },
+      'bookings.booking': { de: 'Buchung', en: 'Booking' },
+      'bookings.confirmed': { de: 'Bestätigt', en: 'Confirmed' },
+      'bookings.pending': { de: 'Ausstehend', en: 'Pending' },
+      'bookings.cancelled': { de: 'Storniert', en: 'Cancelled' },
+      'bookings.customerDetails': { de: 'Kundendetails', en: 'Customer Details' },
+      'bookings.bookingDetails': { de: 'Buchungsdetails', en: 'Booking Details' },
+      'bookings.guests': { de: 'Gäste', en: 'Guests' },
+      'bookings.event': { de: 'Veranstaltung', en: 'Event' },
+      'bookings.perPerson': { de: 'Pro Person', en: 'Per Person' },
+      'bookings.specialRequests': { de: 'Besondere Wünsche', en: 'Special Requests' },
+      'bookings.none': { de: 'Keine', en: 'None' },
+      'bookings.confirmBooking': { de: 'Buchung bestätigen', en: 'Confirm Booking' },
+      'bookings.cancelBooking': { de: 'Buchung stornieren', en: 'Cancel Booking' },
+      'bookings.deleteBooking': { de: 'Buchung löschen', en: 'Delete Booking' },
       'actions.edit': { de: 'Bearbeiten', en: 'Edit' },
       'actions.delete': { de: 'Löschen', en: 'Delete' }
     }
@@ -400,27 +423,14 @@ export default function AdminPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">{t.loading}</p>
+          <p className="text-muted-foreground">{adminT('admin.loading')}</p>
         </div>
       </div>
     )
   }
 
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-serif font-bold text-foreground mb-4">{t.accessRequired}</h1>
-          <p className="text-muted-foreground mb-6">{t.pleaseLogin}</p>
-          <a 
-            href="/api/login"
-            className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-          >
-            {t.login}
-          </a>
-        </div>
-      </div>
-    )
+    return <Navigate to={`/${currentLocale}/admin/login`} replace />
   }
 
   return (
@@ -575,12 +585,12 @@ export default function AdminPage() {
         {activeTab === 'gallery' && (
           <div>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
-              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">{t.gallery.title}</h2>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">{adminT('gallery.title')}</h2>
               <button 
                 onClick={() => {setEditingItem(null); setShowGalleryModal(true)}}
                 className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm sm:text-base w-full sm:w-auto"
               >
-                {t.gallery.uploadImage}
+                {adminT('gallery.uploadImage')}
               </button>
             </div>
             
@@ -602,13 +612,13 @@ export default function AdminPage() {
                         onClick={() => {setEditingItem(image); setShowGalleryModal(true)}}
                         className="text-xs sm:text-sm bg-blue-600 text-white px-2 sm:px-3 py-1 rounded hover:bg-blue-700 transition-colors w-full sm:w-auto"
                       >
-                        {t.actions.edit}
+                        {adminT('actions.edit')}
                       </button>
                       <button
                         onClick={() => deleteGalleryImage(image.id)}
                         className="text-xs sm:text-sm bg-red-600 text-white px-2 sm:px-3 py-1 rounded hover:bg-red-700 transition-colors w-full sm:w-auto"
                       >
-                        {t.actions.delete}
+                        {adminT('actions.delete')}
                       </button>
                     </div>
                   </div>
@@ -621,12 +631,12 @@ export default function AdminPage() {
         {activeTab === 'events' && (
           <div>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
-              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">{t.events.title}</h2>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">{adminT('events.title')}</h2>
               <button 
                 onClick={() => {setEditingItem(null); setShowEventModal(true)}}
                 className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm sm:text-base w-full sm:w-auto"
               >
-                {t.events.createNew}
+                {adminT('events.createNew')}
               </button>
             </div>
             
@@ -645,7 +655,7 @@ export default function AdminPage() {
                       {new Date(event.event_date).toLocaleDateString()}
                     </span>
                     <span className="text-muted-foreground">
-                      {event.current_attendees}/{event.max_attendees} {t.events.attendees}
+                      {event.current_attendees}/{event.max_attendees} {adminT('events.attendees')}
                     </span>
                   </div>
                   <div className="flex flex-col sm:flex-row justify-between items-center mt-4 pt-4 border-t space-y-2 sm:space-y-0">
@@ -653,13 +663,13 @@ export default function AdminPage() {
                       onClick={() => {setEditingItem(event); setShowEventModal(true)}}
                       className="text-sm bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 transition-colors w-full sm:w-auto"
                     >
-                      {t.actions.edit}
+                      {adminT('actions.edit')}
                     </button>
                     <button
                       onClick={() => deleteEvent(event.id)}
                       className="text-sm bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 transition-colors w-full sm:w-auto"
                     >
-                      {t.actions.delete}
+                      {adminT('actions.delete')}
                     </button>
                   </div>
                 </div>
@@ -671,17 +681,17 @@ export default function AdminPage() {
         {activeTab === 'bookings' && (
           <div>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
-              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">{t.bookings.title}</h2>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">{adminT('bookings.title')}</h2>
               <div className="text-sm text-muted-foreground bg-muted/30 px-3 py-2 rounded-lg">
-                {t.bookings.totalBookings}: {eventBookings.length}
+                {adminT('bookings.totalBookings')}: {eventBookings.length}
               </div>
             </div>
             
             {eventBookings.length === 0 ? (
               <div className="text-center py-8 sm:py-12 bg-card rounded-lg border border-dashed">
                 <div className="text-4xl sm:text-6xl mb-4">🎫</div>
-                <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">{t.bookings.noBookings}</h3>
-                <p className="text-muted-foreground text-sm sm:text-base">{t.bookings.noBookingsDesc}</p>
+                <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">{adminT('bookings.noBookings')}</h3>
+                <p className="text-muted-foreground text-sm sm:text-base">{adminT('bookings.noBookingsDesc')}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:gap-6">
@@ -695,7 +705,7 @@ export default function AdminPage() {
                             {event ? event.title_en : `Event ID: ${booking.eventId}`}
                           </h3>
                           <p className="text-sm text-muted-foreground">
-                            {t.bookings.booking} #{booking.id} • {new Date(booking.created_at).toLocaleDateString()}
+                            {adminT('bookings.booking')} #{booking.id} • {new Date(booking.created_at).toLocaleDateString()}
                           </p>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -704,9 +714,9 @@ export default function AdminPage() {
                             booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                             'bg-red-100 text-red-800'
                           }`}>
-                            {booking.status === 'confirmed' ? t.bookings.confirmed :
-                             booking.status === 'pending' ? t.bookings.pending :
-                             t.bookings.cancelled}
+                            {booking.status === 'confirmed' ? adminT('bookings.confirmed') :
+                             booking.status === 'pending' ? adminT('bookings.pending') :
+                             adminT('bookings.cancelled')}
                           </span>
                           <span className="text-lg font-bold text-primary">
                             €{booking.totalAmount}
@@ -716,25 +726,25 @@ export default function AdminPage() {
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                         <div>
-                          <p className="font-medium text-foreground">{t.bookings.customerDetails}</p>
+                          <p className="font-medium text-foreground">{adminT('bookings.customerDetails')}</p>
                           <p className="text-muted-foreground">{booking.name}</p>
                           <p className="text-muted-foreground">{booking.email}</p>
                           <p className="text-muted-foreground">{booking.phone}</p>
                         </div>
                         <div>
-                          <p className="font-medium text-foreground">{t.bookings.bookingDetails}</p>
-                          <p className="text-muted-foreground">{t.bookings.guests}: {booking.guests}</p>
+                          <p className="font-medium text-foreground">{adminT('bookings.bookingDetails')}</p>
+                          <p className="text-muted-foreground">{adminT('bookings.guests')}: {booking.guests}</p>
                           <p className="text-muted-foreground">
-                            {t.bookings.event}: {event ? new Date(event.event_date).toLocaleDateString() : 'Unknown'}
+                            {adminT('bookings.event')}: {event ? new Date(event.event_date).toLocaleDateString() : 'Unknown'}
                           </p>
                           <p className="text-muted-foreground">
-                            {t.bookings.perPerson}: €{event ? event.price : booking.totalAmount / booking.guests}
+                            {adminT('bookings.perPerson')}: €{event ? event.price : booking.totalAmount / booking.guests}
                           </p>
                         </div>
                         <div>
-                          <p className="font-medium text-foreground">{t.bookings.specialRequests}</p>
+                          <p className="font-medium text-foreground">{adminT('bookings.specialRequests')}</p>
                           <p className="text-muted-foreground">
-                            {booking.specialRequests || t.bookings.none}
+                            {booking.specialRequests || adminT('bookings.none')}
                           </p>
                         </div>
                       </div>
@@ -745,13 +755,13 @@ export default function AdminPage() {
                             onClick={() => updateBookingStatus(booking.id, 'confirmed')}
                             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm w-full sm:w-auto"
                           >
-                            {t.bookings.confirmBooking}
+                            {adminT('bookings.confirmBooking')}
                           </button>
                           <button 
                             onClick={() => updateBookingStatus(booking.id, 'cancelled')}
                             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm w-full sm:w-auto"
                           >
-                            {t.bookings.cancelBooking}
+                            {adminT('bookings.cancelBooking')}
                           </button>
                         </div>
                       )}
@@ -761,13 +771,13 @@ export default function AdminPage() {
                             onClick={() => updateBookingStatus(booking.id, 'cancelled')}
                             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm w-full sm:w-auto"
                           >
-                            {t.bookings.cancelBooking}
+                            {adminT('bookings.cancelBooking')}
                           </button>
                           <button 
                             onClick={() => deleteBooking(booking.id)}
                             className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm w-full sm:w-auto"
                           >
-                            {t.bookings.deleteBooking}
+                            {adminT('bookings.deleteBooking')}
                           </button>
                         </div>
                       )}
