@@ -34,12 +34,17 @@ import {
   authRateLimit, 
   apiRateLimit, 
   uploadRateLimit,
-  securityHeaders, 
+  getSecurityHeaders,
+  nonceMiddleware,
+  coopCoepHeaders,
+  permissionsPolicy,
   inputSanitization, 
   compressionMiddleware,
   securityLogger,
   corsConfig
 } from './middleware/security'
+// Error handler import
+import { errorHandler } from './middleware/error-handler'
 
 const app = express()
 // Use port 3001 in development for API server, 5000 in production
@@ -48,7 +53,10 @@ const PORT = process.env.NODE_ENV === 'production'
   : 3001
 
 // Essential security middleware - applied first
-app.use(securityHeaders)
+app.use(nonceMiddleware)
+app.use((req, res, next) => getSecurityHeaders(req.nonce)(req, res, next))
+app.use(coopCoepHeaders)
+app.use(permissionsPolicy)
 app.use(compressionMiddleware)
 app.use(securityLogger)
 
@@ -239,13 +247,7 @@ async function initializeServer() {
   }
 
   // Error handling middleware (must be last)
-  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error('Error:', err)
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
-    })
-  })
+  app.use(errorHandler)
 
   // Graceful shutdown handling for scaling
   const server = app.listen(PORT, '0.0.0.0', () => {

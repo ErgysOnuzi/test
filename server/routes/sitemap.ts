@@ -21,7 +21,9 @@ router.get('/sitemap.xml', (req, res) => {
     { url: '/de/reservations', changefreq: 'monthly', priority: '0.8' },
     { url: '/en/reservations', changefreq: 'monthly', priority: '0.8' },
     { url: '/de/contact', changefreq: 'monthly', priority: '0.7' },
-    { url: '/en/contact', changefreq: 'monthly', priority: '0.7' }
+    { url: '/en/contact', changefreq: 'monthly', priority: '0.7' },
+    { url: '/de/feedback', changefreq: 'monthly', priority: '0.7' },
+    { url: '/en/feedback', changefreq: 'monthly', priority: '0.7' }
   ]
   
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

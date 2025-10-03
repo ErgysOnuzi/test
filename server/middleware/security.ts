@@ -3,11 +3,29 @@ import rateLimit from 'express-rate-limit'
 import mongoSanitize from 'express-mongo-sanitize'
 import hpp from 'hpp'
 import compression from 'compression'
+import crypto from 'crypto'
 import { Request, Response, NextFunction } from 'express'
 
 /**
  * Comprehensive security middleware configuration for production
  */
+
+// Extend Express Request type to include nonce
+declare global {
+  namespace Express {
+    interface Request {
+      nonce?: string
+    }
+  }
+}
+
+// CSP Nonce generation middleware
+export const nonceMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  const nonce = crypto.randomBytes(16).toString('base64')
+  req.nonce = nonce
+  res.locals.nonce = nonce
+  next()
+}
 
 // Rate limiting configurations
 export const generalRateLimit = rateLimit({
@@ -77,14 +95,16 @@ export const uploadRateLimit = rateLimit({
   }
 })
 
-// Security headers configuration
-export const securityHeaders = helmet({
+// Security headers configuration with dynamic nonce support
+export const getSecurityHeaders = (nonce?: string) => helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: [
         "'self'",
-        "'unsafe-inline'", // Required for React inline styles and Vite HMR
+        ...(process.env.NODE_ENV === 'development' 
+          ? ["'unsafe-inline'"] // Required for Vite HMR in development
+          : nonce ? [`'nonce-${nonce}'`] : []), // Use nonce in production
         "https://fonts.googleapis.com",
         "https://unpkg.com"
       ],
@@ -95,11 +115,9 @@ export const securityHeaders = helmet({
       ],
       scriptSrc: [
         "'self'",
-        // In production: only 'self' + specific trusted sources
-        // In development: allow inline for HMR
         ...(process.env.NODE_ENV === 'development' 
-          ? ["'unsafe-inline'", "'unsafe-eval'"] 
-          : [])
+          ? ["'unsafe-inline'", "'unsafe-eval'"] // Allow inline for HMR in development
+          : nonce ? [`'nonce-${nonce}'`] : []) // Use nonce instead of unsafe-inline in production
       ],
       imgSrc: [
         "'self'",
@@ -113,7 +131,6 @@ export const securityHeaders = helmet({
         "'self'",
         "https://maps.googleapis.com",
         "https://places.googleapis.com",
-        // Allow Vite HMR in development
         ...(process.env.NODE_ENV === 'development' 
           ? ["ws:", "wss:", "http://localhost:*", "ws://localhost:*"] 
           : [])
@@ -130,11 +147,27 @@ export const securityHeaders = helmet({
   },
   noSniff: true,
   xssFilter: true,
-  frameguard: { action: 'deny' }, // Prevent clickjacking
+  frameguard: { action: 'deny' },
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   crossOriginEmbedderPolicy: false, // Allow external images
-  crossOriginResourcePolicy: { policy: 'cross-origin' } // Allow external resources
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' }
 })
+
+// COOP/COEP Headers Middleware
+export const coopCoepHeaders = (req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups')
+  res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless')
+  next()
+}
+
+// Permissions-Policy Header
+export const permissionsPolicy = (req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('Permissions-Policy', 
+    'camera=(), microphone=(), geolocation=(self), payment=(self)'
+  )
+  next()
+}
 
 // Input sanitization middleware - Temporarily disabled mongo-sanitize due to Node.js compatibility
 export const inputSanitization = [
