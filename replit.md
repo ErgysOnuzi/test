@@ -2,7 +2,37 @@
 
 ## Current Status (October 3, 2025)
 
-**✅ VALIDATION & TYPESCRIPT FIXES COMPLETE**:
+**✅ COMPREHENSIVE SECURITY AUDIT & INFRASTRUCTURE COMPLETE**:
+
+### Security Hardening
+- ✅ **Security Headers Enhanced**: CSP with nonce support, HSTS (1-year), COOP/COEP, Permissions-Policy
+- ✅ **Rate Limiting**: Multi-tier limits (general: 1000/15min, auth: 5/15min, API: 200/15min, uploads: 50/hr)
+- ✅ **Error Handling**: Standardized error responses with proper codes (400/401/403/404/409/429/500)
+- ✅ **Supply Chain**: 0 npm vulnerabilities, Node.js 20.x pinned
+- ✅ **API Security**: All protected endpoints enforce authentication (401 for unauthenticated CUD operations)
+
+### Observability
+- ✅ **Health Endpoints**: `/api/health` and `/api/ready` with database connectivity checks
+- ✅ **Structured Logging**: Request/error logging with proper context
+- ✅ **Version Tracking**: Health endpoints include version from package.json
+
+### SEO & Accessibility
+- ✅ **robots.txt**: Properly configured with sitemap reference
+- ✅ **sitemap.xml**: Full i18n support (de/en) with hreflang alternates
+- ✅ **Semantic HTML**: Proper heading hierarchy, labels, alt text
+
+### Testing Infrastructure
+- ✅ **Probe Scripts**: Route status, API security, headers verification
+- ✅ **Playwright Setup**: E2E tests created (browser installation not supported in Replit)
+- ✅ **Accessibility Tests**: Axe integration configured for WCAG 2.1 AA
+
+### Audit Results
+- ✅ **Routes**: All public routes return 200 OK
+- ✅ **Security**: Headers properly configured (verified via curl)
+- ✅ **Authentication**: Protected endpoints return 401 without auth
+- ⚠️ **Admin Login**: HTML form renders but requires JavaScript for submission (progressive enhancement needed)
+
+### Previous Status (Same Day)
 - ✅ Phone validation now accepts international format with + symbol (regex updated)
 - ✅ Feedback validation made visitDate/wouldRecommend optional (frontend compatibility)
 - ✅ All TypeScript errors resolved - Request/Response types added to all routes
@@ -70,6 +100,31 @@ Preferred communication style: Simple, everyday language.
 - **Schema Location**: `shared/schema.ts`
 - **Menu Items**: 123 authentic Italian dishes with bilingual content
 - **Tables**: menu_items, gallery_images, events, reservations, contacts, feedback, admin_users
+
+### Security & Middleware Architecture
+- **Security Middleware**: `server/middleware/security.ts`
+  - CSP nonce generation (production: strict nonces, dev: unsafe-inline for HMR)
+  - Multi-tier rate limiting (general, auth, API, upload)
+  - Helmet configuration (HSTS, COOP, COEP, Permissions-Policy)
+- **Error Handling**: `server/middleware/error-handler.ts`
+  - Standardized error format: `{"error": {"code": "...", "message": "...", "fields": {}}}`
+  - No stack traces in production
+  - Helper functions for common errors (badRequest, unauthorized, forbidden, etc.)
+- **Validation**: `server/middleware/validation.ts`
+  - Express-validator for input sanitization
+  - Type-safe request validation
+
+### Observability & Testing
+- **Health Endpoints**: `server/routes/health.ts`
+  - `/api/health` - Server status, version, timestamp
+  - `/api/ready` - Readiness check with database connectivity
+- **Probe Scripts**: `scripts/`
+  - `probe.sh` - Route status code verification
+  - `api-probe.sh` - API security testing
+  - `headers-check.sh` - Security headers validation
+- **E2E Tests**: `tests/public.spec.ts`
+  - Playwright + Axe accessibility testing
+  - Public routes, admin login, accessibility scans
 
 ### Design System
 - **Typography**: 
@@ -177,7 +232,11 @@ tailwind.config.js        # Tailwind CSS configuration
 
 ## Known Issues & Future Work
 
-### Current Issues (October 3, 2025)
+### Current Issues (October 3, 2025 - Post-Audit)
+- ⚠️ **Admin login SSR**: Form requires JavaScript for submission - needs progressive enhancement with server-side POST handler
+- ⚠️ **Static asset caching**: Should use immutable cache headers for /assets/* paths (currently no-cache)
+- ⚠️ **404 status codes**: Non-existent routes return 200 instead of 404
+- ⚠️ **Sitemap domain**: Uses lacantina-berlin.de instead of la-cantina.replit.app (should be dynamic)
 - ⚠️ Google Places API key is invalid - Reviews integration disabled until proper API key is configured in Google Cloud Console
 - ⚠️ Menu API slow (2-3 seconds for 123 items) - Query optimization recommended
 - ℹ️ Two placeholder gallery images in database reference missing files (test1.jpg, test2.jpg)
@@ -189,10 +248,20 @@ tailwind.config.js        # Tailwind CSS configuration
 - ✅ Database sequence issues resolved (was causing duplicate key errors)
 
 ### Next Steps
-1. Implement remaining pages (Reservations, Gallery, Events, Contact)
-2. Create admin dashboard for menu management
-3. Migrate full 123 Italian menu items from PostgreSQL backup to SQLite
-4. Add image upload functionality for gallery
-5. Implement reservation booking system
-6. Add event management features
-7. Set up email notifications for reservations/contact forms
+
+**High Priority** (Security & UX):
+1. Fix admin login for non-JS clients (add server-side POST handler with HTML response)
+2. Fix 404 status codes (catch-all route should return 404, not 200)
+3. Update sitemap domain to be dynamic or use la-cantina.replit.app
+4. Configure static asset caching (immutable headers for /assets/*)
+
+**Medium Priority** (Infrastructure):
+1. Run Playwright E2E tests in CI/CD (GitHub Actions with browser support)
+2. Run Lighthouse performance audit in CI/CD
+3. Add automated accessibility testing with Axe in CI/CD
+4. Optimize menu API query performance
+
+**Low Priority** (Features):
+1. Add image upload functionality for gallery
+2. Set up email notifications for reservations/contact forms
+3. Implement additional admin dashboard features
