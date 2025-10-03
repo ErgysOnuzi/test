@@ -222,7 +222,7 @@ export default function AdminPage() {
   const deleteMenuItem = async (itemId: number) => {
     if (!confirm('Are you sure you want to delete this menu item?')) return
     try {
-      const response = await fetch(`/api/admin/menu/${itemId}`, {
+      const response = await fetch(`/api/menu/${itemId}`, {
         method: 'DELETE',
         credentials: 'include'
       })
@@ -299,7 +299,7 @@ export default function AdminPage() {
   const deleteReservation = async (reservationId: number) => {
     if (!confirm('Are you sure you want to delete this reservation?')) return
     try {
-      const response = await fetch(`/api/admin/reservations/${reservationId}`, {
+      const response = await fetch(`/api/reservations/${reservationId}`, {
         method: 'DELETE',
         credentials: 'include'
       })
@@ -314,7 +314,7 @@ export default function AdminPage() {
 
   const updateReservationStatus = async (reservationId: number, status: 'confirmed' | 'cancelled' | 'pending') => {
     try {
-      const response = await fetch(`/api/admin/reservations/${reservationId}/status`, {
+      const response = await fetch(`/api/reservations/${reservationId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -333,7 +333,7 @@ export default function AdminPage() {
   const deleteFeedback = async (feedbackId: number) => {
     if (!confirm('Are you sure you want to delete this feedback?')) return
     try {
-      const response = await fetch(`/api/admin/feedback/${feedbackId}`, {
+      const response = await fetch(`/api/feedback/${feedbackId}`, {
         method: 'DELETE',
         credentials: 'include'
       })
@@ -348,7 +348,7 @@ export default function AdminPage() {
 
   const approveFeedback = async (feedbackId: number) => {
     try {
-      const response = await fetch(`/api/admin/feedback/${feedbackId}/approve`, {
+      const response = await fetch(`/api/feedback/${feedbackId}/approve`, {
         method: 'PATCH',
         credentials: 'include'
       })
@@ -365,7 +365,7 @@ export default function AdminPage() {
   const deleteContactMessage = async (messageId: number) => {
     if (!confirm('Are you sure you want to delete this message?')) return
     try {
-      const response = await fetch(`/api/admin/contact/${messageId}`, {
+      const response = await fetch(`/api/contact/${messageId}`, {
         method: 'DELETE',
         credentials: 'include'
       })
@@ -380,9 +380,11 @@ export default function AdminPage() {
 
   const markMessageAsReplied = async (messageId: number) => {
     try {
-      const response = await fetch(`/api/admin/contact/${messageId}/reply`, {
+      const response = await fetch(`/api/contact/${messageId}/status`, {
         method: 'PATCH',
-        credentials: 'include'
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status: 'replied' })
       })
       if (!response.ok) throw new Error('Failed to mark message as replied')
       await fetchContactMessages()
@@ -502,6 +504,21 @@ export default function AdminPage() {
             reservations={reservations}
             feedbackList={feedbackList}
             contactMessages={contactMessages}
+            onNewDish={() => {
+              setEditingItem(null)
+              setShowMenuModal(true)
+            }}
+            onNewEvent={() => {
+              setEditingItem(null)
+              setShowEventModal(true)
+            }}
+            onUploadImage={() => {
+              setEditingItem(null)
+              setShowGalleryModal(true)
+            }}
+            onViewReservations={() => {
+              setActiveTab('reservations')
+            }}
           />
         )}
 
@@ -992,7 +1009,7 @@ export default function AdminPage() {
               }
               
               try {
-                const url = editingItem ? `/api/admin/menu/${editingItem.id}` : '/api/admin/menu'
+                const url = editingItem ? `/api/menu/${editingItem.id}` : '/api/menu'
                 const method = editingItem ? 'PUT' : 'POST'
                 
                 const response = await fetch(url, {

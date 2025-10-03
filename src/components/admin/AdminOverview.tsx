@@ -22,6 +22,10 @@ interface AdminOverviewProps {
   reservations: any[];
   feedbackList: any[];
   contactMessages: any[];
+  onNewDish?: () => void;
+  onNewEvent?: () => void;
+  onUploadImage?: () => void;
+  onViewReservations?: () => void;
 }
 
 export default function AdminOverview({
@@ -32,7 +36,11 @@ export default function AdminOverview({
   eventBookings,
   reservations,
   feedbackList,
-  contactMessages
+  contactMessages,
+  onNewDish,
+  onNewEvent,
+  onUploadImage,
+  onViewReservations
 }: AdminOverviewProps) {
   const { t } = useTranslation(locale);
 
@@ -326,25 +334,37 @@ export default function AdminOverview({
           {locale === 'de' ? 'Schnellaktionen' : 'Quick Actions'}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <button className="flex items-center gap-2 p-3 rounded-lg border hover:bg-muted/50 transition-colors text-left">
+          <button 
+            onClick={onNewDish}
+            className="flex items-center gap-2 p-3 rounded-lg border hover:bg-muted/50 transition-colors text-left"
+          >
             <UtensilsCrossed className="w-5 h-5 text-primary" />
             <span className="text-sm font-medium">
               {locale === 'de' ? 'Neues Gericht' : 'New Dish'}
             </span>
           </button>
-          <button className="flex items-center gap-2 p-3 rounded-lg border hover:bg-muted/50 transition-colors text-left">
+          <button 
+            onClick={onNewEvent}
+            className="flex items-center gap-2 p-3 rounded-lg border hover:bg-muted/50 transition-colors text-left"
+          >
             <Calendar className="w-5 h-5 text-blue-600" />
             <span className="text-sm font-medium">
               {locale === 'de' ? 'Neue Veranstaltung' : 'New Event'}
             </span>
           </button>
-          <button className="flex items-center gap-2 p-3 rounded-lg border hover:bg-muted/50 transition-colors text-left">
+          <button 
+            onClick={onUploadImage}
+            className="flex items-center gap-2 p-3 rounded-lg border hover:bg-muted/50 transition-colors text-left"
+          >
             <Image className="w-5 h-5 text-purple-600" />
             <span className="text-sm font-medium">
               {locale === 'de' ? 'Bild hochladen' : 'Upload Image'}
             </span>
           </button>
-          <button className="flex items-center gap-2 p-3 rounded-lg border hover:bg-muted/50 transition-colors text-left">
+          <button 
+            onClick={onViewReservations}
+            className="flex items-center gap-2 p-3 rounded-lg border hover:bg-muted/50 transition-colors text-left"
+          >
             <Users className="w-5 h-5 text-green-600" />
             <span className="text-sm font-medium">
               {locale === 'de' ? 'Reservierungen' : 'Reservations'}
