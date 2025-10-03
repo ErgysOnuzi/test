@@ -1,6 +1,16 @@
 # La Cantina Berlin Restaurant Website
 
-## Current Status (October 2, 2025)
+## Current Status (October 3, 2025)
+
+**✅ VALIDATION & TYPESCRIPT FIXES COMPLETE**:
+- ✅ Phone validation now accepts international format with + symbol (regex updated)
+- ✅ Feedback validation made visitDate/wouldRecommend optional (frontend compatibility)
+- ✅ All TypeScript errors resolved - Request/Response types added to all routes
+- ✅ Database sequences fixed for reservations, contact, feedback, event_bookings
+- ✅ All API endpoints tested and working: reservations, contact, feedback, menu, gallery
+- ✅ Admin panel functional with cookie-based authentication
+
+## Previous Status (October 2, 2025)
 
 **✅ REACT/VITE/EXPRESS ARCHITECTURE RESTORED** - Successfully maintained original architecture:
 - ✅ React 18 with Vite for frontend (port 5000)
@@ -167,10 +177,16 @@ tailwind.config.js        # Tailwind CSS configuration
 
 ## Known Issues & Future Work
 
-### Current Issues
-- Minor hydration mismatch warning in browser (lang="de" vs lang="en") - does not affect functionality
-- next.config.js shows warning about deprecated `experimental.appDir` - can be removed as App Router is now stable
-- LSP diagnostic in src/i18n.ts (minor, does not affect build)
+### Current Issues (October 3, 2025)
+- ⚠️ Google Places API key is invalid - Reviews integration disabled until proper API key is configured in Google Cloud Console
+- ⚠️ Menu API slow (2-3 seconds for 123 items) - Query optimization recommended
+- ℹ️ Two placeholder gallery images in database reference missing files (test1.jpg, test2.jpg)
+
+### Resolved Issues
+- ✅ Phone validation now accepts international format (was rejecting + symbol)
+- ✅ Feedback validation matches frontend fields (visitDate/wouldRecommend made optional)
+- ✅ All TypeScript/LSP errors fixed across route files
+- ✅ Database sequence issues resolved (was causing duplicate key errors)
 
 ### Next Steps
 1. Implement remaining pages (Reservations, Gallery, Events, Contact)
