@@ -84,11 +84,10 @@ export const securityHeaders = helmet({
       defaultSrc: ["'self'"],
       styleSrc: [
         "'self'",
-        // Allow inline styles only in development for HMR
-        process.env.NODE_ENV === 'development' ? "'unsafe-inline'" : "",
+        "'unsafe-inline'", // Required for React inline styles and Vite HMR
         "https://fonts.googleapis.com",
         "https://unpkg.com"
-      ].filter(Boolean),
+      ],
       fontSrc: [
         "'self'",
         "https://fonts.gstatic.com",
@@ -96,22 +95,28 @@ export const securityHeaders = helmet({
       ],
       scriptSrc: [
         "'self'",
-        // Allow inline scripts for development - restrict in production
-        process.env.NODE_ENV === 'development' ? "'unsafe-inline'" : "",
-        process.env.NODE_ENV === 'development' ? "'unsafe-eval'" : ""
-      ].filter(Boolean),
+        // In production: only 'self' + specific trusted sources
+        // In development: allow inline for HMR
+        ...(process.env.NODE_ENV === 'development' 
+          ? ["'unsafe-inline'", "'unsafe-eval'"] 
+          : [])
+      ],
       imgSrc: [
         "'self'",
         "data:",
         "blob:",
-        "https:",
+        "https:", // Allow external images (Unsplash, Google, etc.)
         "*.googleapis.com",
         "*.gstatic.com"
       ],
       connectSrc: [
         "'self'",
         "https://maps.googleapis.com",
-        "https://places.googleapis.com"
+        "https://places.googleapis.com",
+        // Allow Vite HMR in development
+        ...(process.env.NODE_ENV === 'development' 
+          ? ["ws:", "wss:", "http://localhost:*", "ws://localhost:*"] 
+          : [])
       ],
       frameSrc: ["'none'"],
       objectSrc: ["'none'"],
@@ -119,13 +124,16 @@ export const securityHeaders = helmet({
     },
   },
   hsts: {
-    maxAge: 31536000, // 1 year
+    maxAge: 31536000, // 1 year in seconds
     includeSubDomains: true,
     preload: true
   },
   noSniff: true,
   xssFilter: true,
-  referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+  frameguard: { action: 'deny' }, // Prevent clickjacking
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  crossOriginEmbedderPolicy: false, // Allow external images
+  crossOriginResourcePolicy: { policy: 'cross-origin' } // Allow external resources
 })
 
 // Input sanitization middleware - Temporarily disabled mongo-sanitize due to Node.js compatibility

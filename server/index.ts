@@ -27,6 +27,7 @@ import adminRoutes from './routes/admin'
 import uploadRoutes from './routes/upload'
 import googleReviewsRoutes from './routes/google-reviews'
 import instagramRoutes from './routes/instagram'
+import sitemapRoutes from './routes/sitemap'
 // Security middleware imports
 import { 
   generalRateLimit, 
@@ -119,6 +120,9 @@ app.get('/healthz', (_, res) => {
 
 // SSR routes for SEO-critical pages MUST come before static file serving
 app.use(ssrRoutes)
+
+// SEO routes
+app.use(sitemapRoutes)
 
 // Setup routes without database-dependent authentication
 async function initializeServer() {

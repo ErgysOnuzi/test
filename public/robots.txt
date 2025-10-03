@@ -1,0 +1,12 @@
+# La Cantina Berlin - Robots.txt
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /*admin*
+
+# Sitemap location
+Sitemap: https://lacantina-berlin.de/sitemap.xml
+
+# Crawl delay (optional, to be polite)
+Crawl-delay: 1

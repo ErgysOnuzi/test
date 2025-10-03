@@ -4,9 +4,47 @@ import { sql } from 'drizzle-orm'
 
 const router = express.Router()
 
-// GET /api/health - Basic health check
-router.get('/health', (req, res) => {
-  res.json({ status: 'ok' })
+// GET /api/health - Enhanced health check with metrics
+router.get('/health', async (req, res) => {
+  const startTime = Date.now()
+  let dbStatus = 'unknown'
+  let dbResponseTime = 0
+  
+  try {
+    const dbStart = Date.now()
+    const db = await dbPromise
+    await db.execute(sql`SELECT 1`)
+    dbResponseTime = Date.now() - dbStart
+    dbStatus = 'connected'
+  } catch (error) {
+    dbStatus = 'disconnected'
+    console.error('Health check database error:', error)
+  }
+  
+  const memUsage = process.memoryUsage()
+  const apiResponseTime = Date.now() - startTime
+  
+  const healthData = {
+    status: dbStatus === 'connected' ? 'healthy' : 'degraded',
+    timestamp: new Date().toISOString(),
+    uptime: Math.floor(process.uptime()),
+    environment: process.env.NODE_ENV || 'development',
+    services: {
+      database: {
+        status: dbStatus,
+        responseTime: dbResponseTime
+      },
+      api: {
+        responseTime: apiResponseTime
+      }
+    },
+    memory: {
+      used: `${(memUsage.heapUsed / 1024 / 1024).toFixed(2)} MB`,
+      total: `${(memUsage.heapTotal / 1024 / 1024).toFixed(2)} MB`
+    }
+  }
+  
+  res.json(healthData)
 })
 
 // GET /api/ready - Database and storage readiness check
