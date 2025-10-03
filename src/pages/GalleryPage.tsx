@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from '../i18n/translations'
+import { Camera } from 'lucide-react'
 
 interface GalleryImage {
   id: number
@@ -11,128 +12,90 @@ interface GalleryImage {
   category?: string
 }
 
-interface CachedImage extends GalleryImage {
-  cachedAt: number
-  blob?: string
-}
-
-const CACHE_KEY = 'la-cantina-gallery-cache'
-const CACHE_DURATION = 24 * 60 * 60 * 1000 // 24 hours
-
 export default function GalleryPage() {
   const { locale = 'de' } = useParams<{ locale: string }>()
   const { t } = useTranslation(locale as 'de' | 'en')
   const [images, setImages] = useState<GalleryImage[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [cachedImages, setCachedImages] = useState<Map<number, string>>(new Map())
+  const [error, setError] = useState<string | null>(null)
   const [showAll, setShowAll] = useState(false)
-
-  // Check if cache is valid
-  const isCacheValid = useCallback((cachedAt: number) => {
-    return Date.now() - cachedAt < CACHE_DURATION
-  }, [])
-
-  // Load images from cache
-  const loadFromCache = useCallback((): GalleryImage[] => {
-    try {
-      const cached = localStorage.getItem(CACHE_KEY)
-      if (cached) {
-        const parsedCache: CachedImage[] = JSON.parse(cached)
-        return parsedCache.filter(img => isCacheValid(img.cachedAt))
-      }
-    } catch (error) {
-      console.warn('Failed to load gallery cache:', error)
-    }
-    return []
-  }, [isCacheValid])
-
-  // Save images to cache
-  const saveToCache = useCallback((galleryImages: GalleryImage[]) => {
-    try {
-      const cacheData: CachedImage[] = galleryImages.map(img => ({
-        ...img,
-        cachedAt: Date.now()
-      }))
-      localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData))
-    } catch (error) {
-      console.warn('Failed to save gallery cache:', error)
-    }
-  }, [])
-
-  // Pre-load and cache image blobs
-  const preloadImage = useCallback((imageUrl: string, imageId: number) => {
-    if (!imageUrl || cachedImages.has(imageId)) return
-
-    const img = new Image()
-    img.crossOrigin = 'anonymous'
-    img.onload = () => {
-      // Create a canvas to convert image to blob
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-      canvas.width = img.width
-      canvas.height = img.height
-      
-      if (ctx) {
-        ctx.drawImage(img, 0, 0)
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const blobUrl = URL.createObjectURL(blob)
-            setCachedImages(prev => new Map(prev.set(imageId, blobUrl)))
-          }
-        }, 'image/jpeg', 0.8)
-      }
-    }
-    img.src = imageUrl
-  }, [cachedImages])
 
   useEffect(() => {
     const fetchGallery = async () => {
-      // First, try to load from cache
-      const cachedGallery = loadFromCache()
-      if (cachedGallery.length > 0) {
-        const validImages = cachedGallery.filter((img: GalleryImage) => img.imageUrl && img.imageUrl.trim() !== '')
-        setImages(validImages)
-        setIsLoading(false)
-        
-        // Pre-load cached images
-        validImages.forEach(img => preloadImage(img.imageUrl, img.id))
-        return
-      }
-
-      // If no valid cache, fetch from API
       try {
         const response = await fetch('/api/gallery')
-        if (!response.ok) throw new Error('Failed to fetch gallery')
+        if (!response.ok) {
+          throw new Error('Failed to fetch gallery')
+        }
         const data = await response.json()
         
-        console.log('Gallery API response:', data.length, 'images')
-        console.log('Sample image:', data[0])
+        // Filter out invalid images
+        const validImages = data.filter((img: GalleryImage) => 
+          img.imageUrl && 
+          img.imageUrl.trim() !== '' &&
+          !img.imageUrl.includes('test1.jpg') &&
+          !img.imageUrl.includes('test2.jpg')
+        )
         
-        // Filter out images without URLs - be more lenient with the filtering
-        const validImages = data.filter((img: GalleryImage) => {
-          const hasUrl = img.imageUrl && img.imageUrl.trim() !== ''
-          if (!hasUrl) {
-            console.log('Filtered out image without URL:', img)
-          }
-          return hasUrl
-        })
-        
-        console.log('Valid images after filtering:', validImages.length)
         setImages(validImages)
-        
-        // Save to cache
-        saveToCache(validImages)
-        
-        // Pre-load images
-        validImages.forEach((img: GalleryImage) => preloadImage(img.imageUrl, img.id))
       } catch (err) {
         console.error('Gallery fetch error:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load gallery')
       } finally {
         setIsLoading(false)
       }
     }
     fetchGallery()
-  }, [loadFromCache, saveToCache, preloadImage])
+  }, [])
+
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">{t('pages.gallery.loading')}</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center">
+          <div className="bg-destructive/10 rounded-lg p-8 border border-destructive/20">
+            <p className="text-destructive font-medium mb-2">
+              {locale === 'de' ? 'Fehler beim Laden der Galerie' : 'Error loading gallery'}
+            </p>
+            <p className="text-sm text-muted-foreground">{error}</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (images.length === 0) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center py-16">
+          <div className="w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-8">
+            <Camera className="w-16 h-16 text-primary" />
+          </div>
+          <h2 className="text-4xl font-serif font-bold text-foreground mb-6">
+            {locale === 'de' ? 'Galerie kommt bald' : 'Gallery Coming Soon'}
+          </h2>
+          <p className="text-foreground/80 text-lg max-w-2xl mx-auto">
+            {locale === 'de' 
+              ? 'Wir bereiten wunderschöne Fotos unserer Restaurantatmosphäre, köstlichen Gerichte und authentischen italienischen Speiseerlebnis vor. Schauen Sie bald wieder vorbei!'
+              : 'We\'re preparing beautiful photos of our restaurant atmosphere, delicious dishes, and authentic Italian dining experience. Please check back soon!'
+            }
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  const displayedImages = showAll ? images : images.slice(0, 30)
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -148,79 +111,94 @@ export default function GalleryPage() {
         </p>
       </div>
       
-      {isLoading ? (
-        <p className="text-center text-muted-foreground">{t('pages.gallery.loading')}</p>
-      ) : images.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="bg-card rounded-lg border p-8">
-            <h3 className="text-xl font-serif font-medium text-card-foreground mb-4">
-              {locale === 'de' ? 'Galerie kommt bald' : 'Gallery Coming Soon'}
-            </h3>
-            <p className="text-muted-foreground">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {displayedImages.map((image, index) => (
+          <div 
+            key={image.id} 
+            className="bg-card rounded-lg border overflow-hidden hover:shadow-lg transition-shadow duration-300 group"
+            style={{
+              animation: `fadeInUp 0.6s ease-out ${index * 0.05}s both`
+            }}
+          >
+            <div className="relative overflow-hidden">
+              <img 
+                src={image.imageUrl} 
+                alt={image.altText || image.title}
+                className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                loading={index < 6 ? 'eager' : 'lazy'}
+                onError={(e) => {
+                  const target = e.currentTarget
+                  target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23f3f4f6" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-family="sans-serif" font-size="18"%3EImage not available%3C/text%3E%3C/svg%3E'
+                  target.className = "w-full h-64 object-cover"
+                }}
+              />
+              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </div>
+            <div className="p-6">
+              <h3 className="text-lg font-serif font-medium text-card-foreground mb-2">
+                {image.title}
+              </h3>
+              {image.description && (
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {image.description}
+                </p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {images.length > 30 && (
+        <div className="mt-16 text-center">
+          <div className="bg-card rounded-lg p-6 border mb-6">
+            <p className="text-muted-foreground mb-4">
               {locale === 'de' 
-                ? 'Wir bereiten wunderschöne Fotos unserer Restaurantatmosphäre, köstlichen Gerichte und authentischen italienischen Speiseerlebnis vor. Schauen Sie bald wieder vorbei!'
-                : 'We\'re preparing beautiful photos of our restaurant atmosphere, delicious dishes, and authentic Italian dining experience. Please check back soon to see our gallery!'
+                ? `Zeige ${displayedImages.length} von ${images.length} Bildern`
+                : `Showing ${displayedImages.length} of ${images.length} images`
               }
             </p>
+            {!showAll ? (
+              <button
+                onClick={() => setShowAll(true)}
+                className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg font-medium transition-colors duration-200 shadow-sm hover:shadow-md"
+              >
+                {locale === 'de' ? `Alle ${images.length} Fotos anzeigen` : `Show All ${images.length} Photos`}
+                <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setShowAll(false)
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }}
+                className="inline-flex items-center px-6 py-3 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-lg font-medium transition-colors duration-200 shadow-sm hover:shadow-md"
+              >
+                {locale === 'de' ? 'Weniger anzeigen' : 'Show Less'}
+                <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                </svg>
+              </button>
+            )}
           </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {images.slice(0, showAll ? images.length : 30).map((image) => (
-            <div key={image.id} className="bg-card rounded-lg border overflow-hidden hover:shadow-lg transition-shadow duration-300 group">
-              <div className="relative overflow-hidden">
-                <img 
-                  src={cachedImages.get(image.id) || image.imageUrl} 
-                  alt={image.altText || image.title}
-                  className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </div>
-              <div className="p-6">
-                <h3 className="text-lg font-serif font-medium text-card-foreground mb-2">{image.title}</h3>
-                {image.description && <p className="text-sm text-muted-foreground leading-relaxed">{image.description}</p>}
-              </div>
-            </div>
-          ))}
         </div>
       )}
       
-      <div className="mt-16 text-center">
-        <div className="bg-card rounded-lg p-6 border mb-6">
-          <p className="text-muted-foreground mb-4">
-            {locale === 'de' 
-              ? `Zeige ${Math.min(images.length, showAll ? images.length : 30)} von ${images.length} Bildern`
-              : `Showing ${Math.min(images.length, showAll ? images.length : 30)} of ${images.length} images`
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
             }
-          </p>
-          {!showAll && images.length > 30 && (
-            <button
-              onClick={() => setShowAll(true)}
-              className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg font-medium transition-colors duration-200 shadow-sm hover:shadow-md"
-            >
-              {locale === 'de' ? `Alle ${images.length} Fotos anzeigen` : `Show All ${images.length} Photos`}
-              <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          )}
-          {showAll && (
-            <button
-              onClick={() => setShowAll(false)}
-              className="inline-flex items-center px-6 py-3 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-lg font-medium transition-colors duration-200 shadow-sm hover:shadow-md"
-            >
-              {locale === 'de' ? 'Weniger anzeigen' : 'Show Less'}
-              <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-              </svg>
-            </button>
-          )}
-        </div>
-      </div>
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `
+      }} />
     </div>
   )
 }
