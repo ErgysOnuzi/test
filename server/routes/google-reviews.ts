@@ -31,7 +31,7 @@ router.get('/', async (req, res) => {
         average_rating: reviewsData.reviews.length > 0 
           ? Math.round((reviewsData.reviews.reduce((sum, r) => sum + r.rating, 0) / reviewsData.reviews.length) * 10) / 10
           : 0,
-        latest_review: reviewsData.reviews.length > 0 ? reviewsData.reviews[0].created_at : null,
+        latest_review: reviewsData.reviews.length > 0 ? reviewsData.reviews[0]?.created_at : null,
         trace_id: traceId,
       }
     }

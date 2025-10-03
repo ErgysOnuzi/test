@@ -193,7 +193,7 @@ export class GoogleReviewsService {
       return {
         reviews: sanitizedReviews,
         place_info: placeInfo,
-        cached: isCachedData,
+        cached: isCachedData || false,
         fetched_at: cached ? new Date(cached.timestamp).toISOString() : new Date().toISOString(),
       }
 
