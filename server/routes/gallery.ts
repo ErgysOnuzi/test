@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Request, Response } from 'express'
 import { dbPromise } from '../db'
 import { gallery } from '../../shared/schema'
 import { eq } from 'drizzle-orm'
@@ -9,13 +9,13 @@ const router = express.Router()
 import { requireAuth, requireAuthWithCSRF } from './admin'
 
 // GET /api/gallery - Get all gallery images
-router.get('/', async (req, res) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const images = await db.select().from(gallery).where(eq(gallery.isActive, true))
     
     // Transform to match expected API format
-    const transformedImages = images.map(img => ({
+    const transformedImages = images.map((img: any) => ({
       id: img.id,
       title: img.alt || '',
       description: img.description || '',
@@ -28,7 +28,7 @@ router.get('/', async (req, res) => {
     }))
     
     console.log(`🖼️ Fetched ${transformedImages.length} gallery images`)
-    res.json(transformedImages)
+    return res.json(transformedImages)
   } catch (error) {
     console.error('Error fetching gallery images:', error)
     return res.status(500).json({ error: 'Failed to fetch gallery images' })
@@ -36,10 +36,13 @@ router.get('/', async (req, res) => {
 })
 
 // GET /api/gallery/:id - Get specific gallery image
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const { id } = req.params
+    if (!id) {
+      return res.status(400).json({ error: 'Gallery image ID is required' })
+    }
     const images = await db.select().from(gallery).where(eq(gallery.id, parseInt(id)))
     
     if (images.length === 0) {
@@ -60,7 +63,7 @@ router.get('/:id', async (req, res) => {
       sortOrder: img.sortOrder || 0
     }
 
-    res.json(transformedImage)
+    return res.json(transformedImage)
   } catch (error) {
     console.error('Error fetching gallery image:', error)
     return res.status(500).json({ error: 'Failed to fetch gallery image' })
@@ -68,7 +71,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // POST /api/gallery - Upload new gallery image
-router.post('/', requireAuthWithCSRF, async (req, res) => {
+router.post('/', requireAuthWithCSRF, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const {
@@ -109,7 +112,7 @@ router.post('/', requireAuthWithCSRF, async (req, res) => {
     }
 
     console.log(`🖼️ Created gallery image: ${transformedImage.title}`)
-    res.status(201).json(transformedImage)
+    return res.status(201).json(transformedImage)
   } catch (error) {
     console.error('Error creating gallery image:', error)
     return res.status(500).json({ error: 'Failed to create gallery image' })
@@ -117,10 +120,13 @@ router.post('/', requireAuthWithCSRF, async (req, res) => {
 })
 
 // PUT /api/gallery/:id - Update gallery image
-router.put('/:id', requireAuthWithCSRF, async (req, res) => {
+router.put('/:id', requireAuthWithCSRF, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const { id } = req.params
+    if (!id) {
+      return res.status(400).json({ error: 'Gallery image ID is required' })
+    }
     const {
       imageUrl,
       description,
@@ -164,7 +170,7 @@ router.put('/:id', requireAuthWithCSRF, async (req, res) => {
     }
 
     console.log(`🖼️ Updated gallery image: ${transformedImage.title}`)
-    res.json(transformedImage)
+    return res.json(transformedImage)
   } catch (error) {
     console.error('Error updating gallery image:', error)
     return res.status(500).json({ error: 'Failed to update gallery image' })
@@ -172,10 +178,13 @@ router.put('/:id', requireAuthWithCSRF, async (req, res) => {
 })
 
 // DELETE /api/gallery/:id - Delete gallery image
-router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
+router.delete('/:id', requireAuthWithCSRF, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const { id } = req.params
+    if (!id) {
+      return res.status(400).json({ error: 'Gallery image ID is required' })
+    }
     const deleteResult = await db.delete(gallery)
       .where(eq(gallery.id, parseInt(id)))
       .returning()
@@ -185,7 +194,7 @@ router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
     }
 
     console.log(`🖼️ Deleted gallery image ID: ${id}`)
-    res.json({ message: 'Gallery image deleted successfully' })
+    return res.json({ message: 'Gallery image deleted successfully' })
   } catch (error) {
     console.error('Error deleting gallery image:', error)
     return res.status(500).json({ error: 'Failed to delete gallery image' })
@@ -193,10 +202,13 @@ router.delete('/:id', requireAuthWithCSRF, async (req, res) => {
 })
 
 // PATCH /api/gallery/:id/toggle - Toggle gallery image visibility
-router.patch('/:id/toggle', requireAuthWithCSRF, async (req, res) => {
+router.patch('/:id/toggle', requireAuthWithCSRF, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const { id } = req.params
+    if (!id) {
+      return res.status(400).json({ error: 'Gallery image ID is required' })
+    }
     
     // First get the current state
     const currentImages = await db.select().from(gallery).where(eq(gallery.id, parseInt(id)))
@@ -220,7 +232,7 @@ router.patch('/:id/toggle', requireAuthWithCSRF, async (req, res) => {
     const updatedImage = updateResult[0]
     
     console.log(`🖼️ Toggled gallery image visibility: ${updatedImage.alt || 'Unknown'}`)
-    res.json({
+    return res.json({
       success: true,
       message: `Gallery image ${updatedImage.isActive ? 'shown' : 'hidden'} successfully`
     })
