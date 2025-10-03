@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Request, Response } from 'express'
 import { createHash, randomBytes } from 'crypto'
 import jwt from 'jsonwebtoken'
 import { dbPromise } from '../db'
@@ -126,7 +126,7 @@ const requireAuth = (req: express.Request, res: express.Response, next: express.
 const requireAuthWithCSRF = [requireAuth, validateCSRF]
 
 // POST /api/admin/login - Admin login with validation
-router.post('/login', validateAdminLogin, handleValidationErrors, async (req, res) => {
+router.post('/login', validateAdminLogin, handleValidationErrors, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const { identifier, password } = req.body
@@ -206,7 +206,7 @@ router.post('/login', validateAdminLogin, handleValidationErrors, async (req, re
 })
 
 // POST /api/admin/logout - Admin logout
-router.post('/logout', async (req, res) => {
+router.post('/logout', async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const sessionCookie = req.cookies?.['la_cantina_admin_session']
@@ -237,7 +237,7 @@ router.post('/logout', async (req, res) => {
 })
 
 // GET /api/admin/session - Check admin session
-router.get('/session', async (req, res) => {
+router.get('/session', async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const sessionCookie = req.cookies?.['la_cantina_admin_session']
@@ -260,11 +260,13 @@ router.get('/session', async (req, res) => {
           username: ADMIN_USERNAME
         }
       })
+      return
     } else {
       res.json({ 
         authenticated: false,
         user: null
       })
+      return
     }
   } catch (error) {
     console.error('Error checking admin session:', error)
@@ -276,7 +278,7 @@ router.get('/session', async (req, res) => {
 })
 
 // POST /api/admin/refresh - Refresh session token
-router.post('/refresh', async (req, res) => {
+router.post('/refresh', async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const sessionCookie = req.cookies?.['la_cantina_admin_session']
@@ -330,17 +332,20 @@ router.post('/refresh', async (req, res) => {
           username: ADMIN_USERNAME
         }
       })
+      return
     } else {
       res.status(401).json({ error: 'Invalid session' })
+      return
     }
   } catch (error) {
     console.error('Error refreshing admin session:', error)
     res.status(401).json({ error: 'Invalid session' })
+    return
   }
 })
 
 // GET /api/admin/csrf - Get CSRF token
-router.get('/csrf', async (req, res) => {
+router.get('/csrf', async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const { token: csrfToken, secret: csrfSecret } = generateCSRFToken()
@@ -361,7 +366,7 @@ router.get('/csrf', async (req, res) => {
 })
 
 // GET /api/admin/bookings - Get all event bookings (admin only)
-router.get('/bookings', requireAuth, async (req, res) => {
+router.get('/bookings', requireAuth, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const dbBookings = await db.select().from(eventBookings).orderBy(desc(eventBookings.createdAt))
@@ -375,11 +380,15 @@ router.get('/bookings', requireAuth, async (req, res) => {
 })
 
 // PATCH /api/admin/bookings/:id/status - Update booking status (admin only)
-router.patch('/bookings/:id/status', requireAuthWithCSRF, async (req, res) => {
+router.patch('/bookings/:id/status', requireAuthWithCSRF, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const { id } = req.params
     const { status } = req.body // 'confirmed', 'cancelled', 'pending'
+
+    if (!id) {
+      return res.status(400).json({ error: 'Booking ID is required' })
+    }
 
     if (!['confirmed', 'cancelled', 'pending'].includes(status)) {
       return res.status(400).json({ error: 'Invalid status. Must be confirmed, cancelled, or pending' })
@@ -457,17 +466,23 @@ router.patch('/bookings/:id/status', requireAuthWithCSRF, async (req, res) => {
       booking: updatedBooking,
       message: `Booking ${status} successfully`
     })
+    return
   } catch (error) {
     console.error('Error updating booking status:', error)
     res.status(500).json({ error: 'Failed to update booking status' })
+    return
   }
 })
 
 // DELETE /api/admin/bookings/:id - Cancel booking and adjust capacity (admin only)
-router.delete('/bookings/:id', requireAuthWithCSRF, async (req, res) => {
+router.delete('/bookings/:id', requireAuthWithCSRF, async (req: Request, res: Response) => {
   try {
     const db = await dbPromise
     const { id } = req.params
+    
+    if (!id) {
+      return res.status(400).json({ error: 'Booking ID is required' })
+    }
     
     // Get the booking from database
     const [booking] = await db.select().from(eventBookings).where(eq(eventBookings.id, parseInt(id)))
@@ -500,9 +515,11 @@ router.delete('/bookings/:id', requireAuthWithCSRF, async (req, res) => {
       success: true,
       message: 'Booking deleted successfully'
     })
+    return
   } catch (error) {
     console.error('Error deleting booking:', error)
     res.status(500).json({ error: 'Failed to delete booking' })
+    return
   }
 })
 
