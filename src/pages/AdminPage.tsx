@@ -238,7 +238,7 @@ export default function AdminPage() {
   const deleteGalleryImage = async (imageId: number) => {
     if (!confirm('Are you sure you want to delete this image?')) return
     try {
-      const response = await fetch(`/api/admin/gallery/${imageId}`, {
+      const response = await fetch(`/api/gallery/${imageId}`, {
         method: 'DELETE',
         credentials: 'include'
       })
@@ -1089,7 +1089,7 @@ export default function AdminPage() {
               }
               
               try {
-                const url = editingItem ? `/api/admin/gallery/${editingItem.id}` : '/api/admin/gallery'
+                const url = editingItem ? `/api/gallery/${editingItem.id}` : '/api/gallery'
                 const method = editingItem ? 'PUT' : 'POST'
                 
                 const response = await fetch(url, {
